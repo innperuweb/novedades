@@ -2,16 +2,28 @@
 
 declare(strict_types=1);
 
+header("X-Frame-Options: DENY");
+header("X-Content-Type-Options: nosniff");
+header("X-XSS-Protection: 1; mode=block");
+header("Referrer-Policy: no-referrer-when-downgrade");
+
 define('ROOT_PATH', __DIR__);
 require ROOT_PATH . '/application/config/constants.php';
+require ROOT_PATH . '/application/config/security.php';
 require ROOT_PATH . '/database.php';
+
+$sessionActive = session_status();
+if ($sessionActive !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 
 $config = require CONFIG_PATH . '/config.php';
 $routes = require CONFIG_PATH . '/routes.php';
 $GLOBALS['config'] = $config;
 
 require APP_PATH . '/helpers/url_helper.php';
-require APP_PATH . '/helpers/security_helper.php';
+require_once APP_PATH . '/helpers/security_helper.php';
+require_once APP_PATH . '/helpers/session_helper.php';
 
 spl_autoload_register(static function ($class): void {
     $paths = [
