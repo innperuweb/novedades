@@ -29,3 +29,8 @@
 
     <!-- REVOLUTION ACTIVE JS FILES -->
     <script src="<?= asset_url('js/revoulation.js'); ?>"></script>
+
+    <script>
+        const base_url = <?= json_encode(base_url()); ?>;
+    </script>
+    <script src="<?= asset_url('js/search.js'); ?>"></script>

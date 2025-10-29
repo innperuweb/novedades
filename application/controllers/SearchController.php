@@ -10,36 +10,36 @@ class SearchController extends BaseController
 {
     public function index(): void
     {
+        $term = isset($_GET['q']) ? sanitize((string) $_GET['q']) : '';
+        $resultados = [];
+
+        if ($term !== '') {
+            $model = new ProductoModel();
+            $resultados = $model->buscarProductos($term);
+        }
+
         $this->render('search/index', [
             'moduleAction' => 'index',
+            'term' => $term,
+            'resultados' => $resultados,
         ]);
     }
 
-    public function detalle(): void
+    public function ajax(): void
     {
-        $this->render('search/index', [
-            'moduleAction' => 'detalle',
-        ]);
-    }
+        if (!isset($_GET['term'])) {
+            http_response_code(400);
+            header('Content-Type: application/json');
+            echo json_encode([]);
 
-    public function crear(): void
-    {
-        $this->render('search/index', [
-            'moduleAction' => 'crear',
-        ]);
-    }
+            return;
+        }
 
-    public function editar(): void
-    {
-        $this->render('search/index', [
-            'moduleAction' => 'editar',
-        ]);
-    }
+        $term = sanitize((string) $_GET['term']);
+        $model = new ProductoModel();
+        $resultados = $term === '' ? [] : $model->buscarProductos($term);
 
-    public function eliminar(): void
-    {
-        $this->render('search/index', [
-            'moduleAction' => 'eliminar',
-        ]);
+        header('Content-Type: application/json');
+        echo json_encode($resultados);
     }
 }
