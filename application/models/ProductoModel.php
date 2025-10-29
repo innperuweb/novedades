@@ -24,4 +24,14 @@ class ProductoModel
 
         return $result !== false ? $result : null;
     }
+
+    public function buscarProductos($term): array
+    {
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT id, nombre, imagen, precio FROM productos WHERE nombre LIKE ? OR descripcion LIKE ? LIMIT 10');
+        $likeTerm = '%' . $term . '%';
+        $stmt->execute([$likeTerm, $likeTerm]);
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }
