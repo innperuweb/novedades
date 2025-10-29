@@ -1,5 +1,3 @@
-<?php include 'vistas/head.php'; ?>
-<?php include 'vistas/header.php'; ?>
 
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
@@ -160,5 +158,3 @@
     </div>
 </div>
 <br><br>
-<?php include 'vistas/footer.php'; ?>
-<?php include 'vistas/scripts.php'; ?>
