@@ -1,9 +1,5 @@
 <?php
-    $scriptDir = trim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
-    $depth = $scriptDir === '' ? 0 : substr_count($scriptDir, '/') + 1;
-    if (!defined('ASSET_PATH')) {
-        define('ASSET_PATH', str_repeat('../', $depth));
-    }
+    require_once __DIR__ . '/../../config/constants.php';
 ?>
 <!doctype html>
 <html class="no-js" lang="es">
