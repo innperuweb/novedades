@@ -27,3 +27,19 @@ function require_login() {
         exit();
     }
 }
+
+function get_cart_session(): array {
+    return isset($_SESSION['carrito']) && is_array($_SESSION['carrito'])
+        ? $_SESSION['carrito']
+        : [];
+}
+
+function set_cart_session(array $items): void {
+    $_SESSION['carrito'] = $items;
+}
+
+function clear_cart_session(): void {
+    if (isset($_SESSION['carrito'])) {
+        unset($_SESSION['carrito']);
+    }
+}
