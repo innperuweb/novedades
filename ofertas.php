@@ -1,8 +1,6 @@
-<?php
-require_once __DIR__ . '/../config/constants.php';
-include_once __DIR__ . '/vistas/head.php';
-include_once __DIR__ . '/vistas/header.php';
-?>
+<?php include 'vistas/head.php'; ?>
+<?php include 'vistas/header.php'; ?>
+
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
         <div class="row">
@@ -54,8 +52,8 @@ include_once __DIR__ . '/vistas/header.php';
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -88,8 +86,8 @@ include_once __DIR__ . '/vistas/header.php';
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -122,8 +120,8 @@ include_once __DIR__ . '/vistas/header.php';
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -156,8 +154,8 @@ include_once __DIR__ . '/vistas/header.php';
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -190,8 +188,8 @@ include_once __DIR__ . '/vistas/header.php';
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -224,8 +222,8 @@ include_once __DIR__ . '/vistas/header.php';
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -258,8 +256,8 @@ include_once __DIR__ . '/vistas/header.php';
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -292,8 +290,8 @@ include_once __DIR__ . '/vistas/header.php';
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -380,5 +378,5 @@ include_once __DIR__ . '/vistas/header.php';
     </div>
 </div>
 
-<?php include_once __DIR__ . '/vistas/footer.php'; ?>
-<?php include_once __DIR__ . '/vistas/scripts.php'; ?>
+<?php include 'vistas/footer.php'; ?>
+<?php include 'vistas/scripts.php'; ?>

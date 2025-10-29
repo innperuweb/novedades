@@ -1,8 +1,6 @@
-<?php
-require_once __DIR__ . '/../config/constants.php';
-include_once __DIR__ . '/vistas/head.php';
-include_once __DIR__ . '/vistas/header.php';
-?>
+<?php include 'vistas/head.php'; ?>
+<?php include 'vistas/header.php'; ?>
+
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
         <div class="row">
@@ -282,7 +280,7 @@ include_once __DIR__ . '/vistas/header.php';
                                         <div class="banner-box banner-type-5 banner-hover-3">
                                             <div class="banner-inner">
                                                 <div class="banner-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/pago/bcp.jpg" alt="Banner">
+                                                    <img src="img/pago/bcp.jpg" alt="Banner">
                                                 </div>
                                             </div>
                                         </div>
@@ -304,7 +302,7 @@ include_once __DIR__ . '/vistas/header.php';
                                             <div class="banner-box banner-type-5 banner-hover-3">
                                                 <div class="banner-inner">
                                                     <div class="banner-image">
-                                                        <img src="<?php echo ASSET_PATH; ?>img/pago/yape.png" alt="Banner">
+                                                        <img src="img/pago/yape.png" alt="Banner">
                                                     </div>
                                                 </div>
                                             </div>
@@ -313,7 +311,7 @@ include_once __DIR__ . '/vistas/header.php';
                                             <div class="banner-box banner-type-5 banner-hover-3">
                                                 <div class="banner-inner">
                                                     <div class="banner-image">
-                                                        <img src="<?php echo ASSET_PATH; ?>img/pago/plin.png" alt="Banner">
+                                                        <img src="img/pago/plin.png" alt="Banner">
                                                     </div>
                                                 </div>
                                             </div>
@@ -347,5 +345,5 @@ include_once __DIR__ . '/vistas/header.php';
     </div>
 </div>
 
-<?php include_once __DIR__ . '/vistas/footer.php'; ?>
-<?php include_once __DIR__ . '/vistas/scripts.php'; ?>
+<?php include 'vistas/footer.php'; ?>
+<?php include 'vistas/scripts.php'; ?>

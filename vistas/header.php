@@ -43,10 +43,10 @@
                                 <div class="header-left d-flex">
                                     <a href="index.php" class="logo-box">
                                         <figure class="logo--normal">
-                                            <img src="<?php echo ASSET_PATH; ?>img/logo/logo.png" alt="Logo" />
+                                            <img src="img/logo/logo.png" alt="Logo" />
                                         </figure>
                                         <figure class="logo--transparency">
-                                            <img src="<?php echo ASSET_PATH; ?>img/logo/logo-white.png" alt="Logo" />
+                                            <img src="img/logo/logo-white.png" alt="Logo" />
                                         </figure>
                                     </a>
                                     <ul class="header-toolbar">
@@ -151,7 +151,7 @@
                             <div class="col-4">
                                 <a href="index.php" class="logo-box">
                                     <figure class="logo--normal">
-                                        <img src="<?php echo ASSET_PATH; ?>img/logo/logo.png" alt="Logo">
+                                        <img src="img/logo/logo.png" alt="Logo">
                                     </figure>
                                 </a>
                             </div>

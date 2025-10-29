@@ -1,8 +1,6 @@
-<?php
-require_once __DIR__ . '/../config/constants.php';
-include_once __DIR__ . '/vistas/head.php';
-include_once __DIR__ . '/vistas/header.php';
-?>
+<?php include 'vistas/head.php'; ?>
+<?php include 'vistas/header.php'; ?>
+
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
         <div class="row">
@@ -22,7 +20,7 @@ include_once __DIR__ . '/vistas/header.php';
                     <article class="post">
                         <div class="post-media">
                             <div class="image">
-                                <img src="<?php echo ASSET_PATH; ?>img/blog/image.jpg" alt="Blog">
+                                <img src="img/blog/image.jpg" alt="Blog">
                                 <a href="ver_blog.php" class="link-overlay"></a>
                             </div>
                         </div>
@@ -45,7 +43,7 @@ include_once __DIR__ . '/vistas/header.php';
                     <article class="post">
                         <div class="post-media">
                             <div class="image">
-                                <img src="<?php echo ASSET_PATH; ?>img/blog/image.jpg" alt="Blog">
+                                <img src="img/blog/image.jpg" alt="Blog">
                                 <a href="ver_blog.php" class="link-overlay"></a>
                             </div>
                         </div>
@@ -68,7 +66,7 @@ include_once __DIR__ . '/vistas/header.php';
                     <article class="post">
                         <div class="post-media">
                             <div class="image">
-                                <img src="<?php echo ASSET_PATH; ?>img/blog/image.jpg" alt="Blog">
+                                <img src="img/blog/image.jpg" alt="Blog">
                                 <a href="ver_blog.php" class="link-overlay"></a>
                             </div>
                         </div>
@@ -91,7 +89,7 @@ include_once __DIR__ . '/vistas/header.php';
                     <article class="post">
                         <div class="post-media">
                             <div class="image">
-                                <img src="<?php echo ASSET_PATH; ?>img/blog/image.jpg" alt="Blog">
+                                <img src="img/blog/image.jpg" alt="Blog">
                                 <a href="ver_blog.php" class="link-overlay"></a>
                             </div>
                         </div>
@@ -114,7 +112,7 @@ include_once __DIR__ . '/vistas/header.php';
                     <article class="post">
                         <div class="post-media">
                             <div class="image">
-                                <img src="<?php echo ASSET_PATH; ?>img/blog/image.jpg" alt="Blog">
+                                <img src="img/blog/image.jpg" alt="Blog">
                                 <a href="ver_blog.php" class="link-overlay"></a>
                             </div>
                         </div>
@@ -137,7 +135,7 @@ include_once __DIR__ . '/vistas/header.php';
                     <article class="post">
                         <div class="post-media">
                             <div class="image">
-                                <img src="<?php echo ASSET_PATH; ?>img/blog/image.jpg" alt="Blog">
+                                <img src="img/blog/image.jpg" alt="Blog">
                                 <a href="ver_blog.php" class="link-overlay"></a>
                             </div>
                         </div>
@@ -162,5 +160,5 @@ include_once __DIR__ . '/vistas/header.php';
     </div>
 </div>
 <br><br>
-<?php include_once __DIR__ . '/vistas/footer.php'; ?>
-<?php include_once __DIR__ . '/vistas/scripts.php'; ?>
+<?php include 'vistas/footer.php'; ?>
+<?php include 'vistas/scripts.php'; ?>

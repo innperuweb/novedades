@@ -1,8 +1,6 @@
-<?php
-require_once __DIR__ . '/../config/constants.php';
-include_once __DIR__ . '/vistas/head.php';
-include_once __DIR__ . '/vistas/header.php';
-?>
+<?php include 'vistas/head.php'; ?>
+<?php include 'vistas/header.php'; ?>
+
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
         <div class="row">
@@ -54,8 +52,8 @@ include_once __DIR__ . '/vistas/header.php';
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -87,75 +85,8 @@ include_once __DIR__ . '/vistas/header.php';
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
-                                                </a>
-                                            </div>
-                                            <div class="airi-product-action">
-                                                <div class="product-action">
-                                                    <a class="quickview-btn action-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver">
-                                                        <span data-bs-toggle="modal" data-bs-target="#productModal">
-                                                            <i class="dl-icon-view"></i>
-                                                        </span>
-                                                    </a>
-                                                </div>
-                                            </div>
-                                            <span class="product-badge sale">Sale</span>
-                                        </figure>
-                                        <div class="product-info text-center">
-                                            <h3 class="product-title">
-                                                <a href="detalle_producto.php">Limited edition v-neck
-                                                    t-shirt</a>
-                                            </h3>
-                                            <span class="product-price-wrapper">
-                                                <span class="money">S/ 49.00</span>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-4 col-sm-6 mb--40 mb-md--30">
-                                <div class="airi-product">
-                                    <div class="product-inner">
-                                        <figure class="product-image">
-                                            <div class="product-image--holder">
-                                                <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
-                                                </a>
-                                            </div>
-                                            <div class="airi-product-action">
-                                                <div class="product-action">
-                                                    <a class="quickview-btn action-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver">
-                                                        <span data-bs-toggle="modal" data-bs-target="#productModal">
-                                                            <i class="dl-icon-view"></i>
-                                                        </span>
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </figure>
-                                        <div class="product-info text-center">
-                                            <h3 class="product-title">
-                                                <a href="detalle_producto.php">Limited edition v-neck
-                                                    t-shirt</a>
-                                            </h3>
-                                            <span class="product-price-wrapper">
-                                                <span class="money">S/ 49.00</span>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-4 col-sm-6 mb--40 mb-md--30">
-                                <div class="airi-product">
-                                    <div class="product-inner">
-                                        <figure class="product-image">
-                                            <div class="product-image--holder">
-                                                <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -188,8 +119,8 @@ include_once __DIR__ . '/vistas/header.php';
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -221,8 +152,8 @@ include_once __DIR__ . '/vistas/header.php';
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -255,8 +186,8 @@ include_once __DIR__ . '/vistas/header.php';
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -288,8 +219,75 @@ include_once __DIR__ . '/vistas/header.php';
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                </a>
+                                            </div>
+                                            <div class="airi-product-action">
+                                                <div class="product-action">
+                                                    <a class="quickview-btn action-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver">
+                                                        <span data-bs-toggle="modal" data-bs-target="#productModal">
+                                                            <i class="dl-icon-view"></i>
+                                                        </span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <span class="product-badge sale">Sale</span>
+                                        </figure>
+                                        <div class="product-info text-center">
+                                            <h3 class="product-title">
+                                                <a href="detalle_producto.php">Limited edition v-neck
+                                                    t-shirt</a>
+                                            </h3>
+                                            <span class="product-price-wrapper">
+                                                <span class="money">S/ 49.00</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4 col-sm-6 mb--40 mb-md--30">
+                                <div class="airi-product">
+                                    <div class="product-inner">
+                                        <figure class="product-image">
+                                            <div class="product-image--holder">
+                                                <a href="detalle_producto.php">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                </a>
+                                            </div>
+                                            <div class="airi-product-action">
+                                                <div class="product-action">
+                                                    <a class="quickview-btn action-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver">
+                                                        <span data-bs-toggle="modal" data-bs-target="#productModal">
+                                                            <i class="dl-icon-view"></i>
+                                                        </span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </figure>
+                                        <div class="product-info text-center">
+                                            <h3 class="product-title">
+                                                <a href="detalle_producto.php">Limited edition v-neck
+                                                    t-shirt</a>
+                                            </h3>
+                                            <span class="product-price-wrapper">
+                                                <span class="money">S/ 49.00</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4 col-sm-6 mb--40 mb-md--30">
+                                <div class="airi-product">
+                                    <div class="product-inner">
+                                        <figure class="product-image">
+                                            <div class="product-image--holder">
+                                                <a href="detalle_producto.php">
+                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
+                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -376,5 +374,5 @@ include_once __DIR__ . '/vistas/header.php';
     </div>
 </div>
 
-<?php include_once __DIR__ . '/vistas/footer.php'; ?>
-<?php include_once __DIR__ . '/vistas/scripts.php'; ?>
+<?php include 'vistas/footer.php'; ?>
+<?php include 'vistas/scripts.php'; ?>

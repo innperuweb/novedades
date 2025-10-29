@@ -1,8 +1,6 @@
-<?php
-require_once __DIR__ . '/../config/constants.php';
-include_once __DIR__ . '/vistas/head.php';
-include_once __DIR__ . '/vistas/header.php';
-?>
+<?php include 'vistas/head.php'; ?>
+<?php include 'vistas/header.php'; ?>
+
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
         <div class="row">
@@ -37,7 +35,7 @@ include_once __DIR__ . '/vistas/header.php';
                                                 <td class="product-remove text-start"><a href="#"><i
                                                             class="dl-icon-close"></i></a></td>
                                                 <td class="product-thumbnail text-start">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-14-2-70x81.jpg" alt="Product Thumnail">
+                                                    <img src="img/products/prod-14-2-70x81.jpg" alt="Product Thumnail">
                                                 </td>
                                                 <td class="product-name text-start wide-column">
                                                     <h3>
@@ -60,7 +58,7 @@ include_once __DIR__ . '/vistas/header.php';
                                                 <td class="product-remove text-start"><a href="#"><i
                                                             class="dl-icon-close"></i></a></td>
                                                 <td class="product-thumbnail text-start">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-9-1-70x81.jpg" alt="Product Thumnail">
+                                                    <img src="img/products/prod-9-1-70x81.jpg" alt="Product Thumnail">
                                                 </td>
                                                 <td class="product-name text-start wide-column">
                                                     <h3>
@@ -82,7 +80,7 @@ include_once __DIR__ . '/vistas/header.php';
                                                 <td class="product-remove text-start"><a href="#"><i
                                                             class="dl-icon-close"></i></a></td>
                                                 <td class="product-thumbnail text-start">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-10-1-70x81.jpg" alt="Product Thumnail">
+                                                    <img src="img/products/prod-10-1-70x81.jpg" alt="Product Thumnail">
                                                 </td>
                                                 <td class="product-name text-start wide-column">
                                                     <h3>
@@ -105,11 +103,11 @@ include_once __DIR__ . '/vistas/header.php';
                                                 <td class="product-remove text-start"><a href="#"><i
                                                             class="dl-icon-close"></i></a></td>
                                                 <td class="product-thumbnail text-start">
-                                                    <img src="<?php echo ASSET_PATH; ?>img/products/prod-11-1-70x81.jpg" alt="Product Thumnail">
+                                                    <img src="img/products/prod-11-1-70x81.jpg" alt="Product Thumnail">
                                                 </td>
                                                 <td class="product-name text-start wide-column">
                                                     <h3>
-                                                        <a href="product-details.html">Dress with bffelt</a>
+                                                        <a href="product-details.html">Dress with belt</a>
                                                     </h3>
                                                 </td>
                                                 <td class="product-price">
@@ -167,5 +165,5 @@ include_once __DIR__ . '/vistas/header.php';
     </div>
 </div>
 
-<?php include_once __DIR__ . '/vistas/footer.php'; ?>
-<?php include_once __DIR__ . '/vistas/scripts.php'; ?>
+<?php include 'vistas/footer.php'; ?>
+<?php include 'vistas/scripts.php'; ?>
