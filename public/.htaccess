@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    RewriteRule ^css/(.*)$ assets/css/$1 [L]
+    RewriteRule ^js/(.*)$ assets/js/$1 [L]
+    RewriteRule ^img/(.*)$ assets/img/$1 [L]
+    RewriteRule ^fonts/(.*)$ assets/fonts/$1 [L]
+</IfModule>

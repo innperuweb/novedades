@@ -5,7 +5,7 @@
                 <div class="col-lg-3 col-md-8 mb-md--30">
                     <div class="footer-widget">
                         <div class="textwidget">
-                            <img src="img/logo/logo-white.png" alt="Logo" class="mb--10"> <br> <br>
+                            <img src="<?= asset_url('img/logo/logo-white.png'); ?>" alt="Logo" class="mb--10"> <br> <br>
                             <ul class="social">
                                 <li class="social__item">
                                     <a href="#" class="social__link color--white">
@@ -30,10 +30,10 @@
                     <div class="footer-widget">
                         <h3 class="widget-title">Para el cliente</h3>
                         <ul class="widget-menu">
-                            <li><a href="para_el_cliente.php">Preguntas frecuentes</a></li>
-                            <li><a href="para_el_cliente.php">Envíos a nivel nacional</a></li>
-                            <li><a href="para_el_cliente.php">Pedidos por mayor</a></li>
-                            <li><a href="para_el_cliente.php">Garantías</a></li>
+                            <li><a href="<?= base_url('para-el-cliente'); ?>">Preguntas frecuentes</a></li>
+                            <li><a href="<?= base_url('para-el-cliente'); ?>">Envíos a nivel nacional</a></li>
+                            <li><a href="<?= base_url('para-el-cliente'); ?>">Pedidos por mayor</a></li>
+                            <li><a href="<?= base_url('para-el-cliente'); ?>">Garantías</a></li>
                         </ul>
                     </div>
                 </div>
@@ -41,10 +41,10 @@
                     <div class="footer-widget">
                         <h3 class="widget-title">Importante</h3>
                         <ul class="widget-menu">
-                            <li><a href="para_el_cliente.php">Términos y condiciones</a></li>
-                            <li><a href="para_el_cliente.php">Políticas de privacidad</a></li>
-                            <li><a href="para_el_cliente.php">Cambios y devoluciones</a></li>
-                            <li><a href="para_el_cliente.php">Libro de reclamaciones</a></li>
+                            <li><a href="<?= base_url('para-el-cliente'); ?>">Términos y condiciones</a></li>
+                            <li><a href="<?= base_url('para-el-cliente'); ?>">Políticas de privacidad</a></li>
+                            <li><a href="<?= base_url('para-el-cliente'); ?>">Cambios y devoluciones</a></li>
+                            <li><a href="<?= base_url('libro-de-reclamaciones'); ?>">Libro de reclamaciones</a></li>
                         </ul>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
                         </ul>
                         <br>
                         <div class="textwidget">
-                            <img src="img/others/payments.png" alt="Payment">
+                            <img src="<?= asset_url('img/others/payments.png'); ?>" alt="Payment">
                         </div>
                     </div>
                 </div>
@@ -117,26 +117,26 @@
         <div class="side-navigation-inner">
             <div class="widget">
                 <ul class="sidenav-menu sidenav-menu--icons">
-                    <li><a href="productos.php"><span class="label">Relojes</span><img class="cat-icon" src="img/categoria_menu.png"
+                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Relojes</span><img class="cat-icon" src="<?= asset_url('img/categoria_menu.png'); ?>"
                                 alt=""></a></li>
-                    <li><a href="productos.php"><span class="label">Carteras</span><img class="cat-icon"
-                                src="img/categoria_menu.png" alt=""></a></li>
-                    <li><a href="productos.php"><span class="label">Polos</span><img class="cat-icon" src="img/categoria_menu.png"
+                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Carteras</span><img class="cat-icon"
+                                src="<?= asset_url('img/categoria_menu.png'); ?>" alt=""></a></li>
+                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Polos</span><img class="cat-icon" src="<?= asset_url('img/categoria_menu.png'); ?>"
                                 alt=""></a></li>
-                    <li><a href="productos.php"><span class="label">Zapatillas</span><img class="cat-icon"
-                                src="img/categoria_menu.png" alt=""></a></li>
-                    <li><a href="productos.php"><span class="label">Móviles</span><img class="cat-icon" src="img/categoria_menu.png"
+                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Zapatillas</span><img class="cat-icon"
+                                src="<?= asset_url('img/categoria_menu.png'); ?>" alt=""></a></li>
+                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Móviles</span><img class="cat-icon" src="<?= asset_url('img/categoria_menu.png'); ?>"
                                 alt=""></a></li>
-                    <li><a href="productos.php"><span class="label">Cosméticos</span><img class="cat-icon"
-                                src="img/categoria_menu.png" alt=""></a></li>
-                    <li><a href="productos.php"><span class="label">Case</span><img class="cat-icon" src="img/categoria_menu.png"
+                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Cosméticos</span><img class="cat-icon"
+                                src="<?= asset_url('img/categoria_menu.png'); ?>" alt=""></a></li>
+                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Case</span><img class="cat-icon" src="<?= asset_url('img/categoria_menu.png'); ?>"
                                 alt=""></a></li>
-                    <li><a href="productos.php"><span class="label">Laptops</span><img class="cat-icon" src="img/categoria_menu.png"
+                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Laptops</span><img class="cat-icon" src="<?= asset_url('img/categoria_menu.png'); ?>"
                                 alt=""></a></li>
-                    <li><a href="productos.php"><span class="label">Juguetes</span><img class="cat-icon"
-                                src="img/categoria_menu.png" alt=""></a></li>
-                    <li><a href="productos.php"><span class="label">Accesorios</span><img class="cat-icon"
-                                src="img/categoria_menu.png" alt=""></a></li>
+                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Juguetes</span><img class="cat-icon"
+                                src="<?= asset_url('img/categoria_menu.png'); ?>" alt=""></a></li>
+                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Accesorios</span><img class="cat-icon"
+                                src="<?= asset_url('img/categoria_menu.png'); ?>" alt=""></a></li>
                 </ul>
             </div>
             <br><br>
@@ -186,7 +186,7 @@
                             <i class="dl-icon-close"></i>
                         </a>
                         <div class="mini-cart__product__image">
-                            <img src="img/products/prod-17-1-70x91.jpg" alt="products">
+                            <img src="<?= asset_url('img/products/prod-17-1-70x91.jpg'); ?>" alt="products">
                         </div>
                         <div class="mini-cart__product__content">
                             <a class="mini-cart__product__title" href="#">Chain print bermuda
@@ -199,7 +199,7 @@
                             <i class="dl-icon-close"></i>
                         </a>
                         <div class="mini-cart__product__image">
-                            <img src="img/products/prod-18-1-70x91.jpg" alt="products">
+                            <img src="<?= asset_url('img/products/prod-18-1-70x91.jpg'); ?>" alt="products">
                         </div>
                         <div class="mini-cart__product__content">
                             <a class="mini-cart__product__title" href="#">Waxed-effect
@@ -212,7 +212,7 @@
                             <i class="dl-icon-close"></i>
                         </a>
                         <div class="mini-cart__product__image">
-                            <img src="img/products/prod-19-1-70x91.jpg" alt="products">
+                            <img src="<?= asset_url('img/products/prod-19-1-70x91.jpg'); ?>" alt="products">
                         </div>
                         <div class="mini-cart__product__content">
                             <a class="mini-cart__product__title" href="#">Waxed-effect
@@ -225,7 +225,7 @@
                             <i class="dl-icon-close"></i>
                         </a>
                         <div class="mini-cart__product__image">
-                            <img src="img/products/prod-2-1-70x91.jpg" alt="products">
+                            <img src="<?= asset_url('img/products/prod-2-1-70x91.jpg'); ?>" alt="products">
                         </div>
                         <div class="mini-cart__product__content">
                             <a class="mini-cart__product__title" href="#">Waxed-effect
@@ -239,7 +239,7 @@
                     <span class="ammount">S/ 98.00</span>
                 </div>
                 <div class="mini-cart__buttons">
-                    <a href="carrito_compras.php" class="btn btn-fullwidth btn-style-1">Ver carrito</a>
+                    <a href="<?= base_url('carrito'); ?>" class="btn btn-fullwidth btn-style-1">Ver carrito</a>
                 </div>
             </div>
         </div>

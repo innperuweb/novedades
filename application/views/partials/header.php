@@ -41,12 +41,12 @@
                         <div class="row align-items-center">
                             <div class="col-lg-2 col-md-3 col-4 order-1">
                                 <div class="header-left d-flex">
-                                    <a href="index.php" class="logo-box">
+                                    <a href="<?= base_url(); ?>" class="logo-box">
                                         <figure class="logo--normal">
-                                            <img src="img/logo/logo.png" alt="Logo" />
+                                            <img src="<?= asset_url('img/logo/logo.png'); ?>" alt="Logo" />
                                         </figure>
                                         <figure class="logo--transparency">
-                                            <img src="img/logo/logo-white.png" alt="Logo" />
+                                            <img src="<?= asset_url('img/logo/logo-white.png'); ?>" alt="Logo" />
                                         </figure>
                                     </a>
                                     <ul class="header-toolbar">
@@ -63,7 +63,7 @@
                                 <nav class="main-navigation">
                                     <ul class="mainmenu mainmenu--centered">
                                         <li class="mainmenu__item ">
-                                            <a href="index.php" class="mainmenu__link">
+                                            <a href="<?= base_url(); ?>" class="mainmenu__link">
                                                 <span class="mm-text">Inicio</span>
                                             </a>
                                         </li>
@@ -73,28 +73,28 @@
                                             </a>
                                         </li>
                                         <li class="mainmenu__item">
-                                            <a href="productos.php" class="mainmenu__link">
+                                            <a href="<?= base_url('productos'); ?>" class="mainmenu__link">
                                                 <span class="mm-text">Novedades</span>
                                             </a>
                                         </li>
                                         <li class="mainmenu__item ">
-                                            <a href="productos.php" class="mainmenu__link">
+                                            <a href="<?= base_url('ofertas'); ?>" class="mainmenu__link">
                                                 <span class="mm-text">Ofertas</span>
                                                 <span class="tip">Hot</span>
                                             </a>
                                         </li>
                                         <li class="mainmenu__item menu-item-has-children">
-                                            <a href="productos.php" class="mainmenu__link">
+                                            <a href="<?= base_url('productos'); ?>" class="mainmenu__link">
                                                 <span class="mm-text">Populares</span>
                                             </a>
                                         </li>
                                         <li class="mainmenu__item menu-item-has-children">
-                                            <a href="productos.php" class="mainmenu__link">
+                                            <a href="<?= base_url('productos'); ?>" class="mainmenu__link">
                                                 <span class="mm-text">Por mayor</span>
                                             </a>
                                         </li>
                                         <li class="mainmenu__item menu-item-has-children">
-                                            <a href="blog.php" class="mainmenu__link">
+                                            <a href="<?= base_url('blog'); ?>" class="mainmenu__link">
                                                 <span class="mm-text">Blog</span>
                                             </a>
                                         </li>
@@ -110,13 +110,13 @@
                                         </a>
                                         <ul class="user-info-menu">
                                             <li>
-                                                <a href="mi_cuenta.php">Mi cuenta</a>
+                                                <a href="<?= base_url('mi-cuenta'); ?>">Mi cuenta</a>
                                             </li>
                                             <li>
-                                                <a href="carrito_compras.php">Mi carrito</a>
+                                                <a href="<?= base_url('carrito'); ?>">Mi carrito</a>
                                             </li>
                                             <li>
-                                                <a href="#">Ir a pagar</a>
+                                                <a href="<?= base_url('checkout'); ?>">Ir a pagar</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -149,9 +149,9 @@
                     <div class="container-fluid">
                         <div class="row align-items-center">
                             <div class="col-4">
-                                <a href="index.php" class="logo-box">
+                                <a href="<?= base_url(); ?>" class="logo-box">
                                     <figure class="logo--normal">
-                                        <img src="img/logo/logo.png" alt="Logo">
+                                        <img src="<?= asset_url('img/logo/logo.png'); ?>" alt="Logo">
                                     </figure>
                                 </a>
                             </div>
@@ -169,13 +169,13 @@
                                         </a>
                                         <ul class="user-info-menu">
                                             <li>
-                                                <a href="#">Mi cuenta</a>
+                                                <a href="<?= base_url('mi-cuenta'); ?>">Mi cuenta</a>
                                             </li>
                                             <li>
-                                                <a href="#">Mi carrito</a>
+                                                <a href="<?= base_url('carrito'); ?>">Mi carrito</a>
                                             </li>
                                             <li>
-                                                <a href="#">Ir a pagar</a>
+                                                <a href="<?= base_url('checkout'); ?>">Ir a pagar</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -204,7 +204,7 @@
                                     <button class="dl-trigger">Open Menu</button>
                                     <ul class="dl-menu">
                                         <li>
-                                            <a href="#">
+                                            <a href="<?= base_url(); ?>">
                                                 Inicio
                                             </a>
                                         </li>
@@ -214,28 +214,28 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="#">
+                                            <a href="<?= base_url('productos'); ?>">
                                                 Novedades
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="#">
+                                            <a href="<?= base_url('ofertas'); ?>">
                                                 Ofertas
                                                 <span class="tip">Hot</span>
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="#">
+                                            <a href="<?= base_url('productos'); ?>">
                                                 Por mayor
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="#">
+                                            <a href="<?= base_url('blog'); ?>">
                                                 Blog
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="#">
+                                            <a href="<?= base_url('para-el-cliente'); ?>">
                                                 Contáctenos
                                             </a>
                                         </li>
