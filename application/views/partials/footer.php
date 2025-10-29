@@ -104,9 +104,11 @@
     <a href="#" class="btn-close"><i class="dl-icon-close"></i></a>
     <div class="searchform__body">
         <p>Busca tu producto y presiona enter</p>
-        <form class="searchform">
-            <input type="text" name="search" id="buscador" class="searchform__input" placeholder="Buscar producto...">
-            <button type="submit" class="searchform__submit"><i class="dl-icon-search10"></i></button>
+        <form class="searchform" action="<?= base_url('buscar') ?>" method="get">
+            <input type="text" name="q" id="search" class="searchform__input" placeholder="Buscar producto...">
+            <button type="submit" class="searchform__submit">
+                <i class="dl-icon-search10"></i>
+            </button>
         </form>
         <div id="resultados"></div>
     </div>
