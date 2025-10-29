@@ -7,6 +7,7 @@ require ROOT_PATH . '/application/config/constants.php';
 
 $config = require CONFIG_PATH . '/config.php';
 $routes = require CONFIG_PATH . '/routes.php';
+$GLOBALS['config'] = $config;
 
 require APP_PATH . '/helpers/url_helper.php';
 require APP_PATH . '/helpers/security_helper.php';
@@ -25,34 +26,124 @@ spl_autoload_register(static function ($class): void {
     }
 });
 
-$requestedUri = $_GET['route'] ?? '';
-if ($requestedUri === '') {
-    $uri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
-    $scriptName = parse_url($_SERVER['SCRIPT_NAME'] ?? '', PHP_URL_PATH) ?: '';
-    $basePath = rtrim(str_replace('\\', '/', dirname($scriptName)), '/');
+$routeFromRequest = static function (): string {
+    $requested = $_GET['route'] ?? '';
 
-    if ($basePath !== '' && strpos($uri, $basePath) === 0) {
-        $uri = substr($uri, strlen($basePath));
+    if ($requested !== '') {
+        return trim((string) $requested, '/');
     }
 
-    $requestedUri = trim($uri, '/');
+    $uri = '';
+
+    if (!empty($_SERVER['REQUEST_URI'])) {
+        $uri = (string) parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    }
+
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+    $scriptDir = str_replace('\\', '/', dirname($scriptName));
+    $scriptDir = ($scriptDir === '/' || $scriptDir === '.') ? '' : trim($scriptDir, '/');
+
+    if ($scriptDir !== '' && strpos($uri, '/' . $scriptDir) === 0) {
+        $uri = substr($uri, strlen($scriptDir) + 1);
+    }
+
+    $uri = trim($uri, '/');
+
+    if (strpos($uri, 'index.php/') === 0) {
+        $uri = substr($uri, strlen('index.php/'));
+    }
+
+    if ($uri === 'index.php') {
+        $uri = '';
+    }
+
+    return $uri;
+};
+
+$requestedUri = $routeFromRequest();
+$requestedUri = trim(preg_replace('#\\.php$#', '', $requestedUri) ?? '', '/');
+$requestedUri = rawurldecode($requestedUri);
+$requestedUri = preg_replace('#/{2,}#', '/', $requestedUri ?? '') ?? '';
+
+$controllerName = $config['default_controller'] ?? 'HomeController';
+$method = $config['default_method'] ?? 'index';
+$parameters = [];
+
+$matchRoute = static function (string $pattern, string $uri): ?array {
+    $quoted = preg_quote($pattern, '#');
+    $replacements = [
+        '\\(:any\\)' => '([^/]+)',
+        '\\(:num\\)' => '(\\d+)',
+        '\\(:segment\\)' => '([a-zA-Z0-9\-_]+)',
+    ];
+    $regex = str_replace(array_keys($replacements), array_values($replacements), $quoted);
+
+    $regex = preg_replace_callback('#\\\{([a-zA-Z_][a-zA-Z0-9_\-]*)\\\}#', static function (): string {
+        return '([^/]+)';
+    }, $regex);
+
+    if ($regex === null) {
+        return null;
+    }
+
+    $regex = '#^' . $regex . '$#u';
+
+    if (preg_match($regex, $uri, $matches) === 1) {
+        array_shift($matches);
+
+        return $matches;
+    }
+
+    return null;
+};
+
+$matched = false;
+
+if ($requestedUri !== '') {
+    foreach ($routes as $pattern => $handler) {
+        if (!is_array($handler) || count($handler) < 2) {
+            continue;
+        }
+
+        $routeParams = $matchRoute($pattern, $requestedUri);
+
+        if ($routeParams === null) {
+            continue;
+        }
+
+        [$controllerName, $method] = $handler;
+        $parameters = array_map('sanitize_uri_segment', $routeParams);
+        $matched = true;
+        break;
+    }
 }
 
-$requestedUri = trim($requestedUri, '/');
-$requestedUri = preg_replace('/\\.php$/', '', $requestedUri ?? '') ?? '';
+if (!$matched && $requestedUri !== '') {
+    $segments = array_values(array_filter(explode('/', $requestedUri), static function ($segment): bool {
+        return $segment !== '';
+    }));
 
-$controllerName = $config['default_controller'];
-$method = $config['default_method'];
+    $segments = array_map('sanitize_uri_segment', $segments);
 
-if ($requestedUri !== '' && isset($routes[$requestedUri])) {
-    [$controllerName, $method] = $routes[$requestedUri];
-} elseif ($requestedUri !== '') {
-    $segments = explode('/', $requestedUri);
-    $controllerSegment = array_shift($segments);
-    $methodSegment = array_shift($segments) ?: $method;
+    if ($segments !== []) {
+        $controllerSegment = array_shift($segments);
+        $studly = str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $controllerSegment)));
+        $controllerName = $studly . 'Controller';
 
-    $controllerName = str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $controllerSegment))) . 'Controller';
-    $method = str_replace('-', '_', $methodSegment);
+        if ($segments !== []) {
+            $candidate = str_replace('-', '_', array_shift($segments));
+            if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $candidate) === 1) {
+                $method = $candidate;
+            } else {
+                array_unshift($segments, $candidate);
+                $method = $config['default_method'] ?? 'index';
+            }
+        } else {
+            $method = $config['default_method'] ?? 'index';
+        }
+
+        $parameters = array_map('sanitize_uri_segment', $segments);
+    }
 }
 
 if (!class_exists($controllerName)) {
@@ -63,10 +154,19 @@ if (!class_exists($controllerName)) {
 
 $controller = new $controllerName();
 
+if (!method_exists($controller, $method) && !$matched && $parameters !== []) {
+    foreach (['show', 'detalle', 'ver'] as $fallbackMethod) {
+        if (method_exists($controller, $fallbackMethod)) {
+            $method = $fallbackMethod;
+            break;
+        }
+    }
+}
+
 if (!method_exists($controller, $method)) {
     http_response_code(404);
     echo 'Método no encontrado.';
     exit;
 }
 
-$controller->$method();
+call_user_func_array([$controller, $method], $parameters);
