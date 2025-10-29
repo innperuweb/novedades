@@ -20,7 +20,7 @@
                     <article class="post">
                         <div class="post-media">
                             <div class="image">
-                                <img src="img/blog/image.jpg" alt="Blog">
+                                <img src="<?php echo ASSET_PATH; ?>img/blog/image.jpg" alt="Blog">
                                 <a href="ver_blog.php" class="link-overlay"></a>
                             </div>
                         </div>
@@ -43,7 +43,7 @@
                     <article class="post">
                         <div class="post-media">
                             <div class="image">
-                                <img src="img/blog/image.jpg" alt="Blog">
+                                <img src="<?php echo ASSET_PATH; ?>img/blog/image.jpg" alt="Blog">
                                 <a href="ver_blog.php" class="link-overlay"></a>
                             </div>
                         </div>
@@ -66,7 +66,7 @@
                     <article class="post">
                         <div class="post-media">
                             <div class="image">
-                                <img src="img/blog/image.jpg" alt="Blog">
+                                <img src="<?php echo ASSET_PATH; ?>img/blog/image.jpg" alt="Blog">
                                 <a href="ver_blog.php" class="link-overlay"></a>
                             </div>
                         </div>
@@ -89,7 +89,7 @@
                     <article class="post">
                         <div class="post-media">
                             <div class="image">
-                                <img src="img/blog/image.jpg" alt="Blog">
+                                <img src="<?php echo ASSET_PATH; ?>img/blog/image.jpg" alt="Blog">
                                 <a href="ver_blog.php" class="link-overlay"></a>
                             </div>
                         </div>
@@ -112,7 +112,7 @@
                     <article class="post">
                         <div class="post-media">
                             <div class="image">
-                                <img src="img/blog/image.jpg" alt="Blog">
+                                <img src="<?php echo ASSET_PATH; ?>img/blog/image.jpg" alt="Blog">
                                 <a href="ver_blog.php" class="link-overlay"></a>
                             </div>
                         </div>
@@ -135,7 +135,7 @@
                     <article class="post">
                         <div class="post-media">
                             <div class="image">
-                                <img src="img/blog/image.jpg" alt="Blog">
+                                <img src="<?php echo ASSET_PATH; ?>img/blog/image.jpg" alt="Blog">
                                 <a href="ver_blog.php" class="link-overlay"></a>
                             </div>
                         </div>

@@ -5,7 +5,7 @@
                 <div class="col-lg-3 col-md-8 mb-md--30">
                     <div class="footer-widget">
                         <div class="textwidget">
-                            <img src="img/logo/logo-white.png" alt="Logo" class="mb--10"> <br> <br>
+                            <img src="<?php echo ASSET_PATH; ?>img/logo/logo-white.png" alt="Logo" class="mb--10"> <br> <br>
                             <ul class="social">
                                 <li class="social__item">
                                     <a href="#" class="social__link color--white">
@@ -82,7 +82,7 @@
                         </ul>
                         <br>
                         <div class="textwidget">
-                            <img src="img/others/payments.png" alt="Payment">
+                            <img src="<?php echo ASSET_PATH; ?>img/others/payments.png" alt="Payment">
                         </div>
                     </div>
                 </div>
@@ -117,26 +117,26 @@
         <div class="side-navigation-inner">
             <div class="widget">
                 <ul class="sidenav-menu sidenav-menu--icons">
-                    <li><a href="productos.php"><span class="label">Relojes</span><img class="cat-icon" src="img/categoria_menu.png"
+                    <li><a href="productos.php"><span class="label">Relojes</span><img class="cat-icon" src="<?php echo ASSET_PATH; ?>img/categoria_menu.png"
                                 alt=""></a></li>
                     <li><a href="productos.php"><span class="label">Carteras</span><img class="cat-icon"
-                                src="img/categoria_menu.png" alt=""></a></li>
-                    <li><a href="productos.php"><span class="label">Polos</span><img class="cat-icon" src="img/categoria_menu.png"
+                                src="<?php echo ASSET_PATH; ?>img/categoria_menu.png" alt=""></a></li>
+                    <li><a href="productos.php"><span class="label">Polos</span><img class="cat-icon" src="<?php echo ASSET_PATH; ?>img/categoria_menu.png"
                                 alt=""></a></li>
                     <li><a href="productos.php"><span class="label">Zapatillas</span><img class="cat-icon"
-                                src="img/categoria_menu.png" alt=""></a></li>
-                    <li><a href="productos.php"><span class="label">Móviles</span><img class="cat-icon" src="img/categoria_menu.png"
+                                src="<?php echo ASSET_PATH; ?>img/categoria_menu.png" alt=""></a></li>
+                    <li><a href="productos.php"><span class="label">Móviles</span><img class="cat-icon" src="<?php echo ASSET_PATH; ?>img/categoria_menu.png"
                                 alt=""></a></li>
                     <li><a href="productos.php"><span class="label">Cosméticos</span><img class="cat-icon"
-                                src="img/categoria_menu.png" alt=""></a></li>
-                    <li><a href="productos.php"><span class="label">Case</span><img class="cat-icon" src="img/categoria_menu.png"
+                                src="<?php echo ASSET_PATH; ?>img/categoria_menu.png" alt=""></a></li>
+                    <li><a href="productos.php"><span class="label">Case</span><img class="cat-icon" src="<?php echo ASSET_PATH; ?>img/categoria_menu.png"
                                 alt=""></a></li>
-                    <li><a href="productos.php"><span class="label">Laptops</span><img class="cat-icon" src="img/categoria_menu.png"
+                    <li><a href="productos.php"><span class="label">Laptops</span><img class="cat-icon" src="<?php echo ASSET_PATH; ?>img/categoria_menu.png"
                                 alt=""></a></li>
                     <li><a href="productos.php"><span class="label">Juguetes</span><img class="cat-icon"
-                                src="img/categoria_menu.png" alt=""></a></li>
+                                src="<?php echo ASSET_PATH; ?>img/categoria_menu.png" alt=""></a></li>
                     <li><a href="productos.php"><span class="label">Accesorios</span><img class="cat-icon"
-                                src="img/categoria_menu.png" alt=""></a></li>
+                                src="<?php echo ASSET_PATH; ?>img/categoria_menu.png" alt=""></a></li>
                 </ul>
             </div>
             <br><br>
@@ -186,7 +186,7 @@
                             <i class="dl-icon-close"></i>
                         </a>
                         <div class="mini-cart__product__image">
-                            <img src="img/products/prod-17-1-70x91.jpg" alt="products">
+                            <img src="<?php echo ASSET_PATH; ?>img/products/prod-17-1-70x91.jpg" alt="products">
                         </div>
                         <div class="mini-cart__product__content">
                             <a class="mini-cart__product__title" href="#">Chain print bermuda
@@ -199,7 +199,7 @@
                             <i class="dl-icon-close"></i>
                         </a>
                         <div class="mini-cart__product__image">
-                            <img src="img/products/prod-18-1-70x91.jpg" alt="products">
+                            <img src="<?php echo ASSET_PATH; ?>img/products/prod-18-1-70x91.jpg" alt="products">
                         </div>
                         <div class="mini-cart__product__content">
                             <a class="mini-cart__product__title" href="#">Waxed-effect
@@ -212,7 +212,7 @@
                             <i class="dl-icon-close"></i>
                         </a>
                         <div class="mini-cart__product__image">
-                            <img src="img/products/prod-19-1-70x91.jpg" alt="products">
+                            <img src="<?php echo ASSET_PATH; ?>img/products/prod-19-1-70x91.jpg" alt="products">
                         </div>
                         <div class="mini-cart__product__content">
                             <a class="mini-cart__product__title" href="#">Waxed-effect
@@ -225,7 +225,7 @@
                             <i class="dl-icon-close"></i>
                         </a>
                         <div class="mini-cart__product__image">
-                            <img src="img/products/prod-2-1-70x91.jpg" alt="products">
+                            <img src="<?php echo ASSET_PATH; ?>img/products/prod-2-1-70x91.jpg" alt="products">
                         </div>
                         <div class="mini-cart__product__content">
                             <a class="mini-cart__product__title" href="#">Waxed-effect
