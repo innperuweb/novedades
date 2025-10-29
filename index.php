@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 define('ROOT_PATH', __DIR__);
 require ROOT_PATH . '/application/config/constants.php';
+require ROOT_PATH . '/database.php';
 
 $config = require CONFIG_PATH . '/config.php';
 $routes = require CONFIG_PATH . '/routes.php';
