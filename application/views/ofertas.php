@@ -50,8 +50,8 @@
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-1.jpg'); ?>" alt="Product Image" class="primary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-2.jpg'); ?>" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -84,8 +84,8 @@
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-1.jpg'); ?>" alt="Product Image" class="primary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-2.jpg'); ?>" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -118,8 +118,8 @@
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-1.jpg'); ?>" alt="Product Image" class="primary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-2.jpg'); ?>" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -152,8 +152,8 @@
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-1.jpg'); ?>" alt="Product Image" class="primary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-2.jpg'); ?>" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -186,8 +186,8 @@
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-1.jpg'); ?>" alt="Product Image" class="primary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-2.jpg'); ?>" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -220,8 +220,8 @@
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-1.jpg'); ?>" alt="Product Image" class="primary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-2.jpg'); ?>" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -254,8 +254,8 @@
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-1.jpg'); ?>" alt="Product Image" class="primary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-2.jpg'); ?>" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -288,8 +288,8 @@
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="detalle_producto.php">
-                                                    <img src="img/products/prod-20-1.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="img/products/prod-20-2.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-1.jpg'); ?>" alt="Product Image" class="primary-image">
+                                                    <img src="<?= asset_url('img/products/prod-20-2.jpg'); ?>" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">

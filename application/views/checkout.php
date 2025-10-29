@@ -278,7 +278,7 @@
                                         <div class="banner-box banner-type-5 banner-hover-3">
                                             <div class="banner-inner">
                                                 <div class="banner-image">
-                                                    <img src="img/pago/bcp.jpg" alt="Banner">
+                                                    <img src="<?= asset_url('img/pago/bcp.jpg'); ?>" alt="Banner">
                                                 </div>
                                             </div>
                                         </div>
@@ -300,7 +300,7 @@
                                             <div class="banner-box banner-type-5 banner-hover-3">
                                                 <div class="banner-inner">
                                                     <div class="banner-image">
-                                                        <img src="img/pago/yape.png" alt="Banner">
+                                                        <img src="<?= asset_url('img/pago/yape.png'); ?>" alt="Banner">
                                                     </div>
                                                 </div>
                                             </div>
@@ -309,7 +309,7 @@
                                             <div class="banner-box banner-type-5 banner-hover-3">
                                                 <div class="banner-inner">
                                                     <div class="banner-image">
-                                                        <img src="img/pago/plin.png" alt="Banner">
+                                                        <img src="<?= asset_url('img/pago/plin.png'); ?>" alt="Banner">
                                                     </div>
                                                 </div>
                                             </div>

@@ -17,7 +17,7 @@
 
                     <div class="post-media">
                         <div class="image">
-                            <img src="img/blog/image.jpg" alt="Blog">
+                            <img src="<?= asset_url('img/blog/image.jpg'); ?>" alt="Blog">
                             <a href="ver_blog.php" class="link-overlay"></a>
                         </div>
                     </div>

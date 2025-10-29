@@ -62,16 +62,16 @@
                                                 }
                                             ]'>
                                         <figure class="product-gallery__thumb--single">
-                                            <img src="img/products/prod-19-1-2.jpg" alt="Products">
+                                            <img src="<?= asset_url('img/products/prod-19-1-2.jpg'); ?>" alt="Products">
                                         </figure>
                                         <figure class="product-gallery__thumb--single">
-                                            <img src="img/products/prod-19-2-2.jpg" alt="Products">
+                                            <img src="<?= asset_url('img/products/prod-19-2-2.jpg'); ?>" alt="Products">
                                         </figure>
                                         <figure class="product-gallery__thumb--single">
-                                            <img src="img/products/prod-19-3-2.jpg" alt="Products">
+                                            <img src="<?= asset_url('img/products/prod-19-3-2.jpg'); ?>" alt="Products">
                                         </figure>
                                         <figure class="product-gallery__thumb--single">
-                                            <img src="img/products/prod-19-4-2.jpg" alt="Products">
+                                            <img src="<?= asset_url('img/products/prod-19-4-2.jpg'); ?>" alt="Products">
                                         </figure>
                                     </div>
                                 </div>
@@ -87,16 +87,16 @@
                                                     "asNavFor": ".nav-slider"
                                                 }'>
                                             <figure class="product-gallery__image zoom">
-                                                <img src="img/products/prod-19-1-big.jpg" alt="Product">
+                                                <img src="<?= asset_url('img/products/prod-19-1-big.jpg'); ?>" alt="Product">
                                             </figure>
                                             <figure class="product-gallery__image zoom">
-                                                <img src="img/products/prod-19-2-big.jpg" alt="Product">
+                                                <img src="<?= asset_url('img/products/prod-19-2-big.jpg'); ?>" alt="Product">
                                             </figure>
                                             <figure class="product-gallery__image zoom">
-                                                <img src="img/products/prod-19-3-big.jpg" alt="Product">
+                                                <img src="<?= asset_url('img/products/prod-19-3-big.jpg'); ?>" alt="Product">
                                             </figure>
                                             <figure class="product-gallery__image zoom">
-                                                <img src="img/products/prod-19-4-big.jpg" alt="Product">
+                                                <img src="<?= asset_url('img/products/prod-19-4-big.jpg'); ?>" alt="Product">
                                             </figure>
                                         </div>
                                         <div class="product-gallery__actions">
@@ -140,7 +140,7 @@
                             <div class="gallery-with-thumbs">
                                 <div class="product-gallery__wrapper">
                                     <div class="product-gallery__actions" style="left: 0px;">
-                                        <a href="img/tallas.jpg"
+                                        <a href="<?= asset_url('img/tallas.jpg'); ?>"
                                             class="action-btn video-popup">
                                             <i class="fa-solid fa-ruler ubicacion"> </i> <span class="tabla">Tabla de tallas</span>
                                         </a>
@@ -299,7 +299,7 @@
 
                         </article><br>
                         <span class="sku_wrapper font-size-12">MÉTODOS DE PAGO:</span> <br>
-                        <img src="img/others/payments.png" alt="Payment">
+                        <img src="<?= asset_url('img/others/payments.png'); ?>" alt="Payment">
                     </div>
                 </div>
             </div>
@@ -338,7 +338,7 @@
                                     <ul class="review__list">
                                         <li class="review__item">
                                             <div class="review__container">
-                                                <img src="img/others/comment-icon-2.jpg" alt="Review Avatar" class="review__avatar">
+                                                <img src="<?= asset_url('img/others/comment-icon-2.jpg'); ?>" alt="Review Avatar" class="review__avatar">
                                                 <div class="review__text">
                                                     <div class="review__meta">
                                                         <strong class="review__author">Jared Conde</strong>
@@ -416,8 +416,8 @@
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="#">
-                                                    <img src="img/products/prod-18-2.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="img/products/prod-18-1-big.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="<?= asset_url('img/products/prod-18-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                                    <img src="<?= asset_url('img/products/prod-18-1-big.jpg'); ?>" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -446,8 +446,8 @@
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="#">
-                                                    <img src="img/products/prod-18-2.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="img/products/prod-18-1-big.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="<?= asset_url('img/products/prod-18-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                                    <img src="<?= asset_url('img/products/prod-18-1-big.jpg'); ?>" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -476,8 +476,8 @@
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="#">
-                                                    <img src="img/products/prod-18-2.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="img/products/prod-18-1-big.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="<?= asset_url('img/products/prod-18-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                                    <img src="<?= asset_url('img/products/prod-18-1-big.jpg'); ?>" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -506,8 +506,8 @@
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="#">
-                                                    <img src="img/products/prod-18-2.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="img/products/prod-18-1-big.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="<?= asset_url('img/products/prod-18-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                                    <img src="<?= asset_url('img/products/prod-18-1-big.jpg'); ?>" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
@@ -536,8 +536,8 @@
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="#">
-                                                    <img src="img/products/prod-18-2.jpg" alt="Product Image" class="primary-image">
-                                                    <img src="img/products/prod-18-1-big.jpg" alt="Product Image" class="secondary-image">
+                                                    <img src="<?= asset_url('img/products/prod-18-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                                    <img src="<?= asset_url('img/products/prod-18-1-big.jpg'); ?>" alt="Product Image" class="secondary-image">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
