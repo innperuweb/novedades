@@ -10,16 +10,9 @@ if (!function_exists('config_item')) {
 }
 
 if (!function_exists('base_url')) {
-    function base_url(string $path = ''): string
+    function base_url($path = '')
     {
-        $base = rtrim((string) config_item('base_url', ''), '/');
-        $path = trim($path, '/');
-
-        if ($base === '') {
-            return $path === '' ? '/' : '/' . $path;
-        }
-
-        return $path === '' ? $base . '/' : $base . '/' . $path;
+        return 'http://localhost/novedades/' . ltrim($path, '/');
     }
 }
 
@@ -31,14 +24,9 @@ if (!function_exists('site_url')) {
 }
 
 if (!function_exists('asset_url')) {
-    function asset_url(string $path = ''): string
+    function asset_url($path = '')
     {
-        $assetBase = trim((string) config_item('asset_base', 'assets'), '/');
-        $path = ltrim($path, '/');
-
-        $assetPath = $assetBase === '' ? $path : $assetBase . ($path !== '' ? '/' . $path : '');
-
-        return base_url($assetPath);
+        return base_url('public/assets/' . ltrim($path, '/'));
     }
 }
 

@@ -33,7 +33,7 @@
                                                 <td class="product-remove text-start"><a href="#"><i
                                                             class="dl-icon-close"></i></a></td>
                                                 <td class="product-thumbnail text-start">
-                                                    <img src="img/products/prod-14-2-70x81.jpg" alt="Product Thumnail">
+                                                    <img src="<?= asset_url('img/products/prod-14-2-70x81.jpg'); ?>" alt="Product Thumnail">
                                                 </td>
                                                 <td class="product-name text-start wide-column">
                                                     <h3>
@@ -56,7 +56,7 @@
                                                 <td class="product-remove text-start"><a href="#"><i
                                                             class="dl-icon-close"></i></a></td>
                                                 <td class="product-thumbnail text-start">
-                                                    <img src="img/products/prod-9-1-70x81.jpg" alt="Product Thumnail">
+                                                    <img src="<?= asset_url('img/products/prod-9-1-70x81.jpg'); ?>" alt="Product Thumnail">
                                                 </td>
                                                 <td class="product-name text-start wide-column">
                                                     <h3>
@@ -78,7 +78,7 @@
                                                 <td class="product-remove text-start"><a href="#"><i
                                                             class="dl-icon-close"></i></a></td>
                                                 <td class="product-thumbnail text-start">
-                                                    <img src="img/products/prod-10-1-70x81.jpg" alt="Product Thumnail">
+                                                    <img src="<?= asset_url('img/products/prod-10-1-70x81.jpg'); ?>" alt="Product Thumnail">
                                                 </td>
                                                 <td class="product-name text-start wide-column">
                                                     <h3>
@@ -101,7 +101,7 @@
                                                 <td class="product-remove text-start"><a href="#"><i
                                                             class="dl-icon-close"></i></a></td>
                                                 <td class="product-thumbnail text-start">
-                                                    <img src="img/products/prod-11-1-70x81.jpg" alt="Product Thumnail">
+                                                    <img src="<?= asset_url('img/products/prod-11-1-70x81.jpg'); ?>" alt="Product Thumnail">
                                                 </td>
                                                 <td class="product-name text-start wide-column">
                                                     <h3>

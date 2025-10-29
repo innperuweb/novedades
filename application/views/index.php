@@ -7,7 +7,7 @@
                 <ul>
                     <li data-index="rs-15" data-transition="random-premium" data-slotamount="default" data-hideafterloop="0" data-hideslideonmobile="off" data-easein="default" data-easeout="default" data-masterspeed="default" data-thumb="" data-rotate="0" data-saveperformance="off"
                         data-title="01" data-param1="" data-param2="" data-param3="" data-param4="" data-param5="" data-param6="" data-param7="" data-param8="" data-param9="" data-param10="" data-description="">
-                        <img src="img/slider/home-12/transparent.png" data-bgcolor='#f8f7ee' style='background:#f8f7ee' alt="" data-bgposition="center center" data-bgfit="cover" data-bgrepeat="no-repeat" data-bgparallax="off" class="rev-slidebg" data-no-retina>
+                        <img src="<?= asset_url('img/slider/home-12/transparent.png'); ?>" data-bgcolor='#f8f7ee' style='background:#f8f7ee' alt="" data-bgposition="center center" data-bgfit="cover" data-bgrepeat="no-repeat" data-bgparallax="off" class="rev-slidebg" data-no-retina>
                         <div class="tp-caption     rev_group" id="slide-15-layer-1" data-x="['left','left','center','center']" data-hoffset="['120','120','0','0']" data-y="['middle','middle','top','top']" data-voffset="['0','0','0','0']" data-width="['838','838','350','300']"
                             data-height="['808','808','350','300']" data-whitespace="nowrap" data-type="group" data-responsive_offset="on" data-frames='[{"delay":10,"speed":300,"frame":"0","from":"opacity:0;","to":"o:1;","ease":"Power3.easeInOut"},{"delay":"wait","speed":300,"frame":"999","to":"opacity:0;","ease":"Power3.easeInOut"}]'
                             data-margintop="[0,0,0,0]" data-marginright="[0,0,0,0]" data-marginbottom="[0,0,0,0]" data-marginleft="[0,0,0,0]" data-textAlign="['inherit','inherit','inherit','inherit']" data-paddingtop="[0,0,0,0]" data-paddingright="[0,0,0,0]"
@@ -22,7 +22,7 @@
                                 data-whitespace="nowrap" data-type="image" data-responsive_offset="on" data-frames='[{"delay":"+690","speed":1500,"frame":"0","from":"z:0;rX:0;rY:0;rZ:0;sX:0.9;sY:0.9;skX:0;skY:0;opacity:0;","to":"o:1;","ease":"Power3.easeInOut"},{"delay":"wait","speed":300,"frame":"999","to":"auto:auto;","ease":"Power3.easeInOut"}]'
                                 data-margintop="[0,0,0,0]" data-marginright="[0,0,0,0]" data-marginbottom="[0,0,0,0]" data-marginleft="[0,0,0,0]" data-textAlign="['inherit','inherit','inherit','inherit']" data-paddingtop="[0,0,0,0]" data-paddingright="[0,0,0,0]"
                                 data-paddingbottom="[0,0,0,0]" data-paddingleft="[0,0,0,0]" style="z-index: 7;">
-                                <img src="img/slider/home-12/m13-s2-2.png" alt="" data-ww="['488','488','210px','180px']" data-hh="['712px','712px','306px','263px']" data-no-retina>
+                                <img src="<?= asset_url('img/slider/home-12/m13-s2-2.png'); ?>" alt="" data-ww="['488','488','210px','180px']" data-hh="['712px','712px','306px','263px']" data-no-retina>
                             </div>
                         </div>
 
@@ -51,7 +51,7 @@
                     </li>
                     <li data-index="rs-16" data-transition="random-premium" data-slotamount="default" data-hideafterloop="0" data-hideslideonmobile="off" data-easein="default" data-easeout="default" data-masterspeed="default" data-thumb="" data-rotate="0" data-saveperformance="off"
                         data-title="02" data-param1="" data-param2="" data-param3="" data-param4="" data-param5="" data-param6="" data-param7="" data-param8="" data-param9="" data-param10="" data-description="">
-                        <img src="img/slider/home-12/transparent.png" data-bgcolor='#f8f7ee' style='background:#f8f7ee' alt="" data-bgposition="center center" data-bgfit="cover" data-bgrepeat="no-repeat" data-bgparallax="off" class="rev-slidebg" data-no-retina>
+                        <img src="<?= asset_url('img/slider/home-12/transparent.png'); ?>" data-bgcolor='#f8f7ee' style='background:#f8f7ee' alt="" data-bgposition="center center" data-bgfit="cover" data-bgrepeat="no-repeat" data-bgparallax="off" class="rev-slidebg" data-no-retina>
                         <div class="tp-caption     rev_group" id="slide-16-layer-1" data-x="['left','left','center','center']" data-hoffset="['120','120','0','0']" data-y="['middle','middle','top','top']" data-voffset="['0','0','0','0']" data-width="['838','838','350','300']"
                             data-height="['808','808','350','300']" data-whitespace="nowrap" data-type="group" data-responsive_offset="on" data-frames='[{"delay":10,"speed":300,"frame":"0","from":"opacity:0;","to":"o:1;","ease":"Power3.easeInOut"},{"delay":"wait","speed":300,"frame":"999","to":"opacity:0;","ease":"Power3.easeInOut"}]'
                             data-margintop="[0,0,0,0]" data-marginright="[0,0,0,0]" data-marginbottom="[0,0,0,0]" data-marginleft="[0,0,0,0]" data-textAlign="['inherit','inherit','inherit','inherit']" data-paddingtop="[0,0,0,0]" data-paddingright="[0,0,0,0]"
@@ -66,7 +66,7 @@
                                 data-whitespace="nowrap" data-type="image" data-responsive_offset="on" data-frames='[{"delay":"+690","speed":1500,"frame":"0","from":"z:0;rX:0;rY:0;rZ:0;sX:0.9;sY:0.9;skX:0;skY:0;opacity:0;","to":"o:1;","ease":"Power3.easeInOut"},{"delay":"wait","speed":300,"frame":"999","to":"auto:auto;","ease":"Power3.easeInOut"}]'
                                 data-margintop="[0,0,0,0]" data-marginright="[0,0,0,0]" data-marginbottom="[0,0,0,0]" data-marginleft="[0,0,0,0]" data-textAlign="['inherit','inherit','inherit','inherit']" data-paddingtop="[0,0,0,0]" data-paddingright="[0,0,0,0]"
                                 data-paddingbottom="[0,0,0,0]" data-paddingleft="[0,0,0,0]" style="z-index: 7;">
-                                <img src="img/slider/home-12/m13-s2-2.png" alt="" data-ww="['488','488','210px','180px']" data-hh="['712px','712px','306px','263px']" data-no-retina>
+                                <img src="<?= asset_url('img/slider/home-12/m13-s2-2.png'); ?>" alt="" data-ww="['488','488','210px','180px']" data-hh="['712px','712px','306px','263px']" data-no-retina>
                             </div>
                         </div>
 
@@ -95,7 +95,7 @@
                     </li>
                     <li data-index="rs-17" data-transition="random-premium" data-slotamount="default" data-hideafterloop="0" data-hideslideonmobile="off" data-easein="default" data-easeout="default" data-masterspeed="default" data-thumb="" data-rotate="0" data-saveperformance="off"
                         data-title="03" data-param1="" data-param2="" data-param3="" data-param4="" data-param5="" data-param6="" data-param7="" data-param8="" data-param9="" data-param10="" data-description="">
-                        <img src="img/slider/home-12/transparent.png" data-bgcolor='#f8f7ee' style='background:#f8f7ee' alt="" data-bgposition="center center" data-bgfit="cover" data-bgrepeat="no-repeat" data-bgparallax="off" class="rev-slidebg" data-no-retina>
+                        <img src="<?= asset_url('img/slider/home-12/transparent.png'); ?>" data-bgcolor='#f8f7ee' style='background:#f8f7ee' alt="" data-bgposition="center center" data-bgfit="cover" data-bgrepeat="no-repeat" data-bgparallax="off" class="rev-slidebg" data-no-retina>
                         <div class="tp-caption     rev_group" id="slide-16-layer-1" data-x="['left','left','center','center']" data-hoffset="['120','120','0','0']" data-y="['middle','middle','top','top']" data-voffset="['0','0','0','0']" data-width="['838','838','350','300']"
                             data-height="['808','808','350','300']" data-whitespace="nowrap" data-type="group" data-responsive_offset="on" data-frames='[{"delay":10,"speed":300,"frame":"0","from":"opacity:0;","to":"o:1;","ease":"Power3.easeInOut"},{"delay":"wait","speed":300,"frame":"999","to":"opacity:0;","ease":"Power3.easeInOut"}]'
                             data-margintop="[0,0,0,0]" data-marginright="[0,0,0,0]" data-marginbottom="[0,0,0,0]" data-marginleft="[0,0,0,0]" data-textAlign="['inherit','inherit','inherit','inherit']" data-paddingtop="[0,0,0,0]" data-paddingright="[0,0,0,0]"
@@ -110,7 +110,7 @@
                                 data-whitespace="nowrap" data-type="image" data-responsive_offset="on" data-frames='[{"delay":"+690","speed":1500,"frame":"0","from":"z:0;rX:0;rY:0;rZ:0;sX:0.9;sY:0.9;skX:0;skY:0;opacity:0;","to":"o:1;","ease":"Power3.easeInOut"},{"delay":"wait","speed":300,"frame":"999","to":"auto:auto;","ease":"Power3.easeInOut"}]'
                                 data-margintop="[0,0,0,0]" data-marginright="[0,0,0,0]" data-marginbottom="[0,0,0,0]" data-marginleft="[0,0,0,0]" data-textAlign="['inherit','inherit','inherit','inherit']" data-paddingtop="[0,0,0,0]" data-paddingright="[0,0,0,0]"
                                 data-paddingbottom="[0,0,0,0]" data-paddingleft="[0,0,0,0]" style="z-index: 7;">
-                                <img src="img/slider/home-12/m13-s2-2.png" alt="" data-ww="['488','488','210px','180px']" data-hh="['712px','712px','306px','263px']" data-no-retina>
+                                <img src="<?= asset_url('img/slider/home-12/m13-s2-2.png'); ?>" alt="" data-ww="['488','488','210px','180px']" data-hh="['712px','712px','306px','263px']" data-no-retina>
                             </div>
                         </div>
 
@@ -148,28 +148,28 @@
             <div class="row">
                 <div class="col-lg-3 col-md-6 mb-md--30">
                     <div class="method-box method-box-2 text-center">
-                        <img src="img/icons/icon-1.png" alt="Icon">
+                        <img src="<?= asset_url('img/icons/icon-1.png'); ?>" alt="Icon">
                         <h4 class="mt--20">ENVÍOS</h4>
                         <p>A todo el Perú</p>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-md--30">
                     <div class="method-box method-box-2 text-center">
-                        <img src="img/icons/icon-2.png" alt="Icon">
+                        <img src="<?= asset_url('img/icons/icon-2.png'); ?>" alt="Icon">
                         <h4 class="mt--20">PROMOCIONES</h4>
                         <p>Los mejores precios</p>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-sm--30">
                     <div class="method-box method-box-2 text-center">
-                        <img src="img/icons/icon-3.png" alt="Icon">
+                        <img src="<?= asset_url('img/icons/icon-3.png'); ?>" alt="Icon">
                         <h4 class="mt--20">ENVIO EXPRESS</h4>
                         <p>Consulta ahora</p>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="method-box method-box-2 text-center">
-                        <img src="img/icons/icon-4.png" alt="Icon">
+                        <img src="<?= asset_url('img/icons/icon-4.png'); ?>" alt="Icon">
                         <h4 class="mt--20">PAGO 100% SEGURO</h4>
                         <p>Protege al comprador y su seguridad</p>
                     </div>
@@ -206,7 +206,7 @@
                                 <div class="banner-box banner-type-3 banner-hover-1">
                                     <div class="banner-inner">
                                         <div class="banner-image">
-                                            <img src="img/banner/m02-banner6.jpg" alt="Banner">
+                                            <img src="<?= asset_url('img/banner/m02-banner6.jpg'); ?>" alt="Banner">
                                         </div>
                                         <div class="banner-info">
                                             <p class="banner-title-1 lts-5">NEW MAN
@@ -225,7 +225,7 @@
                                 <div class="banner-box banner-type-3 banner-hover-1">
                                     <div class="banner-inner">
                                         <div class="banner-image">
-                                            <img src="img/banner/m02-banner7.jpg" alt="Banner">
+                                            <img src="<?= asset_url('img/banner/m02-banner7.jpg'); ?>" alt="Banner">
                                         </div>
                                         <div class="banner-info">
                                             <p class="banner-title-1 lts-5">Hello</p>
@@ -244,7 +244,7 @@
                                 <div class="banner-box banner-type-3 banner-hover-1">
                                     <div class="banner-inner">
                                         <div class="banner-image">
-                                            <img src="img/banner/m02-banner8.jpg" alt="Banner">
+                                            <img src="<?= asset_url('img/banner/m02-banner8.jpg'); ?>" alt="Banner">
                                         </div>
                                         <div class="banner-info">
                                             <p class="banner-title-1 lts-5">Jacket</p>
@@ -263,7 +263,7 @@
                                 <div class="banner-box banner-type-3 banner-hover-1">
                                     <div class="banner-inner">
                                         <div class="banner-image">
-                                            <img src="img/banner/m02-banner9.jpg" alt="Banner">
+                                            <img src="<?= asset_url('img/banner/m02-banner9.jpg'); ?>" alt="Banner">
                                         </div>
                                         <div class="banner-info">
                                             <p class="banner-title-1 lts-5">New Season
@@ -283,7 +283,7 @@
                                 <div class="banner-box banner-type-3 banner-hover-1">
                                     <div class="banner-inner">
                                         <div class="banner-image">
-                                            <img src="img/banner/m02-banner8.jpg" alt="Banner">
+                                            <img src="<?= asset_url('img/banner/m02-banner8.jpg'); ?>" alt="Banner">
                                         </div>
                                         <div class="banner-info">
                                             <p class="banner-title-1 lts-5">Jacket</p>
@@ -339,8 +339,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-8-2.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-6-4.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-8-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-6-4.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -369,8 +369,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-8-2.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-6-4.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-8-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-6-4.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -399,8 +399,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-8-2.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-6-4.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-8-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-6-4.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -429,8 +429,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-8-2.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-6-4.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-8-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-6-4.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -459,8 +459,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-8-2.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-6-4.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-8-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-6-4.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -526,8 +526,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-17-1-1.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-17-4-1.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-17-1-1.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-17-4-1.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -557,8 +557,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-17-1-1.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-17-4-1.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-17-1-1.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-17-4-1.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -588,8 +588,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-17-1-1.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-17-4-1.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-17-1-1.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-17-4-1.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -620,8 +620,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-17-1-1.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-17-4-1.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-17-1-1.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-17-4-1.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -651,8 +651,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-17-1-1.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-17-4-1.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-17-1-1.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-17-4-1.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -720,8 +720,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-18-2.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-18-1-big.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-18-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-18-1-big.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -750,8 +750,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-18-2.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-18-1-big.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-18-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-18-1-big.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -780,8 +780,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-18-2.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-18-1-big.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-18-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-18-1-big.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -810,8 +810,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-18-2.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-18-1-big.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-18-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-18-1-big.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -840,8 +840,8 @@
                                 <figure class="product-image">
                                     <div class="product-image--holder">
                                         <a href="detalle_producto.php">
-                                            <img src="img/products/prod-18-2.jpg" alt="Product Image" class="primary-image">
-                                            <img src="img/products/prod-18-1-big.jpg" alt="Product Image" class="secondary-image">
+                                            <img src="<?= asset_url('img/products/prod-18-2.jpg'); ?>" alt="Product Image" class="primary-image">
+                                            <img src="<?= asset_url('img/products/prod-18-1-big.jpg'); ?>" alt="Product Image" class="secondary-image">
                                         </a>
                                     </div>
                                     <div class="airi-product-action">
@@ -878,7 +878,7 @@
                     <div class="banner-box banner-type-7 banner-1 banner-hover-5">
                         <div class="banner-inner">
                             <div class="banner-image">
-                                <img src="img/banner/m12-banner1.jpg" alt="Banner">
+                                <img src="<?= asset_url('img/banner/m12-banner1.jpg'); ?>" alt="Banner">
                             </div>
                             <div class="banner-info">
                                 <div class="banner-info--inner">
@@ -892,7 +892,7 @@
                     <div class="banner-box banner-type-7 banner-2 banner-hover-5">
                         <div class="banner-inner">
                             <div class="banner-image">
-                                <img src="img/banner/m12-banner2.jpg" alt="Banner">
+                                <img src="<?= asset_url('img/banner/m12-banner2.jpg'); ?>" alt="Banner">
                             </div>
                             <div class="banner-info">
                                 <div class="banner-info--inner">
@@ -908,7 +908,7 @@
                     <div class="banner-box banner-type-7 banner-3 banner-hover-5">
                         <div class="banner-inner">
                             <div class="banner-image">
-                                <img src="img/banner/m12-banner3.jpg" alt="Banner">
+                                <img src="<?= asset_url('img/banner/m12-banner3.jpg'); ?>" alt="Banner">
                             </div>
                             <div class="banner-info">
                                 <div class="banner-info--inner">
@@ -924,7 +924,7 @@
                     <div class="banner-box banner-type-7 banner-4 banner-hover-5">
                         <div class="banner-inner">
                             <div class="banner-image">
-                                <img src="img/banner/m12-banner4.jpg" alt="Banner">
+                                <img src="<?= asset_url('img/banner/m12-banner4.jpg'); ?>" alt="Banner">
                             </div>
                             <div class="banner-info">
                                 <div class="banner-info--inner">
@@ -938,7 +938,7 @@
                     <div class="banner-box banner-type-7 banner-5 banner-hover-5">
                         <div class="banner-inner">
                             <div class="banner-image">
-                                <img src="img/banner/m12-banner4.jpg" alt="Banner">
+                                <img src="<?= asset_url('img/banner/m12-banner4.jpg'); ?>" alt="Banner">
                             </div>
                             <div class="banner-info">
                                 <div class="banner-info--inner">
@@ -996,7 +996,7 @@
                             <div class="testimonial__inner">
                                 <p class="testimonial__desc">"Maecenas eu accumsan libero. Fusce id imperdiet felis. Cras sed ex vel.</p>
                                 <div class="testimonial__author">
-                                    <img src="img/others/happy-client-1.jpg" alt="Author" class="testimonial__author--img">
+                                    <img src="<?= asset_url('img/others/happy-client-1.jpg'); ?>" alt="Author" class="testimonial__author--img">
                                     <h3 class="testimonial__author--name">Lura Frazier</h3>
                                 </div>
                             </div>
@@ -1005,7 +1005,7 @@
                             <div class="testimonial__inner">
                                 <p class="testimonial__desc">"Maecenas eu accumsan libero. Fusce id imperdiet felis. Cras sed ex vel.</p>
                                 <div class="testimonial__author">
-                                    <img src="img/others/happy-client-1.jpg" alt="Author" class="testimonial__author--img">
+                                    <img src="<?= asset_url('img/others/happy-client-1.jpg'); ?>" alt="Author" class="testimonial__author--img">
                                     <h3 class="testimonial__author--name">Lura Frazier</h3>
                                 </div>
                             </div>
@@ -1014,7 +1014,7 @@
                             <div class="testimonial__inner">
                                 <p class="testimonial__desc">"Maecenas eu accumsan libero. Fusce id imperdiet felis. Cras sed ex vel.</p>
                                 <div class="testimonial__author">
-                                    <img src="img/others/happy-client-1.jpg" alt="Author" class="testimonial__author--img">
+                                    <img src="<?= asset_url('img/others/happy-client-1.jpg'); ?>" alt="Author" class="testimonial__author--img">
                                     <h3 class="testimonial__author--name">Lura Frazier</h3>
                                 </div>
                             </div>
@@ -1023,7 +1023,7 @@
                             <div class="testimonial__inner">
                                 <p class="testimonial__desc">"Maecenas eu accumsan libero. Fusce id imperdiet felis. Cras sed ex vel.</p>
                                 <div class="testimonial__author">
-                                    <img src="img/others/happy-client-1.jpg" alt="Author" class="testimonial__author--img">
+                                    <img src="<?= asset_url('img/others/happy-client-1.jpg'); ?>" alt="Author" class="testimonial__author--img">
                                     <h3 class="testimonial__author--name">Lura Frazier</h3>
                                 </div>
                             </div>
