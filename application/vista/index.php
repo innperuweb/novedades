@@ -1,6 +1,8 @@
-<?php include 'vistas/head.php'; ?>
-
-<?php include 'vistas/header.php'; ?>
+<?php
+require_once __DIR__ . '/../config/constants.php';
+include_once __DIR__ . '/vistas/head.php';
+include_once __DIR__ . '/vistas/header.php';
+?>
 
 <div id="content" class="main-content-wrapper">
     <div class="homepage-slider" id="homepage-slider-1">
@@ -1040,5 +1042,5 @@
 
 </div>
 
-<?php include 'vistas/footer.php'; ?>
-<?php include 'vistas/scripts.php'; ?>
+<?php include_once __DIR__ . '/vistas/footer.php'; ?>
+<?php include_once __DIR__ . '/vistas/scripts.php'; ?>
