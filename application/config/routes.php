@@ -2,6 +2,7 @@
 
 return [
     '' => ['HomeController', 'index'],
+    'buscar' => ['SearchController', 'index'],
     'productos' => ['ProductosController', 'index'],
     'productos/detalle' => ['ProductosController', 'detalle'],
     'detalle_producto' => ['ProductosController', 'detalle'],
@@ -20,5 +21,8 @@ return [
     'para_el_cliente' => ['ClienteController', 'index'],
     'libro-de-reclamaciones' => ['ClienteController', 'libro'],
     'libro_de_reclamaciones' => ['ClienteController', 'libro'],
-    'admin' => ['AdminController', 'index'],
+    'admin' => ['AdminController', 'login'],
+    'admin/login' => ['AdminController', 'login'],
+    'admin/dashboard' => ['AdminController', 'dashboard'],
+    'admin/productos' => ['AdminController', 'productos'],
 ];
