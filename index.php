@@ -24,6 +24,8 @@ $GLOBALS['config'] = $config;
 require APP_PATH . '/helpers/url_helper.php';
 require_once APP_PATH . '/helpers/security_helper.php';
 require_once APP_PATH . '/helpers/session_helper.php';
+require_once APP_PATH . '/helpers/form_helper.php';
+require_once APP_PATH . '/helpers/pagination_helper.php';
 
 spl_autoload_register(static function ($class): void {
     $paths = [
