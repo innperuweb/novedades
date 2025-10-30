@@ -9,15 +9,8 @@ $carrito = isset($carrito) && is_array($carrito)
 .quantity-input {
     width: 60px !important;
     text-align: center;
-    margin-right: 5px;
-}
-.form-cantidad,
-.d-flex.align-items-center {
-    gap: 6px;
-}
-.btn.btn-link.p-0.ms-2 {
-    font-size: 13px;
-    padding: 4px 8px;
+    margin: 0 auto;
+    display: block;
 }
 </style>
 
@@ -85,7 +78,6 @@ $carrito = isset($carrito) && is_array($carrito)
                                                                 <form method="POST" action="<?= base_url('carrito/actualizar') ?>" class="d-flex align-items-center">
                                                                     <input type="hidden" name="id" value="<?= e((string) $item['id']) ?>">
                                                                     <input type="number" class="quantity-input" name="cantidad" min="1" value="<?= $cantidad ?>">
-                                                                    <button type="submit" class="btn btn-link p-0 ms-2">Actualizar</button>
                                                                 </form>
                                                             </div>
                                                         </td>
