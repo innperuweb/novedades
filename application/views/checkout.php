@@ -1,6 +1,21 @@
 <?php
 $carritoItems = isset($carrito) && is_array($carrito) ? $carrito : ($_SESSION['carrito'] ?? []);
 $totalPedido = isset($total) ? (float) $total : 0.0;
+$datosCliente = isset($datosGuardados) && is_array($datosGuardados) ? $datosGuardados : [];
+
+$emailGuardado = htmlspecialchars($datosCliente['email'] ?? '', ENT_QUOTES, 'UTF-8');
+$nombreGuardado = htmlspecialchars($datosCliente['nombre'] ?? '', ENT_QUOTES, 'UTF-8');
+$apellidosGuardados = htmlspecialchars($datosCliente['apellidos'] ?? '', ENT_QUOTES, 'UTF-8');
+$dniGuardado = htmlspecialchars($datosCliente['dni'] ?? '', ENT_QUOTES, 'UTF-8');
+$telefonoGuardado = htmlspecialchars($datosCliente['telefono'] ?? '', ENT_QUOTES, 'UTF-8');
+$direccionGuardada = htmlspecialchars($datosCliente['direccion'] ?? '', ENT_QUOTES, 'UTF-8');
+$referenciaGuardada = htmlspecialchars($datosCliente['referencia'] ?? '', ENT_QUOTES, 'UTF-8');
+$notasGuardadas = htmlspecialchars($datosCliente['notas'] ?? '', ENT_QUOTES, 'UTF-8');
+$distritoGuardado = htmlspecialchars($datosCliente['distrito'] ?? '', ENT_QUOTES, 'UTF-8');
+$departamentoGuardado = htmlspecialchars($datosCliente['departamento'] ?? '', ENT_QUOTES, 'UTF-8');
+$provinciaGuardada = htmlspecialchars($datosCliente['provincia'] ?? '', ENT_QUOTES, 'UTF-8');
+$distritoProvinciaGuardado = htmlspecialchars($datosCliente['distrito_provincia'] ?? '', ENT_QUOTES, 'UTF-8');
+$direccionProvinciaGuardada = htmlspecialchars($datosCliente['direccion_provincia'] ?? '', ENT_QUOTES, 'UTF-8');
 ?>
 
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
@@ -26,7 +41,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                             <div class="row mb--30">
                                 <div class="form__group col-12">
                                     <label for="shipping_email" class="form__label form__label--2">Correo electrónico <span class="required">*</span></label>
-                                    <input type="email" name="email" id="shipping_email" class="form__input form__input--2" required>
+                                    <input type="email" name="email" id="shipping_email" class="form__input form__input--2" value="<?= $emailGuardado; ?>" required>
                                 </div>
                             </div>
 
@@ -38,24 +53,24 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                                 <div class="form__group col-md-6 mb-sm--30">
                                     <label for="billing_fname" class="form__label form__label--2">Nombre
                                         <span class="required">*</span></label>
-                                    <input type="text" name="nombre" id="billing_fname" class="form__input form__input--2" required>
+                                    <input type="text" name="nombre" id="billing_fname" class="form__input form__input--2" value="<?= $nombreGuardado; ?>" required>
                                 </div>
                                 <div class="form__group col-md-6">
                                     <label for="billing_lname" class="form__label form__label--2">Apellidos
                                         <span class="required">*</span></label>
-                                    <input type="text" name="apellidos" id="billing_lname" class="form__input form__input--2">
+                                    <input type="text" name="apellidos" id="billing_lname" class="form__input form__input--2" value="<?= $apellidosGuardados; ?>">
                                 </div>
                             </div>
                             <div class="row mb--30">
                                 <div class="form__group col-md-6 mb-sm--30">
                                     <label for="billing_dni" class="form__label form__label--2">DNI
                                         <span class="required">*</span></label>
-                                    <input type="text" name="dni" id="billing_dni" class="form__input form__input--2">
+                                    <input type="text" name="dni" id="billing_dni" class="form__input form__input--2" value="<?= $dniGuardado; ?>">
                                 </div>
                                 <div class="form__group col-md-6">
                                     <label for="billing_phone" class="form__label form__label--2">N° de Whatsapp
                                         <span class="required">*</span></label>
-                                    <input type="text" name="telefono" id="billing_phone" class="form__input form__input--2" required>
+                                    <input type="text" name="telefono" id="billing_phone" class="form__input form__input--2" value="<?= $telefonoGuardado; ?>" required>
                                 </div>
                             </div>
 
@@ -71,7 +86,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                                             <div class="form__group col-12">
                                                 <label for="billing_country" class="form__label form__label--2">Distrito
                                                     <span class="required">*</span></label>
-                                                <select id="billing_country" name="distrito" class="form__input form__input--2 nice-select" required>
+                                                <select id="billing_country" name="distrito" class="form__input form__input--2 nice-select" required data-valor-guardado="<?= $distritoGuardado; ?>">
                                                     <option value="">Seleccionar</option>
                                                     <option value="AN">Ancón</option>
                                                     <option value="AT">Ate</option>
@@ -121,13 +136,13 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                                         <div class="row mb--30">
                                             <div class="form__group col-12">
                                                 <label for="billing_company" class="form__label form__label--2">Escriba la dirección de entrega completa</label>
-                                                <input type="text" name="direccion" id="billing_company" class="form__input form__input--2" required>
+                                                <input type="text" name="direccion" id="billing_company" class="form__input form__input--2" value="<?= $direccionGuardada; ?>" required>
                                             </div>
                                         </div>
                                         <div class="row mb--30">
                                             <div class="form__group col-12">
                                                 <label for="billing_reference" class="form__label form__label--2">Referencia</label>
-                                                <input type="text" name="referencia" id="billing_reference" class="form__input form__input--2">
+                                                <input type="text" name="referencia" id="billing_reference" class="form__input form__input--2" value="<?= $referenciaGuardada; ?>">
                                             </div>
                                         </div>
                                     </div>
@@ -144,7 +159,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                                             <div class="form__group col-12">
                                                 <label for="billing_country_provincia" class="form__label form__label--2">Departamento
                                                     <span class="required">*</span></label>
-                                                <select id="billing_country_provincia" name="departamento" class="form__input form__input--2 nice-select">
+                                                <select id="billing_country_provincia" name="departamento" class="form__input form__input--2 nice-select" data-valor-guardado="<?= $departamentoGuardado; ?>">
                                                     <option value="">Seleccionar</option>
                                                     <option value="AN">Ancón</option>
                                                     <option value="AT">Ate</option>
@@ -160,7 +175,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                                             <div class="form__group col-12">
                                                 <label for="billing_provincia" class="form__label form__label--2">Provincia
                                                     <span class="required">*</span></label>
-                                                <select id="billing_provincia" name="provincia" class="form__input form__input--2 nice-select">
+                                                <select id="billing_provincia" name="provincia" class="form__input form__input--2 nice-select" data-valor-guardado="<?= $provinciaGuardada; ?>">
                                                     <option value="">Seleccionar</option>
                                                     <option value="AN">Ancón</option>
                                                     <option value="AT">Ate</option>
@@ -176,7 +191,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                                             <div class="form__group col-12">
                                                 <label for="billing_distrito_provincia" class="form__label form__label--2">Distrito
                                                     <span class="required">*</span></label>
-                                                <select id="billing_distrito_provincia" name="distrito_provincia" class="form__input form__input--2 nice-select">
+                                                <select id="billing_distrito_provincia" name="distrito_provincia" class="form__input form__input--2 nice-select" data-valor-guardado="<?= $distritoProvinciaGuardado; ?>">
                                                     <option value="">Seleccionar</option>
                                                     <option value="AN">Ancón</option>
                                                     <option value="AT">Ate</option>
@@ -191,7 +206,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                                         <div class="row mb--30">
                                             <div class="form__group col-12">
                                                 <label for="billing_company" class="form__label form__label--2">Escriba la dirección de entrega completa</label>
-                                                <input type="text" name="direccion_provincia" id="billing_company_provincia" class="form__input form__input--2">
+                                                <input type="text" name="direccion_provincia" id="billing_company_provincia" class="form__input form__input--2" value="<?= $direccionProvinciaGuardada; ?>">
                                             </div>
                                         </div>
                                     </div>
@@ -213,13 +228,13 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                                 <div class="row">
                                     <div class="form__group col-12">
                                         <div class="custom-checkbox mb--20">
-                                            <input type="checkbox" name="shipdifferetads" class="form__checkbox">
-                                            <label for="shipdifferetads" class="form__label form__label--2 shipping-label">Guardar mis datos para próximas compras</label>
+                                            <input type="checkbox" id="guardar_datos" name="shipdifferetads" class="form__checkbox">
+                                            <label for="guardar_datos" class="form__label form__label--2 shipping-label">Guardar mis datos para próximas compras</label>
                                         </div>
                                     </div>
                                     <div class="form__group col-12">
                                         <label for="orderNotes" class="form__label form__label--2">¿Algún comentario adicional?</label>
-                                        <textarea class="form__input form__input--2 form__input--textarea" id="orderNotes" name="notas"></textarea>
+                                        <textarea class="form__input form__input--2 form__input--textarea" id="orderNotes" name="notas"><?= $notasGuardadas; ?></textarea>
                                     </div>
                                 </div>
                             </div>

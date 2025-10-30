@@ -10,6 +10,7 @@ return [
     'ofertas' => ['ProductosController', 'ofertas'],
     'checkout' => ['CheckoutController', 'index'],
     'checkout/procesar' => ['CheckoutController', 'procesar'],
+    'checkout/obtener_datos_cliente' => ['CheckoutController', 'obtener_datos_cliente'],
     'carrito' => ['CarritoController', 'index'],
     'carrito/agregar' => ['CarritoController', 'agregar'],
     'carrito/eliminar' => ['CarritoController', 'eliminar'],

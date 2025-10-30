@@ -910,8 +910,9 @@
                     info.style.display = "none";
                 });
                 const target = document.querySelector(`[data-method='${this.id}']`);
-                if (target)
+                if (target) {
                     target.style.display = "block";
+                }
             });
         });
 
@@ -922,10 +923,75 @@
                     info.style.display = "none";
                 });
                 const target = document.querySelector(`[data-method='${this.id}']`);
-                if (target)
+                if (target) {
                     target.style.display = "block";
+                }
             });
         });
+
+        // Seleccionar automáticamente valores guardados en selects
+        document.querySelectorAll('select[data-valor-guardado]').forEach(function(select) {
+            const valorGuardado = select.getAttribute('data-valor-guardado');
+            if (valorGuardado) {
+                select.value = valorGuardado;
+                select.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // Autocompletado de datos del cliente por correo electrónico
+        const emailInput = document.getElementById('shipping_email');
+        if (emailInput) {
+            emailInput.addEventListener('blur', function() {
+                const email = this.value.trim();
+                if (email === '') {
+                    return;
+                }
+
+                const baseUrl = (typeof window.base_url === 'string') ? window.base_url : '/';
+                const requestUrl = baseUrl.replace(/\/?$/, '/') + 'checkout/obtener_datos_cliente?email=' + encodeURIComponent(email);
+
+                fetch(requestUrl)
+                    .then(function(res) {
+                        return res.json();
+                    })
+                    .then(function(data) {
+                        if (!data.success || !data.data) {
+                            return;
+                        }
+
+                        const info = data.data;
+                        const setValor = function(id, valor) {
+                            const elemento = document.getElementById(id);
+                            if (!elemento) {
+                                return;
+                            }
+
+                            if (elemento.tagName === 'SELECT') {
+                                elemento.value = valor || '';
+                                elemento.dispatchEvent(new Event('change'));
+                            } else {
+                                elemento.value = valor || '';
+                            }
+                        };
+
+                        setValor('billing_fname', info.nombre || '');
+                        setValor('billing_lname', info.apellidos || '');
+                        setValor('billing_dni', info.dni || '');
+                        setValor('billing_phone', info.telefono || '');
+                        setValor('billing_company', info.direccion || '');
+                        setValor('billing_reference', info.referencia || '');
+                        setValor('orderNotes', info.notas || '');
+                        setValor('billing_country', info.distrito || '');
+                        setValor('billing_country_provincia', info.departamento || '');
+                        setValor('billing_provincia', info.provincia || '');
+                        setValor('billing_distrito_provincia', info.distrito_provincia || '');
+                        setValor('billing_company_provincia', info.direccion_provincia || '');
+                    })
+                    .catch(function(err) {
+                        console.error('Error obteniendo datos guardados:', err);
+                    });
+            });
+        }
     });
 
 })(jQuery);
