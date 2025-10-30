@@ -12,42 +12,37 @@ class CheckoutController extends BaseController
         $carrito = get_cart_session();
         $total = $this->calcularTotal($carrito);
 
+        $_SESSION['total'] = number_format($total, 2, '.', '');
+
         $this->render('checkout', compact('carrito', 'total'));
     }
 
     public function procesar(): void
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $nombre = $_POST['nombre'] ?? '';
+            $correo = $_POST['correo'] ?? '';
+            $telefono = $_POST['telefono'] ?? '';
+            $direccion = $_POST['direccion'] ?? '';
+            $total = $_SESSION['total'] ?? '0.00';
+
+            $nombreSeguro = htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8');
+            $totalSeguro = htmlspecialchars((string) $total, ENT_QUOTES, 'UTF-8');
+            $baseUrl = base_url('index');
+
+            echo "
+                <div style='text-align:center; margin-top:80px; font-family:sans-serif'>
+                    <h2>✅ Pedido recibido</h2>
+                    <p>Gracias, <strong>{$nombreSeguro}</strong>.</p>
+                    <p>Tu pedido ha sido registrado correctamente (modo demostración).</p>
+                    <p>Total del pedido: <strong>S/ {$totalSeguro}</strong></p>
+                    <a href='{$baseUrl}' style='display:inline-block;margin-top:20px;padding:10px 20px;background:#000;color:#fff;text-decoration:none;border-radius:4px;'>Volver a la tienda</a>
+                </div>
+            ";
+        } else {
             header('Location: ' . base_url('checkout'));
             exit;
         }
-
-        $nombre = trim($_POST['nombre'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $telefono = trim($_POST['telefono'] ?? '');
-        $direccion = trim($_POST['direccion'] ?? '');
-        $distrito = trim($_POST['distrito'] ?? '');
-        $referencia = trim($_POST['referencia'] ?? '');
-        $notas = trim($_POST['notas'] ?? '');
-
-        $carrito = get_cart_session();
-        $total = $this->calcularTotal($carrito);
-
-        require VIEW_PATH . 'partials/head.php';
-        require VIEW_PATH . 'partials/header.php';
-
-        $nombreSeguro = htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8');
-        $totalFormateado = number_format($total, 2);
-
-        echo "<main class='container py-5 text-center'>
-                <h2>✅ Pedido recibido</h2>
-                <p>Gracias, <strong>{$nombreSeguro}</strong>. Hemos recibido tus datos.</p>
-                <p>Total del pedido: <strong>S/ {$totalFormateado}</strong></p>
-                <a href='" . base_url('index.php') . "' class='btn btn-primary mt-3'>Volver al inicio</a>
-              </main>";
-
-        require VIEW_PATH . 'partials/footer.php';
-        require VIEW_PATH . 'partials/scripts.php';
     }
 
     public function carrito(): void
