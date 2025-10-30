@@ -9,12 +9,18 @@ class CheckoutController extends BaseController
 {
     public function index(): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         $carrito = get_cart_session();
         $total = $this->calcularTotal($carrito);
 
         $_SESSION['total'] = number_format($total, 2, '.', '');
 
-        $this->render('checkout', compact('carrito', 'total'));
+        $datosGuardados = $_SESSION['datos_cliente'] ?? [];
+
+        $this->render('checkout', compact('carrito', 'total', 'datosGuardados'));
     }
 
     public function procesar(): void
@@ -31,6 +37,7 @@ class CheckoutController extends BaseController
             $telefono = trim($_POST['telefono'] ?? '');
             $direccion = trim($_POST['direccion'] ?? '');
             $referencia = trim($_POST['referencia'] ?? '');
+            $guardarDatos = isset($_POST['shipdifferetads']);
 
             $metodo_envio = trim($_POST['metodo_envio'] ?? '');
             $metodo_pago = trim($_POST['metodo_pago'] ?? '');
@@ -81,6 +88,24 @@ class CheckoutController extends BaseController
 
             foreach ($optionalFields as $key => $value) {
                 $checkout[$key] = $value;
+            }
+
+            if ($guardarDatos) {
+                $_SESSION['datos_cliente'] = [
+                    'email' => $email,
+                    'nombre' => $nombre,
+                    'apellidos' => $apellidos,
+                    'dni' => $dni,
+                    'telefono' => $telefono,
+                    'direccion' => $direccion,
+                    'referencia' => $referencia,
+                ];
+
+                foreach ($optionalFields as $campo => $valor) {
+                    $_SESSION['datos_cliente'][$campo] = $valor;
+                }
+            } elseif (isset($_SESSION['datos_cliente'])) {
+                unset($_SESSION['datos_cliente']);
             }
 
             $_SESSION['checkout'] = $checkout;
@@ -165,6 +190,34 @@ class CheckoutController extends BaseController
     public function carrito(): void
     {
         $this->render('carrito_compras');
+    }
+
+    public function obtener_datos_cliente(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        header('Content-Type: application/json');
+
+        $email = trim($_GET['email'] ?? '');
+
+        if ($email === '') {
+            echo json_encode(['success' => false], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $datos = $_SESSION['datos_cliente'] ?? [];
+
+        if ($datos !== [] && isset($datos['email']) && $datos['email'] === $email) {
+            echo json_encode([
+                'success' => true,
+                'data' => $datos,
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        echo json_encode(['success' => false], JSON_UNESCAPED_UNICODE);
     }
 
     private function calcularTotal(array $carrito): float
