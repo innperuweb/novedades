@@ -898,34 +898,32 @@
 
     // === Control de comportamiento dinámico del checkout ===
     document.addEventListener("DOMContentLoaded", function() {
-        // Oculta todas las secciones al inicio excepto la activa
+        // Ocultar todos los paneles al inicio
         document.querySelectorAll(".payment-info").forEach(function(info) {
             info.style.display = "none";
         });
 
-        // Detecta cambio en los radios de envío y muestra la sección correspondiente
+        // Al seleccionar envío
         document.querySelectorAll("input[name='metodo_envio']").forEach(function(radio) {
             radio.addEventListener("change", function() {
                 document.querySelectorAll(".payment-info").forEach(function(info) {
                     info.style.display = "none";
                 });
-                let metodo = this.id;
-                let info = document.querySelector(`[data-method='${metodo}']`);
-                if (info)
-                    info.style.display = "block";
+                const target = document.querySelector(`[data-method='${this.id}']`);
+                if (target)
+                    target.style.display = "block";
             });
         });
 
-        // Detecta cambio en los radios de método de pago
+        // Al seleccionar método de pago
         document.querySelectorAll("input[name='metodo_pago']").forEach(function(radio) {
             radio.addEventListener("change", function() {
                 document.querySelectorAll(".payment-info").forEach(function(info) {
                     info.style.display = "none";
                 });
-                let metodo = this.id;
-                let info = document.querySelector(`[data-method='${metodo}']`);
-                if (info)
-                    info.style.display = "block";
+                const target = document.querySelector(`[data-method='${this.id}']`);
+                if (target)
+                    target.style.display = "block";
             });
         });
     });

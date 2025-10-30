@@ -24,57 +24,63 @@ class CheckoutController extends BaseController
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Capturar datos del formulario
             $email = trim($_POST['email'] ?? '');
             $nombre = trim($_POST['nombre'] ?? '');
             $apellidos = trim($_POST['apellidos'] ?? '');
             $dni = trim($_POST['dni'] ?? '');
             $telefono = trim($_POST['telefono'] ?? '');
             $direccion = trim($_POST['direccion'] ?? '');
-            $referencia = trim($_POST['referencia'] ?? '');
-            $distrito = trim($_POST['distrito'] ?? '');
-            $departamento = trim($_POST['departamento'] ?? '');
-            $provincia = trim($_POST['provincia'] ?? '');
-            $distrito_provincia = trim($_POST['distrito_provincia'] ?? '');
-            $direccion_provincia = trim($_POST['direccion_provincia'] ?? '');
-            $notas = trim($_POST['notas'] ?? '');
             $metodo_envio = trim($_POST['metodo_envio'] ?? '');
             $metodo_pago = trim($_POST['metodo_pago'] ?? '');
             $total = $_SESSION['total'] ?? '0.00';
 
-            // Validar campos obligatorios
-            if (empty($email) || empty($nombre) || empty($apellidos) || empty($dni) || empty($telefono)) {
+            if (
+                empty($email) ||
+                empty($nombre) ||
+                empty($apellidos) ||
+                empty($dni) ||
+                empty($telefono) ||
+                empty($metodo_envio) ||
+                empty($metodo_pago)
+            ) {
                 echo "<script>alert('Por favor complete todos los campos obligatorios.'); window.history.back();</script>";
                 exit;
             }
 
-            // Guardar los datos en sesión
-            $_SESSION['checkout'] = [
+            $checkout = [
                 'email' => $email,
                 'nombre' => $nombre,
                 'apellidos' => $apellidos,
                 'dni' => $dni,
                 'telefono' => $telefono,
                 'direccion' => $direccion,
-                'referencia' => $referencia,
-                'distrito' => $distrito,
-                'departamento' => $departamento,
-                'provincia' => $provincia,
-                'distrito_provincia' => $distrito_provincia,
-                'direccion_provincia' => $direccion_provincia,
-                'notas' => $notas,
                 'metodo_envio' => $metodo_envio,
                 'metodo_pago' => $metodo_pago,
                 'total' => $total
             ];
 
-            // Redirigir a ver_orden.php
+            $optionalFields = [
+                'referencia' => trim($_POST['referencia'] ?? ''),
+                'distrito' => trim($_POST['distrito'] ?? ''),
+                'departamento' => trim($_POST['departamento'] ?? ''),
+                'provincia' => trim($_POST['provincia'] ?? ''),
+                'distrito_provincia' => trim($_POST['distrito_provincia'] ?? ''),
+                'direccion_provincia' => trim($_POST['direccion_provincia'] ?? ''),
+                'notas' => trim($_POST['notas'] ?? '')
+            ];
+
+            foreach ($optionalFields as $key => $value) {
+                $checkout[$key] = $value;
+            }
+
+            $_SESSION['checkout'] = $checkout;
+
             header("Location: " . base_url('ver_orden'));
             exit;
-        } else {
-            header("Location: " . base_url('checkout'));
-            exit;
         }
+
+        header("Location: " . base_url('checkout'));
+        exit;
     }
 
     public function carrito(): void
