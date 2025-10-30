@@ -37,6 +37,7 @@ class CheckoutController extends BaseController
             $telefono = trim($_POST['telefono'] ?? '');
             $direccion = trim($_POST['direccion'] ?? '');
             $referencia = trim($_POST['referencia'] ?? '');
+            $distrito = trim($_POST['distrito'] ?? '');
             $guardarDatos = isset($_POST['shipdifferetads']);
 
             $metodo_envio = trim($_POST['metodo_envio'] ?? '');
@@ -63,6 +64,13 @@ class CheckoutController extends BaseController
             ];
             $metodo_pago_titulo = $pago_titulos[$metodo_pago] ?? strtoupper($metodo_pago);
 
+            $envio_titulos = [
+                'bank' => 'Envío en Lima Metropolitana (S/ 10.00)',
+                'cheque' => 'Envío a Provincias (S/ 12.00)',
+                'cash' => 'Aéreo / Express (S/ 18.00)',
+            ];
+            $metodo_envio_titulo = $envio_titulos[$metodo_envio] ?? strtoupper($metodo_envio);
+
             $checkout = [
                 'email' => $email,
                 'nombre' => $nombre,
@@ -71,14 +79,15 @@ class CheckoutController extends BaseController
                 'telefono' => $telefono,
                 'direccion' => $direccion,
                 'referencia' => $referencia,
+                'distrito' => $distrito,
                 'metodo_envio' => $metodo_envio,
+                'metodo_envio_titulo' => $metodo_envio_titulo,
                 'metodo_pago' => $metodo_pago,
                 'metodo_pago_titulo' => $metodo_pago_titulo,
                 'total' => $total,
             ];
 
             $optionalFields = [
-                'distrito' => trim($_POST['distrito'] ?? ''),
                 'departamento' => trim($_POST['departamento'] ?? ''),
                 'provincia' => trim($_POST['provincia'] ?? ''),
                 'distrito_provincia' => trim($_POST['distrito_provincia'] ?? ''),
@@ -99,6 +108,7 @@ class CheckoutController extends BaseController
                     'telefono' => $telefono,
                     'direccion' => $direccion,
                     'referencia' => $referencia,
+                    'distrito' => $distrito,
                 ];
 
                 foreach ($optionalFields as $campo => $valor) {
@@ -168,14 +178,15 @@ class CheckoutController extends BaseController
         $orden = [
             'numero' => $orden_numero,
             'fecha' => $fecha,
+            'metodo_envio' => $checkout['metodo_envio_titulo'] ?? '',
             'metodo_pago' => $checkout['metodo_pago_titulo'] ?? '',
-            'metodo_envio' => $checkout['metodo_envio'] ?? '',
             'cliente' => [
                 'nombre' => $checkout['nombre'] ?? '',
                 'apellidos' => $checkout['apellidos'] ?? '',
                 'dni' => $checkout['dni'] ?? '',
                 'telefono' => $checkout['telefono'] ?? '',
                 'email' => $checkout['email'] ?? '',
+                'distrito' => $checkout['distrito'] ?? '',
                 'direccion' => $checkout['direccion'] ?? '',
                 'referencia' => $checkout['referencia'] ?? '',
             ],
