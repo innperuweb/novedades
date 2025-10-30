@@ -89,7 +89,15 @@ $items = $items ?? [];
                                         <div class="col-lg-6 col-md-6 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Dirección de envío</h3>
-                                                <p class="ver_orden mb--25 mb-md--20"><?= htmlspecialchars($orden['cliente']['direccion'] ?? '') ?></p>
+                                                <?php if (!empty($orden['cliente']['distrito'])): ?>
+                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Distrito:</strong> <?= htmlspecialchars($orden['cliente']['distrito']) ?></p>
+                                                <?php endif; ?>
+                                                <?php if (!empty($orden['cliente']['direccion'])): ?>
+                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Dirección:</strong> <?= htmlspecialchars($orden['cliente']['direccion']) ?></p>
+                                                <?php endif; ?>
+                                                <?php if (!empty($orden['cliente']['referencia'])): ?>
+                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Referencia:</strong> <?= htmlspecialchars($orden['cliente']['referencia']) ?></p>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                         <div class="col-lg-6 col-md-6 mb-sm--30">
@@ -109,12 +117,24 @@ $items = $items ?? [];
                                               <p><strong>DNI:</strong> <?= htmlspecialchars($orden['cliente']['dni'] ?? '') ?></p>
                                               <p><strong>Teléfono:</strong> <?= htmlspecialchars($orden['cliente']['telefono'] ?? '') ?></p>
                                               <p><strong>Email:</strong> <?= htmlspecialchars($orden['cliente']['email'] ?? '') ?></p>
-                                              <p><strong>Dirección:</strong> <?= htmlspecialchars($orden['cliente']['direccion'] ?? '') ?></p>
-                                              <?php if (!empty($orden['cliente']['referencia'] ?? '')): ?>
-                                                <p><strong>Referencia:</strong> <?= htmlspecialchars($orden['cliente']['referencia'] ?? '') ?></p>
+                                            </div>
+                                            <div class="orden-info">
+                                              <p><strong>Método de Envío:</strong> <?= htmlspecialchars($orden['metodo_envio'] ?? '') ?></p>
+                                              <p><strong>Método de Pago:</strong> <?= htmlspecialchars($orden['metodo_pago'] ?? '') ?></p>
+                                            </div>
+
+                                            <div class="direccion-envio">
+                                              <h4>Dirección de Entrega</h4>
+                                              <?php if (!empty($orden['cliente']['distrito'])): ?>
+                                                <p><strong>Distrito:</strong> <?= htmlspecialchars($orden['cliente']['distrito']) ?></p>
+                                              <?php endif; ?>
+                                              <?php if (!empty($orden['cliente']['direccion'])): ?>
+                                                <p><strong>Dirección:</strong> <?= htmlspecialchars($orden['cliente']['direccion']) ?></p>
+                                              <?php endif; ?>
+                                              <?php if (!empty($orden['cliente']['referencia'])): ?>
+                                                <p><strong>Referencia:</strong> <?= htmlspecialchars($orden['cliente']['referencia']) ?></p>
                                               <?php endif; ?>
                                             </div>
-                                            <p><strong>Método de envío:</strong> <?= htmlspecialchars($orden['metodo_envio'] ?? '') ?></p>
                                             <p><strong>Total:</strong> S/ <?= number_format((float) ($orden['totales']['total'] ?? 0), 2) ?></p>
                                             <div class="table-content table-responsive mb--30">
                                                 <table class="table order-table order-table-2">
