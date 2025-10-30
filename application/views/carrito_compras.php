@@ -39,11 +39,7 @@ $carrito = isset($carrito) && is_array($carrito)
                                             <?php if (!empty($carrito)): ?>
                                                 <?php foreach ($carrito as $item): ?>
                                                     <?php
-                                                        $cantidad = (int) ($item['cantidad'] ?? 0);
                                                         $precio = (float) ($item['precio'] ?? 0);
-                                                        $cantidad = $cantidad > 0 ? $cantidad : 1;
-                                                        $subtotal = $precio * $cantidad;
-                                                        $total += $subtotal;
                                                         $imagenRuta = 'img/products/' . ($item['imagen'] ?? 'no-image.jpg');
                                                     ?>
                                                     <tr>
@@ -63,6 +59,12 @@ $carrito = isset($carrito) && is_array($carrito)
                                                         </td>
                                                         <td class="product-quantity">
                                                             <div class="quantity">
+                                                                <?php
+                                                                    $cantidad = isset($item['cantidad']) && is_numeric($item['cantidad']) ? (int) $item['cantidad'] : 1;
+                                                                    $cantidad = $cantidad > 0 ? $cantidad : 1;
+                                                                    $subtotal = $precio * $cantidad;
+                                                                    $total += $subtotal;
+                                                                ?>
                                                                 <form method="POST" action="<?= base_url('carrito/actualizar') ?>" class="d-flex align-items-center">
                                                                     <input type="hidden" name="id" value="<?= e((string) $item['id']) ?>">
                                                                     <input type="number" class="quantity-input" name="cantidad" min="1" value="<?= $cantidad ?>">
