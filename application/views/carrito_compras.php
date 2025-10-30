@@ -236,3 +236,57 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.quantity-input');
+
+    inputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const id = this.getAttribute('data-id');
+            const cantidad = this.value;
+
+            if (!id) {
+                return;
+            }
+
+            fetch('<?= base_url("carrito/sync_ajax") ?>', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'id=' + encodeURIComponent(id) + '&cantidad=' + encodeURIComponent(cantidad)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const subtotalEl = document.getElementById('subtotal-' + id);
+                    if (subtotalEl) {
+                        subtotalEl.textContent = 'S/ ' + data.subtotal;
+                    }
+
+                    const totalEl = document.getElementById('total-general');
+                    if (totalEl) {
+                        totalEl.textContent = 'S/ ' + data.total;
+                    }
+
+                    const resumenEl = document.querySelector('.resumen-cantidad[data-id="' + id + '"]');
+                    if (resumenEl) {
+                        resumenEl.textContent = 'x' + data.cantidad;
+                    }
+
+                    if (window.localStorage) {
+                        localStorage.setItem('carrito_sync', JSON.stringify({
+                            id: id,
+                            cantidad: data.cantidad,
+                            subtotal: data.subtotal,
+                            total: data.total
+                        }));
+                    }
+                } else {
+                    alert(data.message || 'Error al sincronizar.');
+                }
+            })
+            .catch(() => alert('Error de conexión con el servidor.'));
+        });
+    });
+});
+</script>
