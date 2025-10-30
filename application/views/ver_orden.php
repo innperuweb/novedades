@@ -1,11 +1,41 @@
 <?php
 require_once APP_PATH . '/helpers/security_helper.php';
-$orden = $orden ?? [];
+
+$mensajeError = $mensajeError ?? null;
+$orden = $orden ?? null;
 $items = $items ?? [];
-$orden_guardada = $orden_guardada ?? ($_SESSION['orden_guardada'] ?? []);
-$subtotal = (float) ($orden['totales']['subtotal'] ?? ($orden_guardada['subtotal'] ?? 0));
-$costo_envio = (float) ($orden_guardada['costo_envio'] ?? ($orden['totales']['costo_envio'] ?? 0));
-$total_final = (float) ($orden_guardada['total'] ?? ($orden['totales']['total'] ?? 0));
+
+if ($mensajeError !== null) : ?>
+    <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h1 class="page-title">Orden</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="content" class="main-content-wrapper">
+        <div class="page-content-inner">
+            <div class="container">
+                <div class="row pt--80 pt-md--60 pt-sm--40 pb--80 pb-md--60 pb-sm--40">
+                    <div class="col-12 text-center">
+                        <p><?= e($mensajeError) ?></p>
+                        <a class="lezada-button lezada-button--medium" href="<?= e(base_url('checkout')) ?>">Volver al checkout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php
+    return;
+endif;
+
+$subtotal = (float) ($orden['totales']['subtotal'] ?? 0);
+$costo_envio = (float) ($orden['totales']['costo_envio'] ?? 0);
+$total_final = (float) ($orden['totales']['total'] ?? 0);
+$cliente = $orden['cliente'] ?? [];
 ?>
 
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
@@ -45,11 +75,10 @@ $total_final = (float) ($orden_guardada['total'] ?? ($orden['totales']['total'] 
                                             <div class="row mb--40 mb-md--30">
                                                 <div class="col-12 estado_orden">
                                                     <h4 class="font-bold">Datos de la orden</h4>
-                                                    <!-- Encabezado de la orden -->
                                                     <div class="orden-header">
-                                                      <p><strong>N° de orden:</strong> <?= htmlspecialchars($orden['numero'] ?? '') ?></p>
-                                                      <p><strong>Fecha:</strong> <?= htmlspecialchars($orden['fecha'] ?? '') ?></p>
-                                                      <p><strong>Método de pago:</strong> <?= htmlspecialchars($orden['metodo_pago'] ?? '') ?></p>
+                                                      <p><strong>N° de orden:</strong> <?= e($orden['numero'] ?? '') ?></p>
+                                                      <p><strong>Fecha:</strong> <?= e($orden['fecha'] ?? '') ?></p>
+                                                      <p><strong>Método de pago:</strong> <?= e($orden['metodo_pago'] ?? '') ?></p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -59,7 +88,7 @@ $total_final = (float) ($orden_guardada['total'] ?? ($orden['totales']['total'] 
                                                 <div class="col-12 estado_orden">
                                                     <h4 class="font-bold">Estado de pago</h4>
                                                     <h2 class="heading-secondary text-uppercase font-bold">
-                                                        Pendiente
+                                                        <?= e($orden['estado'] ?? 'Pendiente') ?>
                                                     </h2>
                                                 </div>
                                             </div>
@@ -94,21 +123,21 @@ $total_final = (float) ($orden_guardada['total'] ?? ($orden['totales']['total'] 
                                         <div class="col-lg-6 col-md-6 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Dirección de envío</h3>
-                                                <?php if (!empty($orden['cliente']['distrito_nombre'])): ?>
-                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Distrito:</strong> <?= htmlspecialchars($orden['cliente']['distrito_nombre']) ?></p>
+                                                <?php if (!empty($cliente['distrito_nombre'])): ?>
+                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Distrito:</strong> <?= e($cliente['distrito_nombre']) ?></p>
                                                 <?php endif; ?>
-                                                <?php if (!empty($orden['cliente']['direccion'])): ?>
-                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Dirección:</strong> <?= htmlspecialchars($orden['cliente']['direccion']) ?></p>
+                                                <?php if (!empty($cliente['direccion'])): ?>
+                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Dirección:</strong> <?= e($cliente['direccion']) ?></p>
                                                 <?php endif; ?>
-                                                <?php if (!empty($orden['cliente']['referencia'])): ?>
-                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Referencia:</strong> <?= htmlspecialchars($orden['cliente']['referencia']) ?></p>
+                                                <?php if (!empty($cliente['referencia'])): ?>
+                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Referencia:</strong> <?= e($cliente['referencia']) ?></p>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
                                         <div class="col-lg-6 col-md-6 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Nº de whatsapp</h3>
-                                                <p class="ver_orden mb--25 mb-md--20"><?= htmlspecialchars($orden['cliente']['telefono'] ?? '') ?></p>
+                                                <p class="ver_orden mb--25 mb-md--20"><?= e($cliente['telefono'] ?? '') ?></p>
                                             </div>
                                         </div>
                                     </div>
@@ -118,26 +147,26 @@ $total_final = (float) ($orden_guardada['total'] ?? ($orden['totales']['total'] 
                                     <div class="col-lg-12 mt-md--40">
                                         <div class="order-details">
                                             <div class="cliente">
-                                              <p><strong>Cliente:</strong> <?= htmlspecialchars($orden['cliente']['nombre'] ?? '') ?> <?= htmlspecialchars($orden['cliente']['apellidos'] ?? '') ?></p>
-                                              <p><strong>DNI:</strong> <?= htmlspecialchars($orden['cliente']['dni'] ?? '') ?></p>
-                                              <p><strong>Teléfono:</strong> <?= htmlspecialchars($orden['cliente']['telefono'] ?? '') ?></p>
-                                              <p><strong>Email:</strong> <?= htmlspecialchars($orden['cliente']['email'] ?? '') ?></p>
+                                              <p><strong>Cliente:</strong> <?= e($cliente['nombre'] ?? '') ?> <?= e($cliente['apellidos'] ?? '') ?></p>
+                                              <p><strong>DNI:</strong> <?= e($cliente['dni'] ?? '') ?></p>
+                                              <p><strong>Teléfono:</strong> <?= e($cliente['telefono'] ?? '') ?></p>
+                                              <p><strong>Email:</strong> <?= e($cliente['email'] ?? '') ?></p>
                                             </div>
                                             <div class="orden-info">
-                                              <p><strong>Método de Envío:</strong> <?= htmlspecialchars($orden['metodo_envio'] ?? '') ?></p>
-                                              <p><strong>Método de Pago:</strong> <?= htmlspecialchars($orden['metodo_pago'] ?? '') ?></p>
+                                              <p><strong>Método de Envío:</strong> <?= e($orden['metodo_envio'] ?? '') ?></p>
+                                              <p><strong>Método de Pago:</strong> <?= e($orden['metodo_pago'] ?? '') ?></p>
                                             </div>
 
                                             <div class="direccion-envio">
                                               <h4>Dirección de Entrega</h4>
-                                              <?php if (!empty($orden['cliente']['distrito_nombre'])): ?>
-                                                <p><strong>Distrito:</strong> <?= htmlspecialchars($orden['cliente']['distrito_nombre']) ?></p>
+                                              <?php if (!empty($cliente['distrito_nombre'])): ?>
+                                                <p><strong>Distrito:</strong> <?= e($cliente['distrito_nombre']) ?></p>
                                               <?php endif; ?>
-                                              <?php if (!empty($orden['cliente']['direccion'])): ?>
-                                                <p><strong>Dirección:</strong> <?= htmlspecialchars($orden['cliente']['direccion']) ?></p>
+                                              <?php if (!empty($cliente['direccion'])): ?>
+                                                <p><strong>Dirección:</strong> <?= e($cliente['direccion']) ?></p>
                                               <?php endif; ?>
-                                              <?php if (!empty($orden['cliente']['referencia'])): ?>
-                                                <p><strong>Referencia:</strong> <?= htmlspecialchars($orden['cliente']['referencia']) ?></p>
+                                              <?php if (!empty($cliente['referencia'])): ?>
+                                                <p><strong>Referencia:</strong> <?= e($cliente['referencia']) ?></p>
                                               <?php endif; ?>
                                             </div>
                                             <p><strong>Total:</strong> S/ <?= number_format($total_final, 2) ?></p>
@@ -153,9 +182,7 @@ $total_final = (float) ($orden_guardada['total'] ?? ($orden['totales']['total'] 
                                                     </thead>
                                                     <tbody>
                                                         <?php foreach ($items as $p): ?>
-                                                          <?php
-                                                            $productoId = (int) ($p['id'] ?? 0);
-                                                          ?>
+                                                          <?php $productoId = (int) ($p['id'] ?? 0); ?>
                                                           <tr class="orden-item" data-id="<?= e((string) $productoId) ?>">
                                                             <td class="nombre">
                                                               <?= e($p['nombre'] ?? '') ?><br>
