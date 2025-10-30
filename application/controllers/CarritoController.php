@@ -24,6 +24,8 @@ class CarritoController extends BaseController
 
         $id = sanitize_int($_POST['id']);
         $cantidad = isset($_POST['cantidad']) ? sanitize_int($_POST['cantidad']) : 1;
+        $color = sanitize_string($_POST['color'] ?? '');
+        $talla = sanitize_string($_POST['talla'] ?? '');
 
         if ($id === null) {
             $this->redirectToCarrito();
@@ -35,19 +37,35 @@ class CarritoController extends BaseController
         $producto = $model->getById($id);
 
         if ($producto !== null) {
+            $coloresDisponibles = array_map('strval', $producto['colores'] ?? []);
+            $tallasDisponibles = array_map('strval', $producto['tallas'] ?? []);
+
+            if ($coloresDisponibles !== [] && !in_array($color, $coloresDisponibles, true)) {
+                $color = '';
+            }
+
+            if ($tallasDisponibles !== [] && !in_array($talla, $tallasDisponibles, true)) {
+                $talla = '';
+            }
+
+            $uid = $this->generateItemUid($id, $color, $talla);
+
             $item = [
                 'id' => (int) $producto['id'],
                 'nombre' => (string) $producto['nombre'],
                 'precio' => (float) $producto['precio'],
                 'imagen' => (string) ($producto['imagen'] ?? ''),
                 'cantidad' => $cantidad,
+                'color' => $color,
+                'talla' => $talla,
+                'uid' => $uid,
             ];
 
-            $carrito = get_cart_session();
+            $carrito = $this->normalizeCarrito(get_cart_session());
             $encontrado = false;
 
             foreach ($carrito as &$productoCarrito) {
-                if ((int) $productoCarrito['id'] === $item['id']) {
+                if (($productoCarrito['uid'] ?? '') === $uid) {
                     $productoCarrito['cantidad'] += $item['cantidad'];
                     $encontrado = true;
                     break;
@@ -67,28 +85,30 @@ class CarritoController extends BaseController
 
     public function eliminar(): void
     {
-        if (!isset($_GET['id'])) {
+        $uid = isset($_GET['uid']) ? sanitize_string($_GET['uid']) : '';
+        $id = isset($_GET['id']) ? sanitize_int($_GET['id']) : null;
+
+        if ($uid === '' && $id === null) {
             $this->redirectToCarrito();
         }
 
-        $id = sanitize_int($_GET['id']);
+        $carrito = $this->normalizeCarrito(get_cart_session());
 
-        if ($id !== null) {
-            $carrito = get_cart_session();
+        foreach ($carrito as $key => $item) {
+            $itemUid = (string) ($item['uid'] ?? '');
+            $itemId = (int) ($item['id'] ?? 0);
 
-            foreach ($carrito as $key => $item) {
-                if ((int) ($item['id'] ?? 0) === $id) {
-                    unset($carrito[$key]);
-                }
+            if (($uid !== '' && hash_equals($itemUid, $uid)) || ($uid === '' && $id !== null && $itemId === $id)) {
+                unset($carrito[$key]);
             }
+        }
 
-            $carrito = array_values($carrito);
+        $carrito = array_values($carrito);
 
-            if ($carrito === []) {
-                clear_cart_session();
-            } else {
-                set_cart_session($carrito);
-            }
+        if ($carrito === []) {
+            clear_cart_session();
+        } else {
+            set_cart_session($carrito);
         }
 
         $this->redirectToCarrito();
@@ -103,18 +123,22 @@ class CarritoController extends BaseController
 
     public function actualizar(): void
     {
-        if (!isset($_POST['id'], $_POST['cantidad'])) {
+        if (!isset($_POST['cantidad'])) {
             $this->redirectToCarrito();
         }
 
-        $id = sanitize_int($_POST['id']);
+        $uid = isset($_POST['uid']) ? sanitize_string($_POST['uid']) : '';
+        $id = isset($_POST['id']) ? sanitize_int($_POST['id']) : null;
         $cantidad = sanitize_int($_POST['cantidad']);
 
-        if ($id !== null && $cantidad !== null && $cantidad > 0) {
-            $carrito = get_cart_session();
+        if ($cantidad !== null && $cantidad > 0 && ($uid !== '' || $id !== null)) {
+            $carrito = $this->normalizeCarrito(get_cart_session());
 
             foreach ($carrito as &$item) {
-                if ((int) ($item['id'] ?? 0) === $id) {
+                $itemUid = (string) ($item['uid'] ?? '');
+                $itemId = (int) ($item['id'] ?? 0);
+
+                if (($uid !== '' && hash_equals($itemUid, $uid)) || ($uid === '' && $id !== null && $itemId === $id)) {
                     $item['cantidad'] = $cantidad;
                     break;
                 }
@@ -131,5 +155,49 @@ class CarritoController extends BaseController
     {
         header('Location: ' . base_url('carrito'));
         exit;
+    }
+
+    private function generateItemUid(int $id, string $color, string $talla): string
+    {
+        $normalizar = static function (string $valor): string {
+            $valor = trim($valor);
+            if ($valor === '') {
+                return '';
+            }
+
+            if (function_exists('mb_strtolower')) {
+                $valor = mb_strtolower($valor, 'UTF-8');
+            } else {
+                $valor = strtolower($valor);
+            }
+
+            return $valor;
+        };
+
+        $colorNormalizado = $normalizar($color);
+        $tallaNormalizada = $normalizar($talla);
+
+        return sha1($id . '|' . $colorNormalizado . '|' . $tallaNormalizada);
+    }
+
+    private function normalizeCarrito(array $items): array
+    {
+        foreach ($items as &$item) {
+            $id = sanitize_int($item['id'] ?? null) ?? 0;
+            $color = sanitize_string($item['color'] ?? '');
+            $talla = sanitize_string($item['talla'] ?? '');
+
+            if (empty($item['uid'])) {
+                $item['uid'] = $this->generateItemUid((int) $id, $color, $talla);
+            }
+
+            $item['id'] = (int) $id;
+            $item['color'] = $color;
+            $item['talla'] = $talla;
+            $item['cantidad'] = max(1, (int) ($item['cantidad'] ?? 1));
+        }
+        unset($item);
+
+        return $items;
     }
 }

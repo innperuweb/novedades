@@ -261,11 +261,23 @@ $direccionProvinciaGuardada = htmlspecialchars($datosCliente['direccion_provinci
                                                 <?php
                                                 $nombreProducto = htmlspecialchars($item['nombre'] ?? '', ENT_QUOTES, 'UTF-8');
                                                 $cantidadProducto = (int) ($item['cantidad'] ?? 0);
+                                                $cantidadProducto = $cantidadProducto > 0 ? $cantidadProducto : 1;
                                                 $precioProducto = isset($item['precio']) ? (float) $item['precio'] : 0.0;
                                                 $subtotalProducto = $precioProducto * $cantidadProducto;
+                                                $colorProducto = trim((string) ($item['color'] ?? ''));
+                                                $tallaProducto = trim((string) ($item['talla'] ?? ''));
+                                                $colorProducto = $colorProducto !== '' ? htmlspecialchars($colorProducto, ENT_QUOTES, 'UTF-8') : '';
+                                                $tallaProducto = $tallaProducto !== '' ? htmlspecialchars($tallaProducto, ENT_QUOTES, 'UTF-8') : '';
                                                 ?>
                                                 <tr>
                                                     <th><?= $nombreProducto; ?>
+                                                        <?php if ($colorProducto !== '' || $tallaProducto !== ''): ?>
+                                                            <br><small>
+                                                                <?php if ($colorProducto !== ''): ?>Color: <?= $colorProducto; ?><?php endif; ?>
+                                                                <?php if ($colorProducto !== '' && $tallaProducto !== ''): ?> — <?php endif; ?>
+                                                                <?php if ($tallaProducto !== ''): ?>Talla: <?= $tallaProducto; ?><?php endif; ?>
+                                                            </small>
+                                                        <?php endif; ?>
                                                         <strong><span>&#10005;</span><?= $cantidadProducto; ?></strong>
                                                     </th>
                                                     <td class="text-end">S/ <?= number_format($subtotalProducto, 2); ?></td>
