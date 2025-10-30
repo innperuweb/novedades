@@ -168,6 +168,8 @@ class CheckoutController extends BaseController
             $total += $subtotal;
 
             $items[] = [
+                'id' => (int) ($item['id'] ?? 0),
+                'uid' => (string) ($item['uid'] ?? ''),
                 'nombre' => $item['nombre'] ?? 'Producto',
                 'cantidad' => $cantidad,
                 'precio' => $precio,

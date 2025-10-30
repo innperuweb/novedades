@@ -76,7 +76,7 @@ $total_final = (float) ($orden_guardada['total'] ?? ($orden['totales']['total'] 
                                         <div class="col-lg-4 col-md-4 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Total</h3>
-                                                <p class="ver_orden mb--25 mb-md--20">S/ <?= number_format($total_final, 2) ?></p>
+                                                <p class="ver_orden mb--25 mb-md--20" id="total-general" data-total-general="true">S/ <?= number_format($total_final, 2) ?></p>
                                             </div>
                                         </div>
                                         <div class="col-lg-4 col-md-4 mb-sm--30">
@@ -153,7 +153,10 @@ $total_final = (float) ($orden_guardada['total'] ?? ($orden['totales']['total'] 
                                                     </thead>
                                                     <tbody>
                                                         <?php foreach ($items as $p): ?>
-                                                          <tr class="orden-item">
+                                                          <?php
+                                                            $productoId = (int) ($p['id'] ?? 0);
+                                                          ?>
+                                                          <tr class="orden-item" data-id="<?= e((string) $productoId) ?>">
                                                             <td class="nombre">
                                                               <?= e($p['nombre'] ?? '') ?><br>
 
@@ -165,9 +168,9 @@ $total_final = (float) ($orden_guardada['total'] ?? ($orden['totales']['total'] 
                                                                 <small>Talla: <?= e($p['talla']) ?></small>
                                                               <?php endif; ?>
                                                             </td>
-                                                            <td class="cantidad texto_centrado">x<?= (int) ($p['cantidad'] ?? 0) ?></td>
+                                                            <td class="cantidad texto_centrado" id="cantidad-<?= e((string) $productoId) ?>">x<?= (int) ($p['cantidad'] ?? 0) ?></td>
                                                             <td class="precio texto_centrado">S/ <?= number_format((float) ($p['precio'] ?? 0), 2) ?></td>
-                                                            <td class="subtotal texto_centrado">S/ <?= number_format((float) ($p['subtotal'] ?? 0), 2) ?></td>
+                                                            <td class="subtotal texto_centrado" id="subtotal-<?= e((string) $productoId) ?>">S/ <?= number_format((float) ($p['subtotal'] ?? 0), 2) ?></td>
                                                           </tr>
                                                         <?php endforeach; ?>
                                                     </tbody>
@@ -182,7 +185,7 @@ $total_final = (float) ($orden_guardada['total'] ?? ($orden['totales']['total'] 
                                                         </tr>
                                                         <tr class="orden-total">
                                                           <td colspan="3" style="text-align: right;"><strong>Total</strong></td>
-                                                          <td style="text-align: right;"><strong>S/ <?= number_format($total_final, 2) ?></strong></td>
+                                                          <td style="text-align: right;"><strong data-total-general="true">S/ <?= number_format($total_final, 2) ?></strong></td>
                                                         </tr>
                                                     </tfoot>
                                                 </table>
@@ -253,4 +256,49 @@ $total_final = (float) ($orden_guardada['total'] ?? ($orden['totales']['total'] 
         </div>
     </div>
 </div>
+
+<script>
+window.addEventListener('storage', function(event) {
+    if (event.key !== 'carrito_sync') {
+        return;
+    }
+
+    if (!event.newValue) {
+        return;
+    }
+
+    let data;
+    try {
+        data = JSON.parse(event.newValue);
+    } catch (error) {
+        return;
+    }
+
+    if (!data || !data.id) {
+        return;
+    }
+
+    const cantidadEl = document.getElementById('cantidad-' + data.id);
+    if (cantidadEl && typeof data.cantidad !== 'undefined') {
+        cantidadEl.textContent = 'x' + data.cantidad;
+    }
+
+    const subtotalEl = document.getElementById('subtotal-' + data.id);
+    if (subtotalEl && typeof data.subtotal !== 'undefined') {
+        subtotalEl.textContent = 'S/ ' + data.subtotal;
+    }
+
+    const totalEl = document.getElementById('total-general');
+    if (totalEl && typeof data.total !== 'undefined') {
+        totalEl.textContent = 'S/ ' + data.total;
+    }
+
+    if (typeof data.total !== 'undefined') {
+        const totalTargets = document.querySelectorAll('[data-total-general]');
+        totalTargets.forEach(function(target) {
+            target.textContent = 'S/ ' + data.total;
+        });
+    }
+});
+</script>
 
