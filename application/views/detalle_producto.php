@@ -32,6 +32,28 @@ $tallasDisponibles = array_map('strval', $producto['tallas'] ?? []);
     border: 2px solid #ff4d4d !important;
     background-color: #fff0f0;
 }
+
+/* Estilo para los mensajes de error */
+.error-message {
+    color: #ff4d4d;
+    font-size: 0.9em;
+    margin-top: 5px;
+    display: none;
+}
+
+/* Mejora la visibilidad de los selectores */
+.form__input--2 {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* Estilo para el formulario */
+.form-add-cart {
+    margin-bottom: 20px;
+}
 </style>
 
 <div class="breadcrumb-area pt--70 pt-md--25">
@@ -565,6 +587,51 @@ $tallasDisponibles = array_map('strval', $producto['tallas'] ?? []);
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Validación del formulario de agregar al carrito
+    const form = document.querySelector('form[action$="carrito/agregar"]');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            const colorSelect = form.querySelector('select[name="color"]');
+            const tallaSelect = form.querySelector('select[name="talla"]');
+            let isValid = true;
+
+            // Limpiar mensajes y estilos previos
+            document.querySelectorAll('.error-message').forEach(el => el.remove());
+            [colorSelect, tallaSelect].forEach(select => {
+                select.classList.remove('input-error');
+            });
+
+            // Validar color
+            if (!colorSelect.value) {
+                showError(colorSelect, 'Por favor selecciona un color');
+                isValid = false;
+            }
+
+            // Validar talla
+            if (!tallaSelect.value) {
+                showError(tallaSelect, 'Por favor selecciona una talla');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+                // Desplazarse al primer campo con error
+                const firstError = document.querySelector('.input-error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    }
+
+    // Función para mostrar mensajes de error
+    function showError(input, message) {
+        input.classList.add('input-error');
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = message;
+        input.parentNode.insertBefore(errorDiv, input.nextSibling);
+    }
     const form = document.querySelector('form[action*="carrito/agregar"]');
     if (!form) return;
 
