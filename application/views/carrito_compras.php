@@ -44,7 +44,7 @@ $carrito = isset($carrito) && is_array($carrito)
                                                         $cantidad = $cantidad > 0 ? $cantidad : 1;
                                                         $subtotal = $precio * $cantidad;
                                                         $total += $subtotal;
-                                                        $imagenRuta = 'assets/img/products/' . ($item['imagen'] ?? 'no-image.jpg');
+                                                        $imagenRuta = 'img/products/' . ($item['imagen'] ?? 'no-image.jpg');
                                                     ?>
                                                     <tr>
                                                         <td class="product-remove text-start"><a href="<?= base_url('carrito/eliminar?id=' . urlencode((string) $item['id'])) ?>"><i class="dl-icon-close"></i></a></td>
