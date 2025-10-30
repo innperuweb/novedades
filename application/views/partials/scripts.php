@@ -34,3 +34,26 @@
         const base_url = <?= json_encode(base_url()); ?>;
     </script>
     <script src="<?= asset_url('js/search.js'); ?>"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Elimina cualquier evento JS heredado del tema que interfiera con el botón
+            document.querySelectorAll('.add-to-cart').forEach(btn => {
+                btn.replaceWith(btn.cloneNode(true));
+            });
+
+            const quantityInput = document.querySelector('.quantity-input');
+            const hiddenCantidadInput = document.querySelector('.form-add-cart input[name="cantidad"]');
+
+            if (quantityInput && hiddenCantidadInput) {
+                const updateCantidad = () => {
+                    const value = parseInt(quantityInput.value, 10);
+                    hiddenCantidadInput.value = Number.isNaN(value) || value < 1 ? 1 : value;
+                };
+
+                updateCantidad();
+                quantityInput.addEventListener('change', updateCantidad);
+                quantityInput.addEventListener('input', updateCantidad);
+            }
+        });
+    </script>

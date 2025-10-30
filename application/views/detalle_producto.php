@@ -215,19 +215,23 @@
                             <a href="#" class="reset_variations">Clear</a>
                         </form>
 
-                        <form action="#" class="form--action mb--30 mb-sm--20">
+                        <div class="form--action mb--30 mb-sm--20">
                             <div class="product-action flex-row align-items-center">
                                 <div class="quantity">
                                     <input type="number" class="quantity-input" name="qty" id="qty" value="1" min="1">
                                 </div>
-                                <button type="button" class="btn btn-style-1 btn-large add-to-cart">
-                                    Agregar al carrito
-                                </button>
-                                <button type="button" class="btn btn-style-1 btn-large add-to-cart">
+                                <form method="POST" action="<?= base_url('carrito/agregar') ?>" class="form-add-cart">
+                                    <input type="hidden" name="id" value="<?= $producto['id'] ?? 1 ?>">
+                                    <input type="hidden" name="cantidad" value="1">
+                                    <button type="submit" class="btn btn-style-1 btn-large">
+                                        Agregar al carrito
+                                    </button>
+                                </form>
+                                <button type="button" class="btn btn-style-1 btn-large">
                                     Comprar ahora
                                 </button>
                             </div>
-                        </form>
+                        </div>
                         <article class="single-post-details recojo_envio">
                             <div class="entry-footer-meta">
                                 <div class="tag-list">
