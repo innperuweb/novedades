@@ -27,6 +27,13 @@ $coloresDisponibles = array_map('strval', $producto['colores'] ?? []);
 $tallasDisponibles = array_map('strval', $producto['tallas'] ?? []);
 ?>
 
+<style>
+.input-error {
+    border: 2px solid #ff4d4d !important;
+    background-color: #fff0f0;
+}
+</style>
+
 <div class="breadcrumb-area pt--70 pt-md--25">
     <div class="container-fluid">
         <div class="row">
@@ -555,4 +562,37 @@ $tallasDisponibles = array_map('strval', $producto['tallas'] ?? []);
     </div>
 </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[action*="carrito/agregar"]');
+    if (!form) return;
+
+    form.addEventListener('submit', function(event) {
+        const colorSelect = form.querySelector('select[name="color"]');
+        const tallaSelect = form.querySelector('select[name="talla"]');
+
+        let valid = true;
+        const campos = [colorSelect, tallaSelect];
+
+        // Limpiar estilos previos
+        campos.forEach(campo => campo.classList.remove('input-error'));
+
+        if (!colorSelect.value) {
+            colorSelect.classList.add('input-error');
+            valid = false;
+        }
+
+        if (!tallaSelect.value) {
+            tallaSelect.classList.add('input-error');
+            valid = false;
+        }
+
+        if (!valid) {
+            event.preventDefault();
+            alert('Por favor selecciona un color y una talla antes de agregar al carrito.');
+        }
+    });
+});
+</script>
 
