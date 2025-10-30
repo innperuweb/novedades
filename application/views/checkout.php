@@ -1,3 +1,7 @@
+<?php
+$carritoItems = isset($carrito) && is_array($carrito) ? $carrito : ($_SESSION['carrito'] ?? []);
+$totalPedido = isset($total) ? (float) $total : 0.0;
+?>
 
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
@@ -18,13 +22,13 @@
                         <h2>Ingresa tu correo electrónico para continuar</h2>
                     </div>
                     <div class="checkout-form">
-                        <form action="#" class="form form--checkout">
+                        <form method="POST" action="<?= base_url('checkout/procesar'); ?>" class="form form--checkout">
 
                             <div class="row mb--30">
                                 <div class="form__group col-12">
                                     <label for="shipping_email" class="form__label form__label--2">Correo electrónico <span
                                             class="required">*</span></label>
-                                    <input type="email" name="shipping_email" id="shipping_email" class="form__input form__input--2">
+                                    <input type="email" name="email" id="shipping_email" class="form__input form__input--2" required>
                                 </div>
                             </div>
 
@@ -36,24 +40,24 @@
                                 <div class="form__group col-md-6 mb-sm--30">
                                     <label for="billing_fname" class="form__label form__label--2">Nombre
                                         <span class="required">*</span></label>
-                                    <input type="text" name="billing_fname" id="billing_fname" class="form__input form__input--2">
+                                    <input type="text" name="nombre" id="billing_fname" class="form__input form__input--2" required>
                                 </div>
                                 <div class="form__group col-md-6">
                                     <label for="billing_lname" class="form__label form__label--2">Apellidos
                                         <span class="required">*</span></label>
-                                    <input type="text" name="billing_lname" id="billing_lname" class="form__input form__input--2">
+                                    <input type="text" name="apellidos" id="billing_lname" class="form__input form__input--2">
                                 </div>
                             </div>
                             <div class="row mb--30">
                                 <div class="form__group col-md-6 mb-sm--30">
-                                    <label for="billing_fname" class="form__label form__label--2">DNI
+                                    <label for="billing_dni" class="form__label form__label--2">DNI
                                         <span class="required">*</span></label>
-                                    <input type="text" name="billing_fname" id="billing_fname" class="form__input form__input--2">
+                                    <input type="text" name="dni" id="billing_dni" class="form__input form__input--2">
                                 </div>
                                 <div class="form__group col-md-6">
-                                    <label for="billing_lname" class="form__label form__label--2">N° de Whatsapp
+                                    <label for="billing_phone" class="form__label form__label--2">N° de Whatsapp
                                         <span class="required">*</span></label>
-                                    <input type="text" name="billing_lname" id="billing_lname" class="form__input form__input--2">
+                                    <input type="text" name="telefono" id="billing_phone" class="form__input form__input--2" required>
                                 </div>
                             </div>
 
@@ -69,7 +73,7 @@
                                             <div class="form__group col-12">
                                                 <label for="billing_country" class="form__label form__label--2">Distrito
                                                     <span class="required">*</span></label>
-                                                <select id="billing_country" name="billing_country" class="form__input form__input--2 nice-select">
+                                                <select id="billing_country" name="distrito" class="form__input form__input--2 nice-select" required>
                                                     <option value="">Seleccionar</option>
                                                     <option value="AN">Ancón</option>
                                                     <option value="AT">Ate</option>
@@ -119,7 +123,13 @@
                                         <div class="row mb--30">
                                             <div class="form__group col-12">
                                                 <label for="billing_company" class="form__label form__label--2">Escriba la dirección de entrega completa</label>
-                                                <input type="text" name="billing_company" id="billing_company" class="form__input form__input--2">
+                                                <input type="text" name="direccion" id="billing_company" class="form__input form__input--2" required>
+                                            </div>
+                                        </div>
+                                        <div class="row mb--30">
+                                            <div class="form__group col-12">
+                                                <label for="billing_reference" class="form__label form__label--2">Referencia</label>
+                                                <input type="text" name="referencia" id="billing_reference" class="form__input form__input--2">
                                             </div>
                                         </div>
                                     </div>
@@ -134,9 +144,9 @@
                                     <div class="payment-info cheque hide-in-default" data-method="cheque">
                                         <div class="row mb--30">
                                             <div class="form__group col-12">
-                                                <label for="billing_country" class="form__label form__label--2">Departamento
+                                                <label for="billing_country_provincia" class="form__label form__label--2">Departamento
                                                     <span class="required">*</span></label>
-                                                <select id="billing_country" name="billing_country" class="form__input form__input--2 nice-select">
+                                                <select id="billing_country_provincia" name="departamento" class="form__input form__input--2 nice-select">
                                                     <option value="">Seleccionar</option>
                                                     <option value="AN">Ancón</option>
                                                     <option value="AT">Ate</option>
@@ -150,9 +160,9 @@
                                         </div>
                                         <div class="row mb--30">
                                             <div class="form__group col-12">
-                                                <label for="billing_country" class="form__label form__label--2">Provincia
+                                                <label for="billing_provincia" class="form__label form__label--2">Provincia
                                                     <span class="required">*</span></label>
-                                                <select id="billing_country" name="billing_country" class="form__input form__input--2 nice-select">
+                                                <select id="billing_provincia" name="provincia" class="form__input form__input--2 nice-select">
                                                     <option value="">Seleccionar</option>
                                                     <option value="AN">Ancón</option>
                                                     <option value="AT">Ate</option>
@@ -166,9 +176,9 @@
                                         </div>
                                         <div class="row mb--30">
                                             <div class="form__group col-12">
-                                                <label for="billing_country" class="form__label form__label--2">Distrito
+                                                <label for="billing_distrito_provincia" class="form__label form__label--2">Distrito
                                                     <span class="required">*</span></label>
-                                                <select id="billing_country" name="billing_country" class="form__input form__input--2 nice-select">
+                                                <select id="billing_distrito_provincia" name="distrito_provincia" class="form__input form__input--2 nice-select">
                                                     <option value="">Seleccionar</option>
                                                     <option value="AN">Ancón</option>
                                                     <option value="AT">Ate</option>
@@ -183,7 +193,7 @@
                                         <div class="row mb--30">
                                             <div class="form__group col-12">
                                                 <label for="billing_company" class="form__label form__label--2">Escriba la dirección de entrega completa</label>
-                                                <input type="text" name="billing_company" id="billing_company" class="form__input form__input--2">
+                                                <input type="text" name="direccion_provincia" id="billing_company_provincia" class="form__input form__input--2">
                                             </div>
                                         </div>
                                     </div>
@@ -211,7 +221,7 @@
                                     </div>
                                     <div class="form__group col-12">
                                         <label for="orderNotes" class="form__label form__label--2">¿Algún comentario adicional?</label>
-                                        <textarea class="form__input form__input--2 form__input--textarea" id="orderNotes" name="orderNotes"></textarea>
+                                        <textarea class="form__input form__input--2 form__input--textarea" id="orderNotes" name="notas"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -232,36 +242,40 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <th>Aliquam lobortis est
-                                            <strong><span>&#10005;</span>1</strong>
-                                        </th>
-                                        <td class="text-end">S/ 80.00</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Auctor gravida enim
-                                            <strong><span>&#10005;</span>1</strong>
-                                        </th>
-                                        <td class="text-end">S/ 60.00</td>
-                                    </tr>
+                                    <?php if (!empty($carritoItems)): ?>
+                                        <?php foreach ($carritoItems as $item): ?>
+                                            <?php
+                                            $nombreProducto = htmlspecialchars($item['nombre'] ?? '', ENT_QUOTES, 'UTF-8');
+                                            $cantidadProducto = (int) ($item['cantidad'] ?? 0);
+                                            $precioProducto = isset($item['precio']) ? (float) $item['precio'] : 0.0;
+                                            $subtotalProducto = $precioProducto * $cantidadProducto;
+                                            ?>
+                                            <tr>
+                                                <th><?= $nombreProducto; ?>
+                                                    <strong><span>&#10005;</span><?= $cantidadProducto; ?></strong>
+                                                </th>
+                                                <td class="text-end">S/ <?= number_format($subtotalProducto, 2); ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="2">No hay productos en el carrito.</td>
+                                        </tr>
+                                    <?php endif; ?>
                                 </tbody>
-                                <tfoot>
-                                    <tr class="cart-subtotal">
-                                        <th>Subtotal</th>
-                                        <td class="text-end">S/ 140.00</td>
-                                    </tr>
-                                    <tr class="shipping">
-                                        <th>Costo de Envío</th>
-                                        <td class="text-end">
-                                            <span>Dirección S/ 12.00</span>
-                                        </td>
-                                    </tr>
-                                    <tr class="order-total">
-                                        <th>Total</th>
-                                        <td class="text-end"><span class="order-total-ammount total_pedido">S/ 156.00</span>
-                                        </td>
-                                    </tr>
-                                </tfoot>
+                                <?php if (!empty($carritoItems)): ?>
+                                    <tfoot>
+                                        <tr class="cart-subtotal">
+                                            <th>Subtotal</th>
+                                            <td class="text-end">S/ <?= number_format($totalPedido, 2); ?></td>
+                                        </tr>
+                                        <tr class="order-total">
+                                            <th>Total</th>
+                                            <td class="text-end"><span class="order-total-ammount total_pedido">S/ <?= number_format($totalPedido, 2); ?></span>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                <?php endif; ?>
                             </table>
                         </div>
 
@@ -330,8 +344,7 @@
 
                             <br>
 
-                            <button type="submit" class="btn btn-fullwidth btn-style-1"
-                                onclick="event.preventDefault(); location.href='mi_cuenta.php'">
+                            <button type="submit" class="btn btn-fullwidth btn-style-1">
                                 Realizar pedido
                             </button>
 
