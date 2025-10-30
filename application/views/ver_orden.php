@@ -1,6 +1,10 @@
 <?php
 $orden = $orden ?? [];
 $items = $items ?? [];
+$orden_guardada = $orden_guardada ?? ($_SESSION['orden_guardada'] ?? []);
+$subtotal = (float) ($orden['totales']['subtotal'] ?? ($orden_guardada['subtotal'] ?? 0));
+$costo_envio = (float) ($orden_guardada['costo_envio'] ?? ($orden['totales']['costo_envio'] ?? 0));
+$total_final = (float) ($orden_guardada['total'] ?? ($orden['totales']['total'] ?? 0));
 ?>
 
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
@@ -71,7 +75,7 @@ $items = $items ?? [];
                                         <div class="col-lg-4 col-md-4 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Total</h3>
-                                                <p class="ver_orden mb--25 mb-md--20">S/ <?= number_format((float) ($orden['totales']['total'] ?? 0), 2) ?></p>
+                                                <p class="ver_orden mb--25 mb-md--20">S/ <?= number_format($total_final, 2) ?></p>
                                             </div>
                                         </div>
                                         <div class="col-lg-4 col-md-4 mb-sm--30">
@@ -135,7 +139,7 @@ $items = $items ?? [];
                                                 <p><strong>Referencia:</strong> <?= htmlspecialchars($orden['cliente']['referencia']) ?></p>
                                               <?php endif; ?>
                                             </div>
-                                            <p><strong>Total:</strong> S/ <?= number_format((float) ($orden['totales']['total'] ?? 0), 2) ?></p>
+                                            <p><strong>Total:</strong> S/ <?= number_format($total_final, 2) ?></p>
                                             <div class="table-content table-responsive mb--30">
                                                 <table class="table order-table order-table-2">
                                                     <thead>
@@ -166,9 +170,17 @@ $items = $items ?? [];
                                                         <?php endforeach; ?>
                                                     </tbody>
                                                     <tfoot>
+                                                        <tr class="orden-subtotal">
+                                                          <td colspan="3" style="text-align: right;"><strong>Subtotal</strong></td>
+                                                          <td style="text-align: right;">S/ <?= number_format($subtotal, 2) ?></td>
+                                                        </tr>
+                                                        <tr>
+                                                          <td colspan="3" style="text-align: right;"><strong>Costo de Envío</strong></td>
+                                                          <td style="text-align: right;">S/ <?= number_format($costo_envio, 2) ?></td>
+                                                        </tr>
                                                         <tr class="orden-total">
-                                                          <td colspan="3" class="text-end"><strong>Total</strong></td>
-                                                          <td><strong>S/ <?= number_format((float) ($orden['totales']['total'] ?? 0), 2) ?></strong></td>
+                                                          <td colspan="3" style="text-align: right;"><strong>Total</strong></td>
+                                                          <td style="text-align: right;"><strong>S/ <?= number_format($total_final, 2) ?></strong></td>
                                                         </tr>
                                                     </tfoot>
                                                 </table>

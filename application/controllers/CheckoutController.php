@@ -178,6 +178,37 @@ class CheckoutController extends BaseController
             ];
         }
 
+        $costo_envio = 0.0;
+
+        switch ($checkout['metodo_envio'] ?? '') {
+            case 'bank':
+                $costo_envio = 10.00;
+                break;
+            case 'cheque':
+                $costo_envio = 12.00;
+                break;
+            case 'cash':
+                $costo_envio = 18.00;
+                break;
+        }
+
+        $total_final = $total + $costo_envio;
+
+        $clienteNombreCompleto = trim(trim((string) ($checkout['nombre'] ?? '')) . ' ' . trim((string) ($checkout['apellidos'] ?? '')));
+
+        $orden_guardada = [
+            'numero' => $orden_numero,
+            'fecha' => $fecha,
+            'total' => $total_final,
+            'subtotal' => $total,
+            'costo_envio' => $costo_envio,
+            'metodo_envio' => $checkout['metodo_envio_titulo'] ?? '',
+            'metodo_pago' => $checkout['metodo_pago_titulo'] ?? '',
+            'cliente' => $clienteNombreCompleto,
+        ];
+
+        $_SESSION['orden_guardada'] = $orden_guardada;
+
         $orden = [
             'numero' => $orden_numero,
             'fecha' => $fecha,
@@ -195,11 +226,13 @@ class CheckoutController extends BaseController
                 'referencia' => $checkout['referencia'] ?? '',
             ],
             'totales' => [
-                'total' => $total,
+                'subtotal' => $total,
+                'costo_envio' => $costo_envio,
+                'total' => $total_final,
             ],
         ];
 
-        $this->render('ver_orden', compact('orden', 'items'));
+        $this->render('ver_orden', compact('orden', 'items', 'orden_guardada'));
     }
 
     public function carrito(): void
