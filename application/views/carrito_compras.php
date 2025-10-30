@@ -91,14 +91,12 @@ $carrito = isset($carrito) && is_array($carrito)
                                                                 <form method="POST" action="<?= base_url('carrito/actualizar') ?>" class="d-flex align-items-center">
                                                                     <input type="hidden" name="id" value="<?= e((string) $item['id']) ?>">
                                                                     <input type="hidden" name="uid" value="<?= e($uid) ?>">
-                                                                    <input type="number" class="quantity-input" name="cantidad" min="1" value="<?= $cantidad ?>">
+                                                                    <input type="number" class="quantity-input" name="cantidad" min="1" value="<?= e((string) $cantidad) ?>" data-id="<?= e((string) $item['id']) ?>">
                                                                 </form>
                                                             </div>
                                                         </td>
-                                                        <td class="product-price">
-                                                            <span class="product-price-wrapper">
-                                                                <span class="money">S/ <?= number_format($subtotal, 2) ?></span>
-                                                            </span>
+                                                        <td class="product-price subtotal">
+                                                            S/ <?= number_format($subtotal, 2) ?>
                                                         </td>
                                                     </tr>
                                                 <?php endforeach; ?>
@@ -142,7 +140,7 @@ $carrito = isset($carrito) && is_array($carrito)
                                                                 <?php if ($talla !== ''): ?>Talla: <?= e($talla) ?><?php endif; ?>
                                                             </small>
                                                         <?php endif; ?>
-                                                        <br><strong>x<?= $cantidad; ?></strong>
+                                                        <br><strong><span class="resumen-cantidad" data-id="<?= e((string) $item['id']) ?>">x<?= e((string) $cantidad) ?></span></strong>
                                                     </th>
                                                     <td style="text-align: right;">S/ <?= number_format($subtotal, 2); ?></td>
                                                 </tr>
@@ -178,3 +176,31 @@ $carrito = isset($carrito) && is_array($carrito)
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.quantity-input');
+
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const id = this.getAttribute('data-id');
+            const value = this.value;
+            const cantidad = parseFloat(value) || 0;
+
+            const resumenSpan = document.querySelector(`.resumen-cantidad[data-id="${id}"]`);
+            if (resumenSpan) {
+                resumenSpan.textContent = 'x' + value;
+            }
+
+            const precioEl = this.closest('tr').querySelector('.money');
+            if (precioEl) {
+                const precio = parseFloat(precioEl.textContent.replace(/[^\d.]/g, '')) || 0;
+                const subtotalEl = this.closest('tr').querySelector('.subtotal');
+                if (subtotalEl) {
+                    subtotalEl.textContent = 'S/ ' + (precio * cantidad).toFixed(2);
+                }
+            }
+        });
+    });
+});
+</script>
