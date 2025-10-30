@@ -12,6 +12,7 @@ $direccionGuardada = htmlspecialchars($datosCliente['direccion'] ?? '', ENT_QUOT
 $referenciaGuardada = htmlspecialchars($datosCliente['referencia'] ?? '', ENT_QUOTES, 'UTF-8');
 $notasGuardadas = htmlspecialchars($datosCliente['notas'] ?? '', ENT_QUOTES, 'UTF-8');
 $distritoGuardado = htmlspecialchars($datosCliente['distrito'] ?? '', ENT_QUOTES, 'UTF-8');
+$distritoNombreGuardado = htmlspecialchars($datosCliente['distrito_nombre'] ?? '', ENT_QUOTES, 'UTF-8');
 $departamentoGuardado = htmlspecialchars($datosCliente['departamento'] ?? '', ENT_QUOTES, 'UTF-8');
 $provinciaGuardada = htmlspecialchars($datosCliente['provincia'] ?? '', ENT_QUOTES, 'UTF-8');
 $distritoProvinciaGuardado = htmlspecialchars($datosCliente['distrito_provincia'] ?? '', ENT_QUOTES, 'UTF-8');
@@ -131,6 +132,7 @@ $direccionProvinciaGuardada = htmlspecialchars($datosCliente['direccion_provinci
                                                     <option value="VS">Villa El Salvador</option>
                                                     <option value="VT">Villa María del Triunfo</option>
                                                 </select>
+                                                <input type="hidden" name="distrito_nombre" id="distrito_nombre" value="<?= $distritoNombreGuardado; ?>">
                                             </div>
                                         </div>
                                         <div class="row mb--30">
@@ -364,6 +366,19 @@ $direccionProvinciaGuardada = htmlspecialchars($datosCliente['direccion_provinci
                         </div>
                     </div>
                 </div>
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        const distritoSelect = document.getElementById('billing_country');
+                        const distritoHidden = document.getElementById('distrito_nombre');
+
+                        if (distritoSelect && distritoHidden) {
+                            distritoSelect.addEventListener('change', function() {
+                                const selectedText = distritoSelect.options[distritoSelect.selectedIndex].text;
+                                distritoHidden.value = selectedText;
+                            });
+                        }
+                    });
+                </script>
             </form>
         </div>
     </div>

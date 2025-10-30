@@ -89,8 +89,8 @@ $items = $items ?? [];
                                         <div class="col-lg-6 col-md-6 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Dirección de envío</h3>
-                                                <?php if (!empty($orden['cliente']['distrito'])): ?>
-                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Distrito:</strong> <?= htmlspecialchars($orden['cliente']['distrito']) ?></p>
+                                                <?php if (!empty($orden['cliente']['distrito_nombre'])): ?>
+                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Distrito:</strong> <?= htmlspecialchars($orden['cliente']['distrito_nombre']) ?></p>
                                                 <?php endif; ?>
                                                 <?php if (!empty($orden['cliente']['direccion'])): ?>
                                                   <p class="ver_orden mb--25 mb-md--20"><strong>Dirección:</strong> <?= htmlspecialchars($orden['cliente']['direccion']) ?></p>
@@ -125,8 +125,8 @@ $items = $items ?? [];
 
                                             <div class="direccion-envio">
                                               <h4>Dirección de Entrega</h4>
-                                              <?php if (!empty($orden['cliente']['distrito'])): ?>
-                                                <p><strong>Distrito:</strong> <?= htmlspecialchars($orden['cliente']['distrito']) ?></p>
+                                              <?php if (!empty($orden['cliente']['distrito_nombre'])): ?>
+                                                <p><strong>Distrito:</strong> <?= htmlspecialchars($orden['cliente']['distrito_nombre']) ?></p>
                                               <?php endif; ?>
                                               <?php if (!empty($orden['cliente']['direccion'])): ?>
                                                 <p><strong>Dirección:</strong> <?= htmlspecialchars($orden['cliente']['direccion']) ?></p>
