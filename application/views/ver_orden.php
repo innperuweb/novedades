@@ -1,4 +1,5 @@
 <?php
+require_once APP_PATH . '/helpers/security_helper.php';
 $orden = $orden ?? [];
 $items = $items ?? [];
 $orden_guardada = $orden_guardada ?? ($_SESSION['orden_guardada'] ?? []);
@@ -154,13 +155,14 @@ $total_final = (float) ($orden_guardada['total'] ?? ($orden['totales']['total'] 
                                                         <?php foreach ($items as $p): ?>
                                                           <tr class="orden-item">
                                                             <td class="nombre">
-                                                              <?= htmlspecialchars($p['nombre'] ?? '') ?>
-                                                              <?php if (!empty($p['color']) || !empty($p['talla'])): ?>
-                                                                <br><small>
-                                                                  <?php if (!empty($p['color'])): ?>Color: <?= htmlspecialchars($p['color']) ?><?php endif; ?>
-                                                                  <?php if (!empty($p['color']) && !empty($p['talla'])): ?> — <?php endif; ?>
-                                                                  <?php if (!empty($p['talla'])): ?>Talla: <?= htmlspecialchars($p['talla']) ?><?php endif; ?>
-                                                                </small>
+                                                              <?= e($p['nombre'] ?? '') ?><br>
+
+                                                              <?php if (!empty($p['color'])): ?>
+                                                                <small>Color: <?= e($p['color']) ?></small><br>
+                                                              <?php endif; ?>
+
+                                                              <?php if (!empty($p['talla'])): ?>
+                                                                <small>Talla: <?= e($p['talla']) ?></small>
                                                               <?php endif; ?>
                                                             </td>
                                                             <td class="cantidad texto_centrado">x<?= (int) ($p['cantidad'] ?? 0) ?></td>

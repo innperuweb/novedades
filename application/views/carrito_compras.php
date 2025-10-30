@@ -50,9 +50,15 @@ $carrito = isset($carrito) && is_array($carrito)
                                                     <?php
                                                         $precio = (float) ($item['precio'] ?? 0);
                                                         $imagenRuta = 'img/products/' . ($item['imagen'] ?? 'no-image.jpg');
+                                                        $uid = (string) ($item['uid'] ?? '');
+                                                        $color = trim((string) ($item['color'] ?? ''));
+                                                        $talla = trim((string) ($item['talla'] ?? ''));
+                                                        $removeQuery = $uid !== ''
+                                                            ? 'uid=' . urlencode($uid)
+                                                            : 'id=' . urlencode((string) ($item['id'] ?? ''));
                                                     ?>
                                                     <tr>
-                                                        <td class="product-remove text-start"><a href="<?= base_url('carrito/eliminar?id=' . urlencode((string) $item['id'])) ?>"><i class="dl-icon-close"></i></a></td>
+                                                        <td class="product-remove text-start"><a href="<?= base_url('carrito/eliminar?' . $removeQuery) ?>"><i class="dl-icon-close"></i></a></td>
                                                         <td class="product-thumbnail text-start">
                                                             <img src="<?= asset_url($imagenRuta) ?>" alt="<?= e($item['nombre'] ?? 'Producto'); ?>">
                                                         </td>
@@ -60,6 +66,13 @@ $carrito = isset($carrito) && is_array($carrito)
                                                             <h3>
                                                                 <?= e($item['nombre'] ?? 'Producto'); ?>
                                                             </h3>
+                                                            <?php if ($color !== ''): ?>
+                                                                <p>Color: <?= e($color) ?></p>
+                                                            <?php endif; ?>
+
+                                                            <?php if ($talla !== ''): ?>
+                                                                <p>Talla: <?= e($talla) ?></p>
+                                                            <?php endif; ?>
                                                         </td>
                                                         <td class="product-price">
                                                             <span class="product-price-wrapper">
@@ -77,6 +90,7 @@ $carrito = isset($carrito) && is_array($carrito)
                                                                 ?>
                                                                 <form method="POST" action="<?= base_url('carrito/actualizar') ?>" class="d-flex align-items-center">
                                                                     <input type="hidden" name="id" value="<?= e((string) $item['id']) ?>">
+                                                                    <input type="hidden" name="uid" value="<?= e($uid) ?>">
                                                                     <input type="number" class="quantity-input" name="cantidad" min="1" value="<?= $cantidad ?>">
                                                                 </form>
                                                             </div>
@@ -108,15 +122,28 @@ $carrito = isset($carrito) && is_array($carrito)
                                 <table class="table order-table">
                                     <tbody>
                                         <?php if (!empty($carrito)): ?>
-                                            <?php foreach ($carrito as $item): ?>
+                                                <?php foreach ($carrito as $item): ?>
                                                 <?php
                                                     $cantidad = (int) ($item['cantidad'] ?? 0);
                                                     $precio = (float) ($item['precio'] ?? 0);
                                                     $cantidad = $cantidad > 0 ? $cantidad : 1;
                                                     $subtotal = $precio * $cantidad;
+                                                    $color = trim((string) ($item['color'] ?? ''));
+                                                    $talla = trim((string) ($item['talla'] ?? ''));
                                                 ?>
                                                 <tr>
-                                                    <th><?= e($item['nombre'] ?? 'Producto'); ?> x<?= $cantidad; ?></th>
+                                                    <th>
+                                                        <?= e($item['nombre'] ?? 'Producto'); ?>
+                                                        <?php if ($color !== '' || $talla !== ''): ?>
+                                                            <br>
+                                                            <small>
+                                                                <?php if ($color !== ''): ?>Color: <?= e($color) ?><?php endif; ?>
+                                                                <?php if ($color !== '' && $talla !== ''): ?> — <?php endif; ?>
+                                                                <?php if ($talla !== ''): ?>Talla: <?= e($talla) ?><?php endif; ?>
+                                                            </small>
+                                                        <?php endif; ?>
+                                                        <br><strong>x<?= $cantidad; ?></strong>
+                                                    </th>
                                                     <td style="text-align: right;">S/ <?= number_format($subtotal, 2); ?></td>
                                                 </tr>
                                             <?php endforeach; ?>

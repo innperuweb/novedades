@@ -1,4 +1,31 @@
+<?php
+require_once APP_PATH . '/helpers/security_helper.php';
+require_once APP_PATH . '/models/ProductoModel.php';
 
+$producto = $producto ?? null;
+
+if ($producto === null) {
+    $id = isset($_GET['id']) ? sanitize_int($_GET['id']) : null;
+    $id = $id ?? 1;
+
+    $model = new ProductoModel();
+    $producto = $model->getById($id);
+}
+
+if ($producto === null) {
+    echo '<div class="container"><p>Producto no disponible.</p></div>';
+    return;
+}
+
+$productoId = (int) ($producto['id'] ?? 0);
+$productoNombre = e($producto['nombre'] ?? 'Producto');
+$productoPrecio = (float) ($producto['precio'] ?? 0);
+$productoImagen = trim((string) ($producto['imagen'] ?? 'producto1.jpg'));
+$productoImagen = $productoImagen !== '' ? $productoImagen : 'producto1.jpg';
+$productoImagenUrl = asset_url('img/products/' . $productoImagen);
+$coloresDisponibles = array_map('strval', $producto['colores'] ?? []);
+$tallasDisponibles = array_map('strval', $producto['tallas'] ?? []);
+?>
 
 <div class="breadcrumb-area pt--70 pt-md--25">
     <div class="container-fluid">
@@ -62,7 +89,7 @@
                                                 }
                                             ]'>
                                         <figure class="product-gallery__thumb--single">
-                                            <img src="<?= asset_url('img/products/prod-19-1-2.jpg'); ?>" alt="Products">
+                                            <img src="<?= e($productoImagenUrl) ?>" alt="<?= $productoNombre ?>">
                                         </figure>
                                         <figure class="product-gallery__thumb--single">
                                             <img src="<?= asset_url('img/products/prod-19-2-2.jpg'); ?>" alt="Products">
@@ -87,7 +114,7 @@
                                                     "asNavFor": ".nav-slider"
                                                 }'>
                                             <figure class="product-gallery__image zoom">
-                                                <img src="<?= asset_url('img/products/prod-19-1-big.jpg'); ?>" alt="Product">
+                                                <img src="<?= e($productoImagenUrl) ?>" alt="<?= $productoNombre ?>">
                                             </figure>
                                             <figure class="product-gallery__image zoom">
                                                 <img src="<?= asset_url('img/products/prod-19-2-big.jpg'); ?>" alt="Product">
@@ -114,7 +141,7 @@
                     <div class="product-summary">
                         <div class="clearfix"></div>
                         <span class="sku_wrapper font-size-12">MARCA: <span class="sku">SONY</span></span>
-                        <h3 class="product-title">Waxed-effect pleated skirt</h3>
+                        <h3 class="product-title"><?= $productoNombre ?></h3>
 
                         <div class="stock-row">
                             <span class="product-stock in-stock">
@@ -127,10 +154,7 @@
                         </div>
 
                         <div class="product-price-wrapper mb--40 mb-md--10">
-                            <span class="money">S/ 149.00</span>
-                            <span class="old-price">
-                                <span class="money">S/ 260.00</span>
-                            </span>
+                            <span class="money">S/ <?= number_format($productoPrecio, 2) ?></span>
                         </div>
                         <div class="clearfix"></div>
                         <p class="product-short-description mb--45 mb-sm--20">Donec accumsan auctor iaculis. Sed suscipit arcu ligula, at egestas magna molestie a. Proin ac ex maximus, ultrices justo eget, sodales orci. Aliquam egestas libero ac turpis pharetra, in vehicula lacus scelerisque. Vestibulum
@@ -151,87 +175,40 @@
 
                         <br>
 
-                        <form action="#" class="variation-form mb--35">
-                            <div class="product-color-variations mb--20">
-                                <p class="swatch-label">Color: <strong class="swatch-label"></strong></p>
-                                <div class="product-color-swatch variation-wrapper">
-                                    <div class="swatch-wrapper">
-                                        <a class="product-color-swatch-btn variation-btn blue" data-bs-toggle="tooltip" data-bs-placement="left" title="Blue">
-                                            <span class="product-color-swatch-label">Blue</span>
-                                        </a>
-                                    </div>
-                                    <div class="swatch-wrapper">
-                                        <a class="product-color-swatch-btn variation-btn green" data-bs-toggle="tooltip" data-bs-placement="left" title="Green">
-                                            <span class="product-color-swatch-label">Green</span>
-                                        </a>
-                                    </div>
-                                    <div class="swatch-wrapper">
-                                        <a class="product-color-swatch-btn variation-btn pink" data-bs-toggle="tooltip" data-bs-placement="left" title="Pink">
-                                            <span class="product-color-swatch-label">Pink</span>
-                                        </a>
-                                    </div>
-                                    <div class="swatch-wrapper">
-                                        <a class="product-color-swatch-btn variation-btn red" data-bs-toggle="tooltip" data-bs-placement="left" title="Red">
-                                            <span class="product-color-swatch-label">Red</span>
-                                        </a>
-                                    </div>
-                                    <div class="swatch-wrapper">
-                                        <a class="product-color-swatch-btn variation-btn white" data-bs-toggle="tooltip" data-bs-placement="left" title="White">
-                                            <span class="product-color-swatch-label">white</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="product-size-variations">
-                                <p class="swatch-label">Tallas: <strong class="swatch-label"></strong></p>
-                                <div class="product-size-swatch variation-wrapper">
-                                    <div class="swatch-wrapper">
-                                        <a class="product-size-swatch-btn variation-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="L">
-                                            <span class="product-size-swatch-label">L</span>
-                                        </a>
-                                    </div>
-                                    <div class="swatch-wrapper">
-                                        <a class="product-size-swatch-btn variation-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="M">
-                                            <span class="product-size-swatch-label">M</span>
-                                        </a>
-                                    </div>
-                                    <div class="swatch-wrapper">
-                                        <a class="product-size-swatch-btn variation-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="S">
-                                            <span class="product-size-swatch-label">S</span>
-                                        </a>
-                                    </div>
-                                    <div class="swatch-wrapper">
-                                        <a class="product-size-swatch-btn variation-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="XL">
-                                            <span class="product-size-swatch-label">XL</span>
-                                        </a>
-                                    </div>
-                                    <div class="swatch-wrapper">
-                                        <a class="product-size-swatch-btn variation-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="XXL">
-                                            <span class="product-size-swatch-label">XXL</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                            <a href="#" class="reset_variations">Clear</a>
-                        </form>
+                        <form method="POST" action="<?= base_url('carrito/agregar') ?>" class="variation-form mb--35 form-add-cart">
+                            <input type="hidden" name="id" value="<?= e((string) $productoId) ?>">
 
-                        <div class="form--action mb--30 mb-sm--20">
-                            <div class="product-action flex-row align-items-center">
-                                <div class="quantity">
-                                    <input type="number" class="quantity-input" name="qty" id="qty" value="1" min="1">
-                                </div>
-                                <form method="POST" action="<?= base_url('carrito/agregar') ?>" class="form-add-cart">
-                                    <input type="hidden" name="id" value="<?= $producto['id'] ?? 1 ?>">
-                                    <input type="hidden" name="cantidad" value="1">
+                            <div class="product-color-variations mb--20">
+                                <label for="color" class="swatch-label">Color:</label>
+                                <select name="color" id="color" class="form__input form__input--2" required>
+                                    <option value="">Seleccionar</option>
+                                    <?php foreach ($coloresDisponibles as $color): ?>
+                                        <option value="<?= e($color) ?>"><?= e($color) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div class="product-size-variations">
+                                <label for="talla" class="swatch-label">Talla:</label>
+                                <select name="talla" id="talla" class="form__input form__input--2" required>
+                                    <option value="">Seleccionar</option>
+                                    <?php foreach ($tallasDisponibles as $talla): ?>
+                                        <option value="<?= e($talla) ?>"><?= e($talla) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div class="form--action mb--30 mb-sm--20">
+                                <div class="product-action flex-row align-items-center">
+                                    <div class="quantity">
+                                        <input type="number" class="quantity-input" name="cantidad" id="qty" value="1" min="1">
+                                    </div>
                                     <button type="submit" class="btn btn-style-1 btn-large">
                                         Agregar al carrito
                                     </button>
-                                </form>
-                                <button type="button" class="btn btn-style-1 btn-large">
-                                    Comprar ahora
-                                </button>
+                                </div>
                             </div>
-                        </div>
+                        </form>
                         <article class="single-post-details recojo_envio">
                             <div class="entry-footer-meta">
                                 <div class="tag-list">
