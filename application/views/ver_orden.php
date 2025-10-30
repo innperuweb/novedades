@@ -1,10 +1,6 @@
 <?php
-session_start();
-$checkout = $_SESSION['checkout'] ?? null;
-if (!$checkout) {
-    header("Location: " . base_url('checkout'));
-    exit;
-}
+$orden = $orden ?? [];
+$items = $items ?? [];
 ?>
 
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
@@ -43,10 +39,13 @@ if (!$checkout) {
                                         <div class="col-lg-6 mb-md--30">
                                             <div class="row mb--40 mb-md--30">
                                                 <div class="col-12 estado_orden">
-                                                    <h4 class="font-bold">Nº de órden</h4>
-                                                    <h2 class="heading-secondary text-uppercase font-bold">
-                                                        ALM-785962
-                                                    </h2>
+                                                    <h4 class="font-bold">Datos de la orden</h4>
+                                                    <!-- Encabezado de la orden -->
+                                                    <div class="orden-header">
+                                                      <p><strong>N° de orden:</strong> <?= htmlspecialchars($orden['numero'] ?? '') ?></p>
+                                                      <p><strong>Fecha:</strong> <?= htmlspecialchars($orden['fecha'] ?? '') ?></p>
+                                                      <p><strong>Método de pago:</strong> <?= htmlspecialchars($orden['metodo_pago'] ?? '') ?></p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -66,19 +65,19 @@ if (!$checkout) {
                                         <div class="col-lg-4 col-md-4 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Fecha </h3>
-                                                <p class="ver_orden mb--25 mb-md--20">17/09/2025</p>
+                                                <p class="ver_orden mb--25 mb-md--20"><?= htmlspecialchars($orden['fecha'] ?? '') ?></p>
                                             </div>
                                         </div>
                                         <div class="col-lg-4 col-md-4 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Total</h3>
-                                                <p class="ver_orden mb--25 mb-md--20">S/ <?= htmlspecialchars($checkout['total']) ?></p>
+                                                <p class="ver_orden mb--25 mb-md--20">S/ <?= number_format((float) ($orden['totales']['total'] ?? 0), 2) ?></p>
                                             </div>
                                         </div>
                                         <div class="col-lg-4 col-md-4 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Método de pago </h3>
-                                                <p class="ver_orden mb--25 mb-md--20"><?= htmlspecialchars($checkout['metodo_envio']) ?></p>
+                                                <p class="ver_orden mb--25 mb-md--20"><?= htmlspecialchars($orden['metodo_pago'] ?? '') ?></p>
                                             </div>
                                         </div>
                                     </div>
@@ -90,13 +89,13 @@ if (!$checkout) {
                                         <div class="col-lg-6 col-md-6 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Dirección de envío</h3>
-                                                <p class="ver_orden mb--25 mb-md--20"><?= htmlspecialchars($checkout['direccion']) ?></p>
+                                                <p class="ver_orden mb--25 mb-md--20"><?= htmlspecialchars($orden['cliente']['direccion'] ?? '') ?></p>
                                             </div>
                                         </div>
                                         <div class="col-lg-6 col-md-6 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Nº de whatsapp</h3>
-                                                <p class="ver_orden mb--25 mb-md--20"><?= htmlspecialchars($checkout['telefono']) ?></p>
+                                                <p class="ver_orden mb--25 mb-md--20"><?= htmlspecialchars($orden['cliente']['telefono'] ?? '') ?></p>
                                             </div>
                                         </div>
                                     </div>
@@ -105,65 +104,51 @@ if (!$checkout) {
 
                                     <div class="col-lg-12 mt-md--40">
                                         <div class="order-details">
-                                            <p><strong>Nombre:</strong> <?= htmlspecialchars($checkout['nombre']) ?> <?= htmlspecialchars($checkout['apellidos']) ?></p>
-                                            <p><strong>DNI:</strong> <?= htmlspecialchars($checkout['dni']) ?></p>
-                                            <p><strong>Teléfono:</strong> <?= htmlspecialchars($checkout['telefono']) ?></p>
-                                            <p><strong>Correo:</strong> <?= htmlspecialchars($checkout['email']) ?></p>
-                                            <p><strong>Dirección:</strong> <?= htmlspecialchars($checkout['direccion']) ?></p>
-                                            <p><strong>Referencia:</strong> <?= htmlspecialchars($checkout['referencia']) ?></p>
-                                            <p><strong>Método de envío:</strong> <?= htmlspecialchars($checkout['metodo_envio']) ?></p>
-                                            <p><strong>Total:</strong> S/ <?= htmlspecialchars($checkout['total']) ?></p>
+                                            <div class="cliente">
+                                              <p><strong>Cliente:</strong> <?= htmlspecialchars($orden['cliente']['nombre'] ?? '') ?> <?= htmlspecialchars($orden['cliente']['apellidos'] ?? '') ?></p>
+                                              <p><strong>DNI:</strong> <?= htmlspecialchars($orden['cliente']['dni'] ?? '') ?></p>
+                                              <p><strong>Teléfono:</strong> <?= htmlspecialchars($orden['cliente']['telefono'] ?? '') ?></p>
+                                              <p><strong>Email:</strong> <?= htmlspecialchars($orden['cliente']['email'] ?? '') ?></p>
+                                              <p><strong>Dirección:</strong> <?= htmlspecialchars($orden['cliente']['direccion'] ?? '') ?></p>
+                                              <?php if (!empty($orden['cliente']['referencia'] ?? '')): ?>
+                                                <p><strong>Referencia:</strong> <?= htmlspecialchars($orden['cliente']['referencia'] ?? '') ?></p>
+                                              <?php endif; ?>
+                                            </div>
+                                            <p><strong>Método de envío:</strong> <?= htmlspecialchars($orden['metodo_envio'] ?? '') ?></p>
+                                            <p><strong>Total:</strong> S/ <?= number_format((float) ($orden['totales']['total'] ?? 0), 2) ?></p>
                                             <div class="table-content table-responsive mb--30">
                                                 <table class="table order-table order-table-2">
                                                     <thead>
                                                         <tr>
                                                             <th class="negrito_orden">Nombre del producto</th>
-                                                            <th class="text-center negrito_orden">Color</th>
-                                                            <th class="texto_centrado negrito_orden">Talla</th>
                                                             <th class="texto_centrado negrito_orden">Cantidad</th>
                                                             <th class="texto_centrado negrito_orden">Precio</th>
+                                                            <th class="texto_centrado negrito_orden">Subtotal</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr>
-                                                            <th>Aliquam lobortis est</th>
-                                                            <td class="texto_centrado">Verde</td>
-                                                            <td class="texto_centrado">M</td>
-                                                            <td class="texto_centrado">4</td>
-                                                            <td class="texto_centrado">S/ 180.00</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <th>Aliquam lobortis est</th>
-                                                            <td class="texto_centrado">Verde</td>
-                                                            <td class="texto_centrado">M</td>
-                                                            <td class="texto_centrado">4</td>
-                                                            <td class="texto_centrado">S/ 180.00</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <th>Aliquam lobortis est</th>
-                                                            <td class="texto_centrado">Verde</td>
-                                                            <td class="texto_centrado">M</td>
-                                                            <td class="texto_centrado">4</td>
-                                                            <td class="texto_centrado">S/ 180.00</td>
-                                                        </tr>
+                                                        <?php foreach ($items as $p): ?>
+                                                          <tr class="orden-item">
+                                                            <td class="nombre">
+                                                              <?= htmlspecialchars($p['nombre'] ?? '') ?>
+                                                              <?php if (!empty($p['color']) || !empty($p['talla'])): ?>
+                                                                <br><small>
+                                                                  <?php if (!empty($p['color'])): ?>Color: <?= htmlspecialchars($p['color']) ?><?php endif; ?>
+                                                                  <?php if (!empty($p['color']) && !empty($p['talla'])): ?> — <?php endif; ?>
+                                                                  <?php if (!empty($p['talla'])): ?>Talla: <?= htmlspecialchars($p['talla']) ?><?php endif; ?>
+                                                                </small>
+                                                              <?php endif; ?>
+                                                            </td>
+                                                            <td class="cantidad texto_centrado">x<?= (int) ($p['cantidad'] ?? 0) ?></td>
+                                                            <td class="precio texto_centrado">S/ <?= number_format((float) ($p['precio'] ?? 0), 2) ?></td>
+                                                            <td class="subtotal texto_centrado">S/ <?= number_format((float) ($p['subtotal'] ?? 0), 2) ?></td>
+                                                          </tr>
+                                                        <?php endforeach; ?>
                                                     </tbody>
                                                     <tfoot>
-                                                        <tr class="shipping">
-                                                            <th class="negrito_orden">Costo de Envío</th>
-                                                            <td></td>
-                                                            <td></td>
-                                                            <td></td>
-                                                            <td class="texto_centrado">
-                                                               S/ 12.00
-                                                            </td>
-                                                        </tr>
-                                                        <tr class="order-total">
-                                                            <th class="negrito_orden">Total</th>
-                                                            <td></td>
-                                                            <td></td>
-                                                            <td></td>
-                                                            <td class="texto_centrado"><span class="order-total-ammount total_pedido">S/ 156.00</span>
-                                                            </td>
+                                                        <tr class="orden-total">
+                                                          <td colspan="3" class="text-end"><strong>Total</strong></td>
+                                                          <td><strong>S/ <?= number_format((float) ($orden['totales']['total'] ?? 0), 2) ?></strong></td>
                                                         </tr>
                                                     </tfoot>
                                                 </table>
@@ -171,9 +156,6 @@ if (!$checkout) {
 
                                         </div>
                                     </div>
-
-
-
 
 
 
