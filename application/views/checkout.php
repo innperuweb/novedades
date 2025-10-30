@@ -63,7 +63,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                             <div class="checkout-payment">
                                 <div class="payment-group mb--10">
                                     <div class="payment-radio">
-                                        <input type="radio" value="bank" name="payment-method" id="bank" checked>
+                                        <input type="radio" value="bank" name="metodo_envio" id="bank" checked>
                                         <label class="payment-label" for="bank">Envío en Lima Metropolitana (S/ 10.00)</label>
                                     </div>
                                     <div class="payment-info" data-method="bank">
@@ -134,7 +134,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                                 </div>
                                 <div class="payment-group mb--10">
                                     <div class="payment-radio">
-                                        <input type="radio" value="cheque" name="payment-method" id="cheque">
+                                        <input type="radio" value="cheque" name="metodo_envio" id="cheque">
                                         <label class="payment-label" for="cheque">
                                             ENVÍO A PROVINCIAS (S/ 12.00)
                                         </label>
@@ -198,7 +198,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                                 </div>
                                 <div class="payment-group mb--10">
                                     <div class="payment-radio">
-                                        <input type="radio" value="cash" name="payment-method" id="cash">
+                                        <input type="radio" value="cash" name="metodo_envio" id="cash">
                                         <label class="payment-label" for="cash">
                                             AÉREO/EXPRESS (S/ 18.00)
                                         </label>
@@ -280,7 +280,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                             <div class="checkout-payment">
                                 <div class="payment-group mb--10">
                                     <div class="payment-radio">
-                                        <input type="radio" value="transferencia" name="payment-method" id="transferencia" checked>
+                                        <input type="radio" value="transferencia" name="metodo_pago" id="transferencia" checked>
                                         <label class="payment-label" for="transferencia">TRANSFERENCIA BANCARIA</label>
                                     </div>
                                     <div class="payment-info" data-method="transferencia">
@@ -299,7 +299,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                                 </div>
                                 <div class="payment-group mb--10">
                                     <div class="payment-radio">
-                                        <input type="radio" value="yape" name="payment-method" id="yape">
+                                        <input type="radio" value="yape" name="metodo_pago" id="yape">
                                         <label class="payment-label" for="yape">
                                             PAGO CON YAPE / PLIN
                                         </label>
@@ -332,7 +332,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
 
                                 <div class="payment-group mb--10">
                                     <div class="payment-radio">
-                                        <input type="radio" value="tarjeta" name="payment-method">
+                                        <input type="radio" value="tarjeta" name="metodo_pago">
                                         <label class="payment-label" for="tarjeta">
                                             PAGO CON TARJETA CRÉDITO / DÉBITO
                                         </label>

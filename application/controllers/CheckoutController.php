@@ -36,7 +36,8 @@ class CheckoutController extends BaseController
             $distrito_provincia = trim($_POST['distrito_provincia'] ?? '');
             $direccion_provincia = trim($_POST['direccion_provincia'] ?? '');
             $notas = trim($_POST['notas'] ?? '');
-            $metodo_envio = trim($_POST['payment-method'] ?? '');
+            $metodo_envio = trim($_POST['metodo_envio'] ?? '');
+            $metodo_pago = trim($_POST['metodo_pago'] ?? '');
             $total = $_SESSION['total'] ?? '0.00';
 
             // Validar campos obligatorios
@@ -61,6 +62,7 @@ class CheckoutController extends BaseController
                 'direccion_provincia' => $direccion_provincia,
                 'notas' => $notas,
                 'metodo_envio' => $metodo_envio,
+                'metodo_pago' => $metodo_pago,
                 'total' => $total
             ];
 
