@@ -60,8 +60,9 @@ $carrito = isset($carrito) && is_array($carrito)
                                                         <td class="product-quantity">
                                                             <div class="quantity">
                                                                 <?php
-                                                                    $cantidad = isset($item['cantidad']) && is_numeric($item['cantidad']) ? (int) $item['cantidad'] : 1;
-                                                                    $cantidad = $cantidad > 0 ? $cantidad : 1;
+                                                                    $cantidad = isset($item['cantidad']) && is_numeric($item['cantidad']) && $item['cantidad'] > 0
+                                                                        ? (int)$item['cantidad']
+                                                                        : 1;
                                                                     $subtotal = $precio * $cantidad;
                                                                     $total += $subtotal;
                                                                 ?>
