@@ -37,7 +37,8 @@ class CheckoutController extends BaseController
             $telefono = trim($_POST['telefono'] ?? '');
             $direccion = trim($_POST['direccion'] ?? '');
             $referencia = trim($_POST['referencia'] ?? '');
-            $distrito = trim($_POST['distrito'] ?? '');
+            $distrito_codigo = trim($_POST['distrito'] ?? '');
+            $distrito_nombre = trim($_POST['distrito_nombre'] ?? '');
             $guardarDatos = isset($_POST['shipdifferetads']);
 
             $metodo_envio = trim($_POST['metodo_envio'] ?? '');
@@ -79,7 +80,8 @@ class CheckoutController extends BaseController
                 'telefono' => $telefono,
                 'direccion' => $direccion,
                 'referencia' => $referencia,
-                'distrito' => $distrito,
+                'distrito_codigo' => $distrito_codigo,
+                'distrito_nombre' => $distrito_nombre,
                 'metodo_envio' => $metodo_envio,
                 'metodo_envio_titulo' => $metodo_envio_titulo,
                 'metodo_pago' => $metodo_pago,
@@ -108,7 +110,8 @@ class CheckoutController extends BaseController
                     'telefono' => $telefono,
                     'direccion' => $direccion,
                     'referencia' => $referencia,
-                    'distrito' => $distrito,
+                    'distrito' => $distrito_codigo,
+                    'distrito_nombre' => $distrito_nombre,
                 ];
 
                 foreach ($optionalFields as $campo => $valor) {
@@ -186,7 +189,8 @@ class CheckoutController extends BaseController
                 'dni' => $checkout['dni'] ?? '',
                 'telefono' => $checkout['telefono'] ?? '',
                 'email' => $checkout['email'] ?? '',
-                'distrito' => $checkout['distrito'] ?? '',
+                'distrito_codigo' => $checkout['distrito_codigo'] ?? '',
+                'distrito_nombre' => $checkout['distrito_nombre'] ?? '',
                 'direccion' => $checkout['direccion'] ?? '',
                 'referencia' => $checkout['referencia'] ?? '',
             ],
