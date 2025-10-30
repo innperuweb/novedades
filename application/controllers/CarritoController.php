@@ -31,6 +31,12 @@ class CarritoController extends BaseController
             $this->redirectToCarrito();
         }
 
+        if ($color === '' || $talla === '') {
+            $_SESSION['error'] = 'Debe seleccionar color y talla antes de agregar al carrito.';
+            header('Location: ' . base_url('detalle_producto.php?id=' . $id));
+            exit;
+        }
+
         $cantidad = $cantidad !== null ? max(1, $cantidad) : 1;
 
         $model = new ProductoModel();
