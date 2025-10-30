@@ -26,7 +26,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                             <div class="row mb--30">
                                 <div class="form__group col-12">
                                     <label for="shipping_email" class="form__label form__label--2">Correo electrónico <span class="required">*</span></label>
-                                    <input type="email" name="correo" id="shipping_email" class="form__input form__input--2" required>
+                                    <input type="email" name="email" id="shipping_email" class="form__input form__input--2" required>
                                 </div>
                             </div>
 
@@ -63,7 +63,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                             <div class="checkout-payment">
                                 <div class="payment-group mb--10">
                                     <div class="payment-radio">
-                                        <input type="radio" value="bank" name="metodo_envio" id="bank" checked>
+                                        <input type="radio" value="bank" name="metodo_envio" id="bank">
                                         <label class="payment-label" for="bank">Envío en Lima Metropolitana (S/ 10.00)</label>
                                     </div>
                                     <div class="payment-info" data-method="bank">
@@ -280,7 +280,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                             <div class="checkout-payment">
                                 <div class="payment-group mb--10">
                                     <div class="payment-radio">
-                                        <input type="radio" value="transferencia" name="metodo_pago" id="transferencia" checked>
+                                        <input type="radio" value="transferencia" name="metodo_pago" id="transferencia">
                                         <label class="payment-label" for="transferencia">TRANSFERENCIA BANCARIA</label>
                                     </div>
                                     <div class="payment-info" data-method="transferencia">
@@ -299,12 +299,12 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                                 </div>
                                 <div class="payment-group mb--10">
                                     <div class="payment-radio">
-                                        <input type="radio" value="yape" name="metodo_pago" id="yape">
-                                        <label class="payment-label" for="yape">
+                                        <input type="radio" value="yape_plin" name="metodo_pago" id="yape_plin">
+                                        <label class="payment-label" for="yape_plin">
                                             PAGO CON YAPE / PLIN
                                         </label>
                                     </div>
-                                    <div class="payment-info yape hide-in-default" data-method="yape">
+                                    <div class="payment-info yape hide-in-default" data-method="yape_plin">
                                     <div class="row">
                                         <p style="padding: 10px 35px;">Realice su pago escaneando el código <b>QR</b> ó al número <b> <a href="tel:+51901110822"> 901 110 822 </a> </b> y envíe su pago al correo <b><a href="mailto:ys@novedades.pe">ys@novedades.pe</a></b> ó al <b> <a style="color: #19c44d;" href="https://api.whatsapp.com/send?phone=+51901110822&text=Envío%20mi%20pago%20">whatsapp</a> </b> </p>
                                         <div class="col-md-6">
@@ -332,7 +332,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
 
                                 <div class="payment-group mb--10">
                                     <div class="payment-radio">
-                                        <input type="radio" value="tarjeta" name="metodo_pago">
+                                        <input type="radio" value="tarjeta" name="metodo_pago" id="tarjeta">
                                         <label class="payment-label" for="tarjeta">
                                             PAGO CON TARJETA CRÉDITO / DÉBITO
                                         </label>
