@@ -19,7 +19,9 @@ class CheckoutController extends BaseController
 
     public function procesar(): void
     {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Capturar datos del formulario
