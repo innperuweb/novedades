@@ -1,3 +1,11 @@
+<?php
+session_start();
+$checkout = $_SESSION['checkout'] ?? null;
+if (!$checkout) {
+    header("Location: " . base_url('checkout'));
+    exit;
+}
+?>
 
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
@@ -64,13 +72,13 @@
                                         <div class="col-lg-4 col-md-4 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Total</h3>
-                                                <p class="ver_orden mb--25 mb-md--20">S/ 149.00</p>
+                                                <p class="ver_orden mb--25 mb-md--20">S/ <?= htmlspecialchars($checkout['total']) ?></p>
                                             </div>
                                         </div>
                                         <div class="col-lg-4 col-md-4 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Método de pago </h3>
-                                                <p class="ver_orden mb--25 mb-md--20">Transferencia Bancaria</p>
+                                                <p class="ver_orden mb--25 mb-md--20"><?= htmlspecialchars($checkout['metodo_envio']) ?></p>
                                             </div>
                                         </div>
                                     </div>
@@ -82,13 +90,13 @@
                                         <div class="col-lg-6 col-md-6 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Dirección de envío</h3>
-                                                <p class="ver_orden mb--25 mb-md--20">Av. Tomás Valle 1250 - Los Olivos - Lima - Perú</p>
+                                                <p class="ver_orden mb--25 mb-md--20"><?= htmlspecialchars($checkout['direccion']) ?></p>
                                             </div>
                                         </div>
                                         <div class="col-lg-6 col-md-6 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Nº de whatsapp</h3>
-                                                <p class="ver_orden mb--25 mb-md--20">997 199 995</p>
+                                                <p class="ver_orden mb--25 mb-md--20"><?= htmlspecialchars($checkout['telefono']) ?></p>
                                             </div>
                                         </div>
                                     </div>
@@ -97,6 +105,14 @@
 
                                     <div class="col-lg-12 mt-md--40">
                                         <div class="order-details">
+                                            <p><strong>Nombre:</strong> <?= htmlspecialchars($checkout['nombre']) ?> <?= htmlspecialchars($checkout['apellidos']) ?></p>
+                                            <p><strong>DNI:</strong> <?= htmlspecialchars($checkout['dni']) ?></p>
+                                            <p><strong>Teléfono:</strong> <?= htmlspecialchars($checkout['telefono']) ?></p>
+                                            <p><strong>Correo:</strong> <?= htmlspecialchars($checkout['email']) ?></p>
+                                            <p><strong>Dirección:</strong> <?= htmlspecialchars($checkout['direccion']) ?></p>
+                                            <p><strong>Referencia:</strong> <?= htmlspecialchars($checkout['referencia']) ?></p>
+                                            <p><strong>Método de envío:</strong> <?= htmlspecialchars($checkout['metodo_envio']) ?></p>
+                                            <p><strong>Total:</strong> S/ <?= htmlspecialchars($checkout['total']) ?></p>
                                             <div class="table-content table-responsive mb--30">
                                                 <table class="table order-table order-table-2">
                                                     <thead>

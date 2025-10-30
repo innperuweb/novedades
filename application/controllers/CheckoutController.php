@@ -19,28 +19,56 @@ class CheckoutController extends BaseController
 
     public function procesar(): void
     {
+        session_start();
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $nombre = $_POST['nombre'] ?? '';
-            $correo = $_POST['correo'] ?? '';
-            $telefono = $_POST['telefono'] ?? '';
-            $direccion = $_POST['direccion'] ?? '';
+            // Capturar datos del formulario
+            $email = trim($_POST['email'] ?? '');
+            $nombre = trim($_POST['nombre'] ?? '');
+            $apellidos = trim($_POST['apellidos'] ?? '');
+            $dni = trim($_POST['dni'] ?? '');
+            $telefono = trim($_POST['telefono'] ?? '');
+            $direccion = trim($_POST['direccion'] ?? '');
+            $referencia = trim($_POST['referencia'] ?? '');
+            $distrito = trim($_POST['distrito'] ?? '');
+            $departamento = trim($_POST['departamento'] ?? '');
+            $provincia = trim($_POST['provincia'] ?? '');
+            $distrito_provincia = trim($_POST['distrito_provincia'] ?? '');
+            $direccion_provincia = trim($_POST['direccion_provincia'] ?? '');
+            $notas = trim($_POST['notas'] ?? '');
+            $metodo_envio = trim($_POST['payment-method'] ?? '');
             $total = $_SESSION['total'] ?? '0.00';
 
-            $nombreSeguro = htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8');
-            $totalSeguro = htmlspecialchars((string) $total, ENT_QUOTES, 'UTF-8');
-            $baseUrl = base_url('index');
+            // Validar campos obligatorios
+            if (empty($email) || empty($nombre) || empty($apellidos) || empty($dni) || empty($telefono)) {
+                echo "<script>alert('Por favor complete todos los campos obligatorios.'); window.history.back();</script>";
+                exit;
+            }
 
-            echo "
-                <div style='text-align:center; margin-top:80px; font-family:sans-serif'>
-                    <h2>✅ Pedido recibido</h2>
-                    <p>Gracias, <strong>{$nombreSeguro}</strong>.</p>
-                    <p>Tu pedido ha sido registrado correctamente (modo demostración).</p>
-                    <p>Total del pedido: <strong>S/ {$totalSeguro}</strong></p>
-                    <a href='{$baseUrl}' style='display:inline-block;margin-top:20px;padding:10px 20px;background:#000;color:#fff;text-decoration:none;border-radius:4px;'>Volver a la tienda</a>
-                </div>
-            ";
+            // Guardar los datos en sesión
+            $_SESSION['checkout'] = [
+                'email' => $email,
+                'nombre' => $nombre,
+                'apellidos' => $apellidos,
+                'dni' => $dni,
+                'telefono' => $telefono,
+                'direccion' => $direccion,
+                'referencia' => $referencia,
+                'distrito' => $distrito,
+                'departamento' => $departamento,
+                'provincia' => $provincia,
+                'distrito_provincia' => $distrito_provincia,
+                'direccion_provincia' => $direccion_provincia,
+                'notas' => $notas,
+                'metodo_envio' => $metodo_envio,
+                'total' => $total
+            ];
+
+            // Redirigir a ver_orden.php
+            header("Location: " . base_url('ver_orden'));
+            exit;
         } else {
-            header('Location: ' . base_url('checkout'));
+            header("Location: " . base_url('checkout'));
             exit;
         }
     }
