@@ -15,6 +15,7 @@ return [
     'carrito/agregar' => ['CarritoController', 'agregar'],
     'carrito/eliminar' => ['CarritoController', 'eliminar'],
     'carrito/actualizar' => ['CarritoController', 'actualizar'],
+    'carrito/actualizar_ajax' => ['CarritoController', 'actualizar_ajax'],
     'carrito/vaciar' => ['CarritoController', 'vaciar'],
     'carrito_compras' => ['CarritoController', 'index'],
     'blog' => ['BlogController', 'index'],

@@ -157,6 +157,66 @@ class CarritoController extends BaseController
         $this->redirectToCarrito();
     }
 
+    public function actualizar_ajax(): void
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        header('Content-Type: application/json');
+
+        $id = isset($_POST['id']) ? sanitize_int($_POST['id']) : null;
+        $uid = isset($_POST['uid']) ? sanitize_string($_POST['uid']) : '';
+        $cantidad = isset($_POST['cantidad']) ? sanitize_int($_POST['cantidad']) : null;
+
+        if ($cantidad === null || $cantidad < 1 || ($id === null && $uid === '')) {
+            echo json_encode(['status' => 'error', 'message' => 'Datos inválidos']);
+            exit;
+        }
+
+        $carrito = $this->normalizeCarrito(get_cart_session());
+
+        $subtotal = 0.0;
+        $encontrado = false;
+
+        foreach ($carrito as &$item) {
+            $itemUid = (string) ($item['uid'] ?? '');
+            $itemId = (int) ($item['id'] ?? 0);
+
+            if (($uid !== '' && hash_equals($itemUid, $uid)) || ($uid === '' && $id !== null && $itemId === $id)) {
+                $cantidad = max(1, $cantidad);
+                $item['cantidad'] = $cantidad;
+                $precio = (float) ($item['precio'] ?? 0);
+                $subtotal = $precio * $cantidad;
+                $encontrado = true;
+                break;
+            }
+        }
+        unset($item);
+
+        if (!$encontrado) {
+            echo json_encode(['status' => 'error', 'message' => 'Producto no encontrado en el carrito.']);
+            exit;
+        }
+
+        set_cart_session($carrito);
+
+        $total = 0.0;
+        foreach ($carrito as $item) {
+            $itemCantidad = max(1, (int) ($item['cantidad'] ?? 0));
+            $itemPrecio = (float) ($item['precio'] ?? 0);
+            $total += $itemPrecio * $itemCantidad;
+        }
+
+        echo json_encode([
+            'status' => 'success',
+            'cantidad' => $cantidad,
+            'subtotal' => number_format($subtotal, 2),
+            'total' => number_format($total, 2),
+        ]);
+        exit;
+    }
+
     private function redirectToCarrito(): void
     {
         header('Location: ' . base_url('carrito'));

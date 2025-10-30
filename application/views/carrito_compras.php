@@ -91,11 +91,11 @@ $carrito = isset($carrito) && is_array($carrito)
                                                                 <form method="POST" action="<?= base_url('carrito/actualizar') ?>" class="d-flex align-items-center">
                                                                     <input type="hidden" name="id" value="<?= e((string) $item['id']) ?>">
                                                                     <input type="hidden" name="uid" value="<?= e($uid) ?>">
-                                                                    <input type="number" class="quantity-input" name="cantidad" min="1" value="<?= e((string) $cantidad) ?>" data-id="<?= e((string) $item['id']) ?>">
+                                                                    <input type="number" class="quantity-input" name="cantidad" min="1" value="<?= e((string) $cantidad) ?>" data-id="<?= e((string) $item['id']) ?>" data-uid="<?= e($uid) ?>">
                                                                 </form>
                                                             </div>
                                                         </td>
-                                                        <td class="product-price subtotal">
+                                                        <td class="product-price subtotal" id="subtotal-<?= e((string) $item['id']) ?>">
                                                             S/ <?= number_format($subtotal, 2) ?>
                                                         </td>
                                                     </tr>
@@ -149,7 +149,7 @@ $carrito = isset($carrito) && is_array($carrito)
                                                 <th>Total</th>
                                                 <td>
                                                     <span class="product-price-wrapper">
-                                                        <span class="money">S/ <?= number_format($total, 2); ?></span>
+                                                        <span class="money" id="total-general">S/ <?= number_format($total, 2); ?></span>
                                                     </span>
                                                 </td>
                                             </tr>
@@ -182,24 +182,56 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('.quantity-input');
 
     inputs.forEach(input => {
-        input.addEventListener('input', function() {
+        input.addEventListener('change', function() {
             const id = this.getAttribute('data-id');
-            const value = this.value;
-            const cantidad = parseFloat(value) || 0;
+            const uid = this.getAttribute('data-uid') || '';
+            const cantidad = this.value;
 
-            const resumenSpan = document.querySelector(`.resumen-cantidad[data-id="${id}"]`);
-            if (resumenSpan) {
-                resumenSpan.textContent = 'x' + value;
+            const params = new URLSearchParams();
+            if (id !== null) {
+                params.append('id', id);
+            }
+            params.append('cantidad', cantidad);
+            if (uid !== '') {
+                params.append('uid', uid);
             }
 
-            const precioEl = this.closest('tr').querySelector('.money');
-            if (precioEl) {
-                const precio = parseFloat(precioEl.textContent.replace(/[^\d.]/g, '')) || 0;
-                const subtotalEl = this.closest('tr').querySelector('.subtotal');
-                if (subtotalEl) {
-                    subtotalEl.textContent = 'S/ ' + (precio * cantidad).toFixed(2);
+            fetch('<?= base_url("carrito/actualizar_ajax") ?>', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params.toString()
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Network response was not ok');
                 }
-            }
+                return res.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    this.value = data.cantidad;
+
+                    const subtotalEl = document.getElementById('subtotal-' + id);
+                    if (subtotalEl) {
+                        subtotalEl.textContent = 'S/ ' + data.subtotal;
+                    }
+
+                    const resumenEl = document.querySelector('.resumen-cantidad[data-id="' + id + '"]');
+                    if (resumenEl) {
+                        resumenEl.textContent = 'x' + data.cantidad;
+                    }
+
+                    const totalEl = document.getElementById('total-general');
+                    if (totalEl) {
+                        totalEl.textContent = 'S/ ' + data.total;
+                    }
+                } else {
+                    alert(data.message || 'Error al actualizar la cantidad.');
+                }
+            })
+            .catch(() => {
+                alert('Error al conectar con el servidor.');
+            });
         });
     });
 });
