@@ -209,6 +209,17 @@ class CheckoutController extends BaseController
 
         $_SESSION['orden_guardada'] = $orden_guardada;
 
+        $estado = 'Pendiente';
+        $orden_id = null;
+
+        $_SESSION['ultima_orden'] = [
+            'id' => $orden_id,
+            'numero' => $orden_numero,
+            'fecha' => $fecha,
+            'estado' => $estado,
+            'total' => $total_final,
+        ];
+
         $orden = [
             'numero' => $orden_numero,
             'fecha' => $fecha,

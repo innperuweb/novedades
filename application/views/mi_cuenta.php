@@ -29,8 +29,9 @@
 
                                     <div class="table-content table-responsive">
                                         <div class="table-content table-responsive">
+                                            <?php if (!isset($orden)) { $orden = $_SESSION['ultima_orden'] ?? null; } ?>
                                             <table class="table compare-table">
-                                                <tbody>
+                                                <thead>
                                                     <tr>
                                                         <th>Nº de órden</th>
                                                         <th>Fecha</th>
@@ -38,29 +39,24 @@
                                                         <th>Total</th>
                                                         <th>Acción</th>
                                                     </tr>
-                                                    <tr>
-                                                        <td>237582</td>
-                                                        <td>Septiembre 15, 2025</td>
-                                                        <td>Pendiente</td>
-                                                        <td>S/ 148.00</td>
-                                                        <td><a href="ver_orden.php" class="btn btn-tiny btn-style-1">Ver</a></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>237582</td>
-                                                        <td>Septiembre 15, 2025</td>
-                                                        <td>Pendiente</td>
-                                                        <td>S/ 148.00</td>
-                                                        <td><a href="ver_orden.php" class="btn btn-tiny btn-style-1">Ver</a></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>237582</td>
-                                                        <td>Septiembre 15, 2025</td>
-                                                        <td>Pendiente</td>
-                                                        <td>S/ 148.00</td>
-                                                        <td><a href="ver_orden.php" class="btn btn-tiny btn-style-1">Ver</a></td>
-                                                    </tr>
-
-
+                                                </thead>
+                                                <tbody>
+                                                    <?php if ($orden): ?>
+                                                        <tr>
+                                                            <td><?= htmlspecialchars($orden['numero'] ?? '') ?></td>
+                                                            <td><?= htmlspecialchars($orden['fecha'] ?? '') ?></td>
+                                                            <td><?= htmlspecialchars($orden['estado'] ?? '') ?></td>
+                                                            <td>S/ <?= number_format((float) ($orden['total'] ?? 0), 2) ?></td>
+                                                            <td style="white-space: nowrap;">
+                                                                <a href="<?= base_url('ver_orden') ?>" class="btn btn-tiny btn-style-1">Ver</a>
+                                                                <a href="<?= base_url('mi_cuenta/eliminar') ?>" class="btn btn-tiny btn-style-1 btn-danger" onclick="return confirm('¿Eliminar esta orden?');" title="Eliminar">✕</a>
+                                                            </td>
+                                                        </tr>
+                                                    <?php else: ?>
+                                                        <tr>
+                                                            <td colspan="5">No tienes órdenes registradas.</td>
+                                                        </tr>
+                                                    <?php endif; ?>
                                                 </tbody>
                                             </table>
                                         </div>
