@@ -22,7 +22,7 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                         <h2>Ingresa tu correo electrónico para continuar</h2>
                     </div>
                     <div class="checkout-form">
-                        <form method="POST" action="<?= base_url('checkout/procesar'); ?>" class="form form--checkout">
+                        <form method="POST" action="<?= base_url('checkout/procesar') ?>" class="checkout-form">
 
                             <div class="row mb--30">
                                 <div class="form__group col-12">
