@@ -16,19 +16,17 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
 <div id="content" class="main-content-wrapper ptb--80">
     <div class="page-content-inner">
         <div class="container">
-            <div class="row pb--80 pb-md--60 pb-sm--40">
-                <div class="col-lg-6">
-                    <div class="checkout-title mt--10">
-                        <h2>Ingresa tu correo electrónico para continuar</h2>
-                    </div>
-                    <div class="checkout-form">
-                        <form method="POST" action="<?= base_url('checkout/procesar') ?>" class="checkout-form">
-
+            <form method="POST" action="<?= base_url('checkout/procesar') ?>" class="checkout-form">
+                <div class="row pb--80 pb-md--60 pb-sm--40">
+                    <div class="col-lg-6">
+                        <div class="checkout-title mt--10">
+                            <h2>Ingresa tu correo electrónico para continuar</h2>
+                        </div>
+                        <div class="checkout-form">
                             <div class="row mb--30">
                                 <div class="form__group col-12">
-                                    <label for="shipping_email" class="form__label form__label--2">Correo electrónico <span
-                                            class="required">*</span></label>
-                                    <input type="email" name="email" id="shipping_email" class="form__input form__input--2" required>
+                                    <label for="shipping_email" class="form__label form__label--2">Correo electrónico <span class="required">*</span></label>
+                                    <input type="email" name="correo" id="shipping_email" class="form__input form__input--2" required>
                                 </div>
                             </div>
 
@@ -225,89 +223,88 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                                     </div>
                                 </div>
                             </div>
-                        </form>
+                        </div>
                     </div>
-                </div>
-                <div class="col-xl-5 offset-xl-1 col-lg-6 mt-md--40">
-                    <div class="order-details">
-                        <div class="checkout-title mt--10">
-                            <h2>Mi pedido</h2>
-                        </div>
-                        <div class="table-content table-responsive mb--30">
-                            <table class="table order-table order-table-2">
-                                <thead>
-                                    <tr>
-                                        <th>Producto</th>
-                                        <th class="text-end">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (!empty($carritoItems)): ?>
-                                        <?php foreach ($carritoItems as $item): ?>
-                                            <?php
-                                            $nombreProducto = htmlspecialchars($item['nombre'] ?? '', ENT_QUOTES, 'UTF-8');
-                                            $cantidadProducto = (int) ($item['cantidad'] ?? 0);
-                                            $precioProducto = isset($item['precio']) ? (float) $item['precio'] : 0.0;
-                                            $subtotalProducto = $precioProducto * $cantidadProducto;
-                                            ?>
-                                            <tr>
-                                                <th><?= $nombreProducto; ?>
-                                                    <strong><span>&#10005;</span><?= $cantidadProducto; ?></strong>
-                                                </th>
-                                                <td class="text-end">S/ <?= number_format($subtotalProducto, 2); ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
+                    <div class="col-xl-5 offset-xl-1 col-lg-6 mt-md--40">
+                        <div class="order-details">
+                            <div class="checkout-title mt--10">
+                                <h2>Mi pedido</h2>
+                            </div>
+                            <div class="table-content table-responsive mb--30">
+                                <table class="table order-table order-table-2">
+                                    <thead>
                                         <tr>
-                                            <td colspan="2">No hay productos en el carrito.</td>
+                                            <th>Producto</th>
+                                            <th class="text-end">Total</th>
                                         </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (!empty($carritoItems)): ?>
+                                            <?php foreach ($carritoItems as $item): ?>
+                                                <?php
+                                                $nombreProducto = htmlspecialchars($item['nombre'] ?? '', ENT_QUOTES, 'UTF-8');
+                                                $cantidadProducto = (int) ($item['cantidad'] ?? 0);
+                                                $precioProducto = isset($item['precio']) ? (float) $item['precio'] : 0.0;
+                                                $subtotalProducto = $precioProducto * $cantidadProducto;
+                                                ?>
+                                                <tr>
+                                                    <th><?= $nombreProducto; ?>
+                                                        <strong><span>&#10005;</span><?= $cantidadProducto; ?></strong>
+                                                    </th>
+                                                    <td class="text-end">S/ <?= number_format($subtotalProducto, 2); ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="2">No hay productos en el carrito.</td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                    <?php if (!empty($carritoItems)): ?>
+                                        <tfoot>
+                                            <tr class="cart-subtotal">
+                                                <th>Subtotal</th>
+                                                <td class="text-end">S/ <?= number_format($totalPedido, 2); ?></td>
+                                            </tr>
+                                            <tr class="order-total">
+                                                <th>Total</th>
+                                                <td class="text-end"><span class="order-total-ammount total_pedido">S/ <?= number_format($totalPedido, 2); ?></span>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
                                     <?php endif; ?>
-                                </tbody>
-                                <?php if (!empty($carritoItems)): ?>
-                                    <tfoot>
-                                        <tr class="cart-subtotal">
-                                            <th>Subtotal</th>
-                                            <td class="text-end">S/ <?= number_format($totalPedido, 2); ?></td>
-                                        </tr>
-                                        <tr class="order-total">
-                                            <th>Total</th>
-                                            <td class="text-end"><span class="order-total-ammount total_pedido">S/ <?= number_format($totalPedido, 2); ?></span>
-                                            </td>
-                                        </tr>
-                                    </tfoot>
-                                <?php endif; ?>
-                            </table>
-                        </div>
+                                </table>
+                            </div>
 
-                        <h3 class="metodo">Método de Pago</h3>
-                        <div class="checkout-payment">
-                            <div class="payment-group mb--10">
-                                <div class="payment-radio">
-                                    <input type="radio" value="transferencia" name="payment-method" id="transferencia" checked>
-                                    <label class="payment-label" for="transferencia">TRANSFERENCIA BANCARIA</label>
-                                </div>
-                                <div class="payment-info" data-method="transferencia">
-                                    <div class="row">
-                                        <p style="padding: 10px 35px;">Realiza tu pago directamente a nuestra cuenta bancaria. Por favor, usa el número de pedido como referencia de pago. Tú pedido no se procesará hasta que se haya recibido el importe en nuestra cuenta bancaria</p>
-                                        <div class="banner-box banner-type-5 banner-hover-3">
-                                            <div class="banner-inner">
-                                                <div class="banner-image">
-                                                    <img src="<?= asset_url('img/pago/bcp.jpg'); ?>" alt="Banner">
+                            <h3 class="metodo">Método de Pago</h3>
+                            <div class="checkout-payment">
+                                <div class="payment-group mb--10">
+                                    <div class="payment-radio">
+                                        <input type="radio" value="transferencia" name="payment-method" id="transferencia" checked>
+                                        <label class="payment-label" for="transferencia">TRANSFERENCIA BANCARIA</label>
+                                    </div>
+                                    <div class="payment-info" data-method="transferencia">
+                                        <div class="row">
+                                            <p style="padding: 10px 35px;">Realiza tu pago directamente a nuestra cuenta bancaria. Por favor, usa el número de pedido como referencia de pago. Tú pedido no se procesará hasta que se haya recibido el importe en nuestra cuenta bancaria</p>
+                                            <div class="banner-box banner-type-5 banner-hover-3">
+                                                <div class="banner-inner">
+                                                    <div class="banner-image">
+                                                        <img src="<?= asset_url('img/pago/bcp.jpg'); ?>" alt="Banner">
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
+                                        <br>
                                     </div>
-                                    <br>
                                 </div>
-                            </div>
-                            <div class="payment-group mb--10">
-                                <div class="payment-radio">
-                                    <input type="radio" value="yape" name="payment-method" id="yape">
-                                    <label class="payment-label" for="yape">
-                                        PAGO CON YAPE / PLIN
-                                    </label>
-                                </div>
-                                <div class="payment-info yape hide-in-default" data-method="yape">
+                                <div class="payment-group mb--10">
+                                    <div class="payment-radio">
+                                        <input type="radio" value="yape" name="payment-method" id="yape">
+                                        <label class="payment-label" for="yape">
+                                            PAGO CON YAPE / PLIN
+                                        </label>
+                                    </div>
+                                    <div class="payment-info yape hide-in-default" data-method="yape">
                                     <div class="row">
                                         <p style="padding: 10px 35px;">Realice su pago escaneando el código <b>QR</b> ó al número <b> <a href="tel:+51901110822"> 901 110 822 </a> </b> y envíe su pago al correo <b><a href="mailto:ys@novedades.pe">ys@novedades.pe</a></b> ó al <b> <a style="color: #19c44d;" href="https://api.whatsapp.com/send?phone=+51901110822&text=Envío%20mi%20pago%20">whatsapp</a> </b> </p>
                                         <div class="col-md-6">
@@ -330,28 +327,29 @@ $totalPedido = isset($total) ? (float) $total : 0.0;
                                         </div>
                                         <p class="a_nombre"> <b>A nombre de: NOVEDADES SAC</b> </p>
                                     </div>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="payment-group mb--10">
-                                <div class="payment-radio">
-                                    <input type="radio" value="tarjeta" name="payment-method">
-                                    <label class="payment-label" for="tarjeta">
-                                        PAGO CON TARJETA CRÉDITO / DÉBITO
-                                    </label>
+                                <div class="payment-group mb--10">
+                                    <div class="payment-radio">
+                                        <input type="radio" value="tarjeta" name="payment-method">
+                                        <label class="payment-label" for="tarjeta">
+                                            PAGO CON TARJETA CRÉDITO / DÉBITO
+                                        </label>
+                                    </div>
                                 </div>
+
+                                <br>
+
+                                <button type="submit" class="btn btn-fullwidth btn-style-1">
+                                    Realizar pedido
+                                </button>
+
                             </div>
-
-                            <br>
-
-                            <button type="submit" class="btn btn-fullwidth btn-style-1">
-                                Realizar pedido
-                            </button>
-
                         </div>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 </div>
