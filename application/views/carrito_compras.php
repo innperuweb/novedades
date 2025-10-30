@@ -5,6 +5,22 @@ $carrito = isset($carrito) && is_array($carrito)
     : (isset($_SESSION['carrito']) && is_array($_SESSION['carrito']) ? $_SESSION['carrito'] : []);
 ?>
 
+<style>
+.quantity-input {
+    width: 60px !important;
+    text-align: center;
+    margin-right: 5px;
+}
+.form-cantidad,
+.d-flex.align-items-center {
+    gap: 6px;
+}
+.btn.btn-link.p-0.ms-2 {
+    font-size: 13px;
+    padding: 4px 8px;
+}
+</style>
+
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
         <div class="row">
