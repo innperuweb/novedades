@@ -153,8 +153,8 @@ $cliente = $orden['cliente'] ?? [];
                                               <p><strong>Email:</strong> <?= e($cliente['email'] ?? '') ?></p>
                                             </div>
                                             <div class="orden-info">
-                                              <p><strong>Método de Envío:</strong> <?= e($orden['metodo_envio_texto'] ?? '') ?></p>
-                                              <p><strong>Costo de Envío:</strong> S/ <?= number_format((float) ($orden['costo_envio'] ?? 0), 2) ?></p>
+                                              <p><strong>Método de envío:</strong> <?= e($orden['metodo_envio_texto'] ?? '') ?></p>
+                                              <p><strong>Costo de envío:</strong> S/ <?= number_format((float) ($orden['costo_envio'] ?? 0), 2) ?></p>
                                               <p><strong>Método de Pago:</strong> <?= e($orden['metodo_pago'] ?? '') ?></p>
                                             </div>
 
@@ -204,15 +204,15 @@ $cliente = $orden['cliente'] ?? [];
                                                     </tbody>
                                                     <tfoot>
                                                         <tr class="orden-subtotal">
-                                                          <td colspan="3" style="text-align: right;"><strong>Subtotal</strong></td>
+                                                          <td colspan="3" style="text-align: right; font-weight: bold;">Subtotal</td>
                                                           <td style="text-align: right;">S/ <?= number_format($subtotal, 2) ?></td>
                                                         </tr>
                                                         <tr>
-                                                          <td colspan="3" style="text-align: right;"><strong>Costo de Envío</strong></td>
+                                                          <td colspan="3" style="text-align: right; font-weight: bold;">Costo de envío</td>
                                                           <td style="text-align: right;">S/ <?= number_format($costo_envio, 2) ?></td>
                                                         </tr>
                                                         <tr class="orden-total">
-                                                          <td colspan="3" style="text-align: right;"><strong>Total</strong></td>
+                                                          <td colspan="3" style="text-align: right; font-weight: bold;">Total</td>
                                                           <td style="text-align: right;"><strong data-total-general="true">S/ <?= number_format($total_final, 2) ?></strong></td>
                                                         </tr>
                                                     </tfoot>

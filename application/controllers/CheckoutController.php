@@ -75,26 +75,28 @@ class CheckoutController extends BaseController
         ];
         $metodoPagoTitulo = $pagoTitulos[$metodoPago] ?? strtoupper($metodoPago);
 
-        $metodoEnvioTexto = '';
+        $metodoEnvioTexto = 'Sin especificar';
         $costoEnvio = 0.0;
 
         switch ($metodoEnvio) {
+            case 'lima':
             case 'bank':
-                $metodoEnvioTexto = 'Envío en Lima Metropolitana (S/ 10.00)';
                 $costoEnvio = 10.00;
+                $metodoEnvioTexto = 'Envío en Lima Metropolitana (S/ 10.00)';
                 break;
+            case 'provincia':
             case 'cheque':
-                $metodoEnvioTexto = 'ENVÍO A PROVINCIAS (S/ 12.00)';
                 $costoEnvio = 12.00;
+                $metodoEnvioTexto = 'Envío a Provincias (S/ 12.00)';
                 break;
+            case 'aereo':
             case 'cash':
-                $metodoEnvioTexto = 'AÉREO / EXPRESS (S/ 18.00)';
                 $costoEnvio = 18.00;
+                $metodoEnvioTexto = 'Aéreo/Express (S/ 18.00)';
                 break;
-        }
-
-        if ($metodoEnvioTexto === '' && $metodoEnvio !== '') {
-            $metodoEnvioTexto = strtoupper($metodoEnvio);
+            default:
+                $metodoEnvioTexto = 'Sin especificar';
+                break;
         }
 
         $optionalFields = [
@@ -167,10 +169,10 @@ class CheckoutController extends BaseController
                 ':referencia' => $referencia,
                 ':metodo_envio' => $metodoEnvio,
                 ':metodo_envio_texto' => $metodoEnvioTexto,
-                ':costo_envio' => number_format($costoEnvio, 2, '.', ''),
+                ':costo_envio' => round($costoEnvio, 2),
                 ':metodo_pago' => $metodoPagoTitulo,
-                ':subtotal' => number_format($subtotal, 2, '.', ''),
-                ':total' => number_format($total, 2, '.', ''),
+                ':subtotal' => round($subtotal, 2),
+                ':total' => round($total, 2),
             ]);
 
             OrdenDetalleModel::crear($ordenId, $detalleItems);
