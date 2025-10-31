@@ -26,21 +26,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let ubigeoData = {};
 
-    // Carga inicial del JSON
-    fetch('/public/assets/data/ubigeo.json')
-        .then(res => res.json())
-        .then(data => {
+    // Carga inicial del archivo ubigeo.json
+    fetch(window.location.origin + '/novedades/public/assets/data/ubigeo.json', { cache: 'no-store' })
+        .then((res) => {
+            if (!res.ok) {
+                throw new Error(`No se pudo cargar el ubigeo.json (HTTP ${res.status})`);
+            }
+            return res.json();
+        })
+        .then((data) => {
+            console.log('✅ UBIGEO cargado correctamente:', Object.keys(data));
             ubigeoData = data;
+
+            // Limpiar y preparar select
             resetSelect(departamentoSelect, 'Seleccionar Departamento');
+
+            // Cargar departamentos visibles
             Object.keys(ubigeoData).forEach(dep => {
                 const opt = document.createElement('option');
                 opt.value = dep;
                 opt.textContent = dep;
                 departamentoSelect.appendChild(opt);
             });
+
+            // Mostrar y actualizar
+            departamentoSelect.classList.remove('hidden');
             actualizarNiceSelect(departamentoSelect);
         })
-        .catch(err => console.error('Error cargando ubigeo.json:', err));
+        .catch((err) => {
+            console.error('❌ Error cargando ubigeo.json:', err);
+            alert('Error cargando lista de departamentos. Verifique el archivo ubigeo.json');
+        });
 
     // Cargar provincias al elegir departamento
     departamentoSelect.addEventListener('change', function () {
