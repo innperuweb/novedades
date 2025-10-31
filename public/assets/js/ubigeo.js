@@ -1,120 +1,140 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const departamento = document.getElementById('billing_country_provincia');
-    const provincia = document.getElementById('billing_provincia');
-    const distrito = document.getElementById('billing_distrito_provincia');
+    const departamentoSelect = document.getElementById('billing_country_provincia');
+    const provinciaSelect = document.getElementById('billing_provincia');
+    const distritoSelect = document.getElementById('billing_distrito_provincia');
 
-    if (!departamento || !provincia || !distrito) {
+    if (!departamentoSelect || !provinciaSelect || !distritoSelect) {
         return;
     }
 
-    const ubigeoURL = (() => {
-        const dataUrl = departamento.dataset.ubigeoUrl;
-        if (dataUrl && dataUrl.trim().length > 0) {
-            return dataUrl.trim();
+    const obtenerUbigeoUrl = () => {
+        const dataUrl = (departamentoSelect.dataset.ubigeoUrl || '').trim();
+        if (dataUrl) {
+            return dataUrl;
         }
-        return 'public/assets/data/ubigeo.json';
-    })();
+        return '/public/assets/data/ubigeo.json';
+    };
 
     const obtenerValorGuardado = (select) => (select.dataset.valorGuardado || '').trim();
 
     const actualizarNiceSelect = (select) => {
-        if (window.jQuery && typeof window.jQuery.fn.niceSelect === 'function') {
-            window.jQuery(select).niceSelect('update');
+        if (!(window.jQuery && typeof window.jQuery.fn.niceSelect === 'function')) {
+            return;
+        }
+
+        const $select = window.jQuery(select);
+
+        try {
+            if ($select.data('niceSelect')) {
+                $select.niceSelect('update');
+            } else {
+                $select.niceSelect();
+            }
+        } catch (error) {
+            console.error('No fue posible actualizar nice-select:', error);
         }
     };
 
-    const resetSelect = (select, placeholder) => {
+    const crearOpcionPorDefecto = () => {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Seleccionar';
+        return option;
+    };
+
+    const resetSelect = (select) => {
         select.innerHTML = '';
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = placeholder;
-        select.appendChild(opt);
-        actualizarNiceSelect(select);
+        select.appendChild(crearOpcionPorDefecto());
+    };
+
+    const bindChange = (select, handler) => {
+        if (window.jQuery && typeof window.jQuery === 'function') {
+            window.jQuery(select).on('change', handler);
+        } else {
+            select.addEventListener('change', handler);
+        }
     };
 
     let ubigeoData = {};
 
     const cargarDepartamentos = () => {
-        resetSelect(departamento, 'Seleccionar Departamento');
+        resetSelect(departamentoSelect);
         Object.keys(ubigeoData).forEach(dep => {
-            const opt = document.createElement('option');
-            opt.value = dep;
-            opt.textContent = dep;
-            departamento.appendChild(opt);
+            const option = document.createElement('option');
+            option.value = dep;
+            option.textContent = dep;
+            departamentoSelect.appendChild(option);
         });
-        actualizarNiceSelect(departamento);
+        actualizarNiceSelect(departamentoSelect);
     };
 
-    const cargarProvincias = (departamentoSeleccionado) => {
-        resetSelect(provincia, 'Seleccionar Provincia');
-        resetSelect(distrito, 'Seleccionar Distrito');
+    const cargarProvincias = (departamento) => {
+        resetSelect(provinciaSelect);
+        resetSelect(distritoSelect);
 
-        if (departamentoSeleccionado && ubigeoData[departamentoSeleccionado]) {
-            Object.keys(ubigeoData[departamentoSeleccionado]).forEach(prov => {
-                const opt = document.createElement('option');
-                opt.value = prov;
-                opt.textContent = prov;
-                provincia.appendChild(opt);
+        if (departamento && ubigeoData[departamento]) {
+            Object.keys(ubigeoData[departamento]).forEach(prov => {
+                const option = document.createElement('option');
+                option.value = prov;
+                option.textContent = prov;
+                provinciaSelect.appendChild(option);
             });
-            actualizarNiceSelect(provincia);
         }
+        actualizarNiceSelect(provinciaSelect);
+        actualizarNiceSelect(distritoSelect);
     };
 
-    const cargarDistritos = (departamentoSeleccionado, provinciaSeleccionada) => {
-        resetSelect(distrito, 'Seleccionar Distrito');
+    const cargarDistritos = (departamento, provincia) => {
+        resetSelect(distritoSelect);
 
-        if (
-            departamentoSeleccionado &&
-            provinciaSeleccionada &&
-            ubigeoData[departamentoSeleccionado] &&
-            ubigeoData[departamentoSeleccionado][provinciaSeleccionada]
-        ) {
-            ubigeoData[departamentoSeleccionado][provinciaSeleccionada].forEach(dist => {
-                const opt = document.createElement('option');
-                opt.value = dist;
-                opt.textContent = dist;
-                distrito.appendChild(opt);
+        if (departamento && provincia && ubigeoData[departamento] && ubigeoData[departamento][provincia]) {
+            ubigeoData[departamento][provincia].forEach(dist => {
+                const option = document.createElement('option');
+                option.value = dist;
+                option.textContent = dist;
+                distritoSelect.appendChild(option);
             });
-            actualizarNiceSelect(distrito);
         }
+        actualizarNiceSelect(distritoSelect);
     };
 
-    departamento.addEventListener('change', function () {
-        cargarProvincias(this.value);
+    bindChange(departamentoSelect, function (event) {
+        cargarProvincias(event.target.value);
     });
 
-    provincia.addEventListener('change', function () {
-        cargarDistritos(departamento.value, this.value);
+    bindChange(provinciaSelect, function (event) {
+        cargarDistritos(departamentoSelect.value, event.target.value);
     });
 
-    fetch(ubigeoURL)
-        .then(response => {
-            if (!response.ok) {
+    fetch(obtenerUbigeoUrl())
+        .then(res => {
+            if (!res.ok) {
                 throw new Error('No se pudo cargar el archivo de ubigeo.');
             }
-            return response.json();
+            return res.json();
         })
         .then(data => {
+            console.log('Ubigeo cargado:', data);
             ubigeoData = data;
             cargarDepartamentos();
 
-            const departamentoGuardado = obtenerValorGuardado(departamento);
-            const provinciaGuardada = obtenerValorGuardado(provincia);
-            const distritoGuardado = obtenerValorGuardado(distrito);
+            const departamentoGuardado = obtenerValorGuardado(departamentoSelect);
+            const provinciaGuardada = obtenerValorGuardado(provinciaSelect);
+            const distritoGuardado = obtenerValorGuardado(distritoSelect);
 
             if (departamentoGuardado && ubigeoData[departamentoGuardado]) {
-                departamento.value = departamentoGuardado;
-                actualizarNiceSelect(departamento);
+                departamentoSelect.value = departamentoGuardado;
+                actualizarNiceSelect(departamentoSelect);
                 cargarProvincias(departamentoGuardado);
 
                 if (provinciaGuardada && ubigeoData[departamentoGuardado][provinciaGuardada]) {
-                    provincia.value = provinciaGuardada;
-                    actualizarNiceSelect(provincia);
+                    provinciaSelect.value = provinciaGuardada;
+                    actualizarNiceSelect(provinciaSelect);
                     cargarDistritos(departamentoGuardado, provinciaGuardada);
 
                     if (ubigeoData[departamentoGuardado][provinciaGuardada].includes(distritoGuardado)) {
-                        distrito.value = distritoGuardado;
-                        actualizarNiceSelect(distrito);
+                        distritoSelect.value = distritoGuardado;
+                        actualizarNiceSelect(distritoSelect);
                     }
                 }
             }
