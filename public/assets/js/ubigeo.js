@@ -9,25 +9,49 @@ document.addEventListener('DOMContentLoaded', () => {
     // Obtener ruta del archivo ubigeo.json
     const obtenerUbigeoUrl = () => {
         const dataUrl = (departamentoSelect.dataset.ubigeoUrl || '').trim();
-        return dataUrl || '/public/assets/data/ubigeo.json';
+        if (dataUrl) {
+            try {
+                return new URL(dataUrl, window.location.origin).toString();
+            } catch (error) {
+                return dataUrl;
+            }
+        }
+
+        const base = (window.location && window.location.origin) ? window.location.origin : '';
+        return `${base.replace(/\/?$/, '')}/public/assets/data/ubigeo.json`;
     };
 
     // Recuperar valores guardados (en caso de persistencia)
     const obtenerValorGuardado = (select) => (select.dataset.valorGuardado || '').trim();
 
     // Actualizar o inicializar nice-select
-    const actualizarNiceSelect = (select) => {
+    const sincronizarNiceSelect = (select) => {
         if (!(window.jQuery && typeof window.jQuery.fn.niceSelect === 'function')) return;
         const $select = window.jQuery(select);
+
         try {
-            if ($select.data('niceSelect')) {
-                $select.niceSelect('update');
-            } else {
-                $select.niceSelect();
+            if ($select.next('.nice-select').length) {
+                $select.niceSelect('destroy');
             }
+
+            $select.niceSelect();
         } catch (error) {
-            console.error('Error al actualizar nice-select:', error);
+            console.error('Error al sincronizar nice-select:', error);
         }
+    };
+
+    const dispararEventoChange = (elemento) => {
+        if (!elemento) return;
+
+        let eventoCambio;
+        if (typeof Event === 'function') {
+            eventoCambio = new Event('change', { bubbles: true });
+        } else {
+            eventoCambio = document.createEvent('HTMLEvents');
+            eventoCambio.initEvent('change', true, false);
+        }
+
+        elemento.dispatchEvent(eventoCambio);
     };
 
     // Crear opción por defecto
@@ -42,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetSelect = (select) => {
         select.innerHTML = '';
         select.appendChild(crearOpcionPorDefecto());
-        actualizarNiceSelect(select);
     };
 
     // Datos del ubigeo
@@ -57,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
             option.textContent = dep;
             departamentoSelect.appendChild(option);
         });
-        actualizarNiceSelect(departamentoSelect);
+        sincronizarNiceSelect(departamentoSelect);
     };
 
     // Cargar provincias según el departamento
@@ -72,8 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 provinciaSelect.appendChild(option);
             });
         }
-        actualizarNiceSelect(provinciaSelect);
-        actualizarNiceSelect(distritoSelect);
+        sincronizarNiceSelect(provinciaSelect);
+        sincronizarNiceSelect(distritoSelect);
     };
 
     // Cargar distritos según la provincia
@@ -87,12 +110,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 distritoSelect.appendChild(option);
             });
         }
-        actualizarNiceSelect(distritoSelect);
+        sincronizarNiceSelect(distritoSelect);
     };
 
     // Eventos de cambio
     departamentoSelect.addEventListener('change', function () {
         cargarProvincias(this.value);
+        dispararEventoChange(provinciaSelect);
     });
 
     provinciaSelect.addEventListener('change', function () {
@@ -106,7 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return res.json();
         })
         .then(data => {
-            console.log('Ubigeo cargado correctamente');
             ubigeoData = data;
             cargarDepartamentos();
 
@@ -117,17 +140,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (depGuardado && ubigeoData[depGuardado]) {
                 departamentoSelect.value = depGuardado;
-                actualizarNiceSelect(departamentoSelect);
+                sincronizarNiceSelect(departamentoSelect);
                 cargarProvincias(depGuardado);
 
                 if (provGuardado && ubigeoData[depGuardado][provGuardado]) {
                     provinciaSelect.value = provGuardado;
-                    actualizarNiceSelect(provinciaSelect);
+                    sincronizarNiceSelect(provinciaSelect);
                     cargarDistritos(depGuardado, provGuardado);
 
                     if (ubigeoData[depGuardado][provGuardado].includes(distGuardado)) {
                         distritoSelect.value = distGuardado;
-                        actualizarNiceSelect(distritoSelect);
+                        sincronizarNiceSelect(distritoSelect);
                     }
                 }
             }
