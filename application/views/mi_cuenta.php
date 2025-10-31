@@ -5,7 +5,14 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once APP_PATH . '/helpers/security_helper.php';
 
-$ordenes = $ordenes ?? [];
+$idCliente = isset($_SESSION['id_cliente']) ? (int) $_SESSION['id_cliente'] : null;
+
+if ($idCliente !== null) {
+    require_once APP_PATH . '/models/OrdenModel.php';
+    $ordenes = $ordenes ?? OrdenModel::obtenerPorCliente($idCliente);
+} else {
+    $ordenes = $ordenes ?? [];
+}
 ?>
 
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
