@@ -59,4 +59,4 @@
     </script>
     
 <!-- === UBIGEO SCRIPT === -->
-<script src="/public/assets/js/ubigeo.js"></script>
+<script src="<?= base_url('public/assets/js/ubigeo.js'); ?>"></script>
