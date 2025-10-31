@@ -10,12 +10,12 @@ class OrdenModel
         $stmt = $pdo->prepare(
             "INSERT INTO ordenes (
                 nro_orden, nombre, apellidos, email, telefono, dni, direccion,
-                distrito, referencia, metodo_envio, costo_envio, metodo_pago,
-                subtotal, total, estado
+                distrito, referencia, metodo_envio, metodo_envio_texto, costo_envio,
+                metodo_pago, subtotal, total, estado
             ) VALUES (
                 :nro_orden, :nombre, :apellidos, :email, :telefono, :dni, :direccion,
-                :distrito, :referencia, :metodo_envio, :costo_envio, :metodo_pago,
-                :subtotal, :total, :estado
+                :distrito, :referencia, :metodo_envio, :metodo_envio_texto, :costo_envio,
+                :metodo_pago, :subtotal, :total, 'Pendiente'
             )"
         );
         $stmt->execute($data);

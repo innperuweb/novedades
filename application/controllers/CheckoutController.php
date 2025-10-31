@@ -75,12 +75,27 @@ class CheckoutController extends BaseController
         ];
         $metodoPagoTitulo = $pagoTitulos[$metodoPago] ?? strtoupper($metodoPago);
 
-        $envioTitulos = [
-            'bank' => 'Envío en Lima Metropolitana (S/ 10.00)',
-            'cheque' => 'Envío a Provincias (S/ 12.00)',
-            'cash' => 'Aéreo / Express (S/ 18.00)',
-        ];
-        $metodoEnvioTitulo = $envioTitulos[$metodoEnvio] ?? strtoupper($metodoEnvio);
+        $metodoEnvioTexto = '';
+        $costoEnvio = 0.0;
+
+        switch ($metodoEnvio) {
+            case 'bank':
+                $metodoEnvioTexto = 'Envío en Lima Metropolitana (S/ 10.00)';
+                $costoEnvio = 10.00;
+                break;
+            case 'cheque':
+                $metodoEnvioTexto = 'ENVÍO A PROVINCIAS (S/ 12.00)';
+                $costoEnvio = 12.00;
+                break;
+            case 'cash':
+                $metodoEnvioTexto = 'AÉREO / EXPRESS (S/ 18.00)';
+                $costoEnvio = 18.00;
+                break;
+        }
+
+        if ($metodoEnvioTexto === '' && $metodoEnvio !== '') {
+            $metodoEnvioTexto = strtoupper($metodoEnvio);
+        }
 
         $optionalFields = [
             'departamento' => trim($_POST['departamento'] ?? ''),
@@ -129,19 +144,6 @@ class CheckoutController extends BaseController
             ];
         }
 
-        $costoEnvio = 0.0;
-        switch ($metodoEnvio) {
-            case 'bank':
-                $costoEnvio = 10.00;
-                break;
-            case 'cheque':
-                $costoEnvio = 12.00;
-                break;
-            case 'cash':
-                $costoEnvio = 18.00;
-                break;
-        }
-
         $total = $subtotal + $costoEnvio;
 
         $numeroOrden = $this->generarNumeroOrden();
@@ -163,12 +165,12 @@ class CheckoutController extends BaseController
                 ':direccion' => $direccion,
                 ':distrito' => $distritoNombre !== '' ? $distritoNombre : $distritoCodigo,
                 ':referencia' => $referencia,
-                ':metodo_envio' => $metodoEnvioTitulo,
-                ':costo_envio' => $costoEnvio,
+                ':metodo_envio' => $metodoEnvio,
+                ':metodo_envio_texto' => $metodoEnvioTexto,
+                ':costo_envio' => number_format($costoEnvio, 2, '.', ''),
                 ':metodo_pago' => $metodoPagoTitulo,
                 ':subtotal' => number_format($subtotal, 2, '.', ''),
                 ':total' => number_format($total, 2, '.', ''),
-                ':estado' => 'Pendiente',
             ]);
 
             OrdenDetalleModel::crear($ordenId, $detalleItems);
@@ -249,7 +251,11 @@ class CheckoutController extends BaseController
             'fecha' => $fechaFormateada,
             'estado' => (string) ($orden['estado'] ?? 'Pendiente'),
             'metodo_envio' => (string) ($orden['metodo_envio'] ?? ''),
+            'metodo_envio_texto' => (string) ($orden['metodo_envio_texto'] ?? ''),
             'metodo_pago' => (string) ($orden['metodo_pago'] ?? ''),
+            'costo_envio' => (float) ($orden['costo_envio'] ?? 0),
+            'subtotal' => (float) ($orden['subtotal'] ?? 0),
+            'total' => (float) ($orden['total'] ?? 0),
             'cliente' => [
                 'nombre' => (string) ($orden['nombre'] ?? ''),
                 'apellidos' => (string) ($orden['apellidos'] ?? ''),

@@ -32,9 +32,9 @@ if ($mensajeError !== null) : ?>
     return;
 endif;
 
-$subtotal = (float) ($orden['totales']['subtotal'] ?? 0);
-$costo_envio = (float) ($orden['totales']['costo_envio'] ?? 0);
-$total_final = (float) ($orden['totales']['total'] ?? 0);
+$subtotal = isset($orden['subtotal']) ? (float) $orden['subtotal'] : (float) ($orden['totales']['subtotal'] ?? 0);
+$costo_envio = isset($orden['costo_envio']) ? (float) $orden['costo_envio'] : (float) ($orden['totales']['costo_envio'] ?? 0);
+$total_final = isset($orden['total']) ? (float) $orden['total'] : (float) ($orden['totales']['total'] ?? 0);
 $cliente = $orden['cliente'] ?? [];
 ?>
 
@@ -153,7 +153,8 @@ $cliente = $orden['cliente'] ?? [];
                                               <p><strong>Email:</strong> <?= e($cliente['email'] ?? '') ?></p>
                                             </div>
                                             <div class="orden-info">
-                                              <p><strong>Método de Envío:</strong> <?= e($orden['metodo_envio'] ?? '') ?></p>
+                                              <p><strong>Método de Envío:</strong> <?= e($orden['metodo_envio_texto'] ?? '') ?></p>
+                                              <p><strong>Costo de Envío:</strong> S/ <?= number_format((float) ($orden['costo_envio'] ?? 0), 2) ?></p>
                                               <p><strong>Método de Pago:</strong> <?= e($orden['metodo_pago'] ?? '') ?></p>
                                             </div>
 
