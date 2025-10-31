@@ -33,4 +33,21 @@ class OrdenModel
 
         return $orden === false ? null : $orden;
     }
+
+    public static function obtenerPorEmail(string $email): array
+    {
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT * FROM ordenes WHERE email = ? ORDER BY fecha DESC');
+        $stmt->execute([$email]);
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public static function eliminarPorNro(string $numero): bool
+    {
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('DELETE FROM ordenes WHERE nro_orden = ?');
+
+        return $stmt->execute([$numero]);
+    }
 }

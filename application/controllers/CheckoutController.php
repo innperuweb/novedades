@@ -185,6 +185,9 @@ class CheckoutController extends BaseController
             exit;
         }
 
+        // Guardar correo del cliente en sesión
+        $_SESSION['email_cliente'] = $email;
+
         clear_cart_session();
         unset($_SESSION['checkout'], $_SESSION['orden_guardada'], $_SESSION['ultima_orden'], $_SESSION['orden_numero']);
 
