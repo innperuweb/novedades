@@ -1,3 +1,15 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+require_once APP_PATH . '/helpers/security_helper.php';
+require_once APP_PATH . '/models/OrdenModel.php';
+
+$email_cliente = $_SESSION['email_cliente'] ?? null;
+
+$ordenes = $email_cliente ? OrdenModel::obtenerPorEmail($email_cliente) : [];
+?>
 
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
@@ -29,33 +41,31 @@
 
                                     <div class="table-content table-responsive">
                                         <div class="table-content table-responsive">
-                                            <?php if (!isset($orden)) { $orden = $_SESSION['ultima_orden'] ?? null; } ?>
                                             <table class="table compare-table">
                                                 <thead>
                                                     <tr>
                                                         <th>Nº de órden</th>
                                                         <th>Fecha</th>
-                                                        <th>Estado</th>
                                                         <th>Total</th>
-                                                        <th>Acción</th>
+                                                        <th>Estado</th>
+                                                        <th>Ver</th>
+                                                        <th>Eliminar</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <?php if ($orden): ?>
-                                                        <tr>
-                                                            <td><?= htmlspecialchars($orden['numero'] ?? '') ?></td>
-                                                            <td><?= htmlspecialchars($orden['fecha'] ?? '') ?></td>
-                                                            <td><?= htmlspecialchars($orden['estado'] ?? '') ?></td>
-                                                            <td>S/ <?= number_format((float) ($orden['total'] ?? 0), 2) ?></td>
-                                                            <td style="white-space: nowrap;">
-                                                                <a href="<?= base_url('ver_orden') ?>" class="btn btn-tiny btn-style-1">Ver</a>
-                                                                <a href="<?= base_url('mi_cuenta/eliminar') ?>" class="btn btn-tiny btn-style-1 btn-danger" onclick="return confirm('¿Eliminar esta orden?');" title="Eliminar">✕</a>
-                                                            </td>
-                                                        </tr>
+                                                    <?php if (!empty($ordenes)): ?>
+                                                        <?php foreach ($ordenes as $orden): ?>
+                                                            <tr>
+                                                                <td><?= e($orden['nro_orden']) ?></td>
+                                                                <td><?= date('d/m/Y', strtotime($orden['fecha'])) ?></td>
+                                                                <td>S/ <?= number_format((float) $orden['total'], 2) ?></td>
+                                                                <td><?= e($orden['estado']) ?></td>
+                                                                <td><a href="<?= base_url('ver_orden?nro=' . urlencode($orden['nro_orden'])) ?>">Ver</a></td>
+                                                                <td><a href="<?= base_url('mi_cuenta/eliminar?nro=' . urlencode($orden['nro_orden'])) ?>" class="text-danger" onclick="return confirm('¿Eliminar esta orden?');">✕</a></td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
                                                     <?php else: ?>
-                                                        <tr>
-                                                            <td colspan="5">No tienes órdenes registradas.</td>
-                                                        </tr>
+                                                        <tr><td colspan="6">No tienes órdenes registradas.</td></tr>
                                                     <?php endif; ?>
                                                 </tbody>
                                             </table>
