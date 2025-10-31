@@ -57,3 +57,6 @@
             }
         });
     </script>
+    
+<!-- === UBIGEO SCRIPT === -->
+<script src="/public/assets/js/ubigeo.js"></script>
