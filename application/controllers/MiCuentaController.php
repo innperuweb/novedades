@@ -14,12 +14,7 @@ class MiCuentaController extends BaseController
         }
 
         $idCliente = isset($_SESSION['id_cliente']) ? (int) $_SESSION['id_cliente'] : null;
-        if ($idCliente !== null) {
-            $ordenes = OrdenModel::obtenerPorCliente($idCliente);
-        } else {
-            $emailCliente = $_SESSION['email_cliente'] ?? null;
-            $ordenes = $emailCliente ? OrdenModel::obtenerPorEmail($emailCliente) : [];
-        }
+        $ordenes = $idCliente !== null ? OrdenModel::obtenerPorCliente($idCliente) : [];
 
         $this->render('mi_cuenta', compact('ordenes'));
     }
@@ -30,10 +25,23 @@ class MiCuentaController extends BaseController
             session_start();
         }
 
-        $numeroOrden = $_GET['nro'] ?? '';
+        $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
+        $idCliente = isset($_SESSION['id_cliente']) ? (int) $_SESSION['id_cliente'] : null;
 
-        if ($numeroOrden !== '') {
-            OrdenModel::eliminarPorNro($numeroOrden);
+        if ($id === null && !empty($_GET['nro'])) {
+            $orden = OrdenModel::obtenerOrdenCompleta((string) $_GET['nro']);
+            $id = $orden['id'] ?? null;
+            $id = $id !== null ? (int) $id : null;
+        }
+
+        if ($id !== null && $idCliente !== null) {
+            $ordenesCliente = OrdenModel::obtenerPorCliente($idCliente);
+            foreach ($ordenesCliente as $ordenCliente) {
+                if ((int) ($ordenCliente['id'] ?? 0) === $id) {
+                    OrdenModel::eliminarOrden($id);
+                    break;
+                }
+            }
         }
 
         $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
