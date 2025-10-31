@@ -187,7 +187,7 @@ $referenciaValor = $referenciaCliente !== '' ? $referenciaCliente : $referenciaG
                                                 <label for="billing_company_provincia" class="form__label form__label--2">
                                                     Escriba la dirección de entrega completa
                                                 </label>
-                                                <input type="text" name="direccion_provincia" id="billing_company_provincia" class="form__input form__input--2">
+                                                <input type="text" name="direccion_provincia" id="billing_company_provincia" class="form__input form__input--2" value="<?= $direccionProvinciaGuardada; ?>">
                                             </div>
                                         </div>
                                     </div>
