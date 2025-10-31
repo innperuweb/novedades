@@ -162,7 +162,7 @@ $referenciaValor = $referenciaCliente !== '' ? $referenciaCliente : $referenciaG
                                         </div>
                                         <div class="row mb--30">
                                             <div class="form__group col-12">
-                                                <label for="billing_company" class="form__label form__label--2">Escriba la dirección de entrega completa</label>
+                                                <label for="billing_company" class="form__label form__label--2">Escriba la dirección de entrega completa: Departamento / Provincia / Distrito</label>
                                                 <input type="text" name="direccion" id="billing_company" class="form__input form__input--2" value="<?= $direccionValor; ?>" required>
                                             </div>
                                         </div>
@@ -187,7 +187,7 @@ $referenciaValor = $referenciaCliente !== '' ? $referenciaCliente : $referenciaG
                                                 <label for="billing_company_provincia" class="form__label form__label--2">
                                                     Escriba la dirección de entrega completa
                                                 </label>
-                                                <input type="text" name="direccion_provincia" id="billing_company_provincia" class="form__input form__input--2" value="<?= $direccionProvinciaGuardada; ?>">
+                                                <input type="text" name="direccion_provincia" id="billing_company_provincia" class="form__input form__input--2">
                                             </div>
                                         </div>
                                     </div>
