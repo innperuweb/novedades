@@ -184,35 +184,10 @@ $referenciaValor = $referenciaCliente !== '' ? $referenciaCliente : $referenciaG
                                     <div class="payment-info cheque hide-in-default" data-method="cheque">
                                         <div class="row mb--30">
                                             <div class="form__group col-12">
-                                                <label for="billing_country_provincia" class="form__label form__label--2">Departamento
-                                                    <span class="required">*</span></label>
-                                                <select id="billing_country_provincia" name="departamento" class="form__input form__input--2 nice-select" data-valor-guardado="<?= $departamentoGuardado; ?>" data-ubigeo-url="<?= base_url('public/assets/data/ubigeo.json'); ?>">
-                                                    <option value="">Seleccionar</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="row mb--30">
-                                            <div class="form__group col-12">
-                                                <label for="billing_provincia" class="form__label form__label--2">Provincia
-                                                    <span class="required">*</span></label>
-                                                <select id="billing_provincia" name="provincia" class="form__input form__input--2 nice-select hidden" data-valor-guardado="<?= $provinciaGuardada; ?>">
-                                                    <option value="">Seleccionar</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="row mb--30">
-                                            <div class="form__group col-12">
-                                                <label for="billing_distrito_provincia" class="form__label form__label--2">Distrito
-                                                    <span class="required">*</span></label>
-                                                <select id="billing_distrito_provincia" name="distrito_provincia" class="form__input form__input--2 nice-select hidden" data-valor-guardado="<?= $distritoProvinciaGuardado; ?>">
-                                                    <option value="">Seleccionar</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="row mb--30">
-                                            <div class="form__group col-12">
-                                                <label for="billing_company" class="form__label form__label--2">Escriba la dirección de entrega completa</label>
-                                                <input type="text" name="direccion_provincia" id="billing_company_provincia" class="form__input form__input--2" value="<?= $direccionProvinciaGuardada; ?>">
+                                                <label for="billing_company_provincia" class="form__label form__label--2">
+                                                    Escriba la dirección de entrega completa
+                                                </label>
+                                                <input type="text" name="direccion_provincia" id="billing_company_provincia" class="form__input form__input--2">
                                             </div>
                                         </div>
                                     </div>
