@@ -56,6 +56,27 @@ class CheckoutController extends BaseController
         $metodoEnvio = trim($_POST['metodo_envio'] ?? '');
         $metodoPago = trim($_POST['metodo_pago'] ?? '');
 
+        // Convertir código del distrito a nombre completo
+        $distritos = [
+            'AN' => 'Ancón', 'AT' => 'Ate', 'BR' => 'Barranco', 'BE' => 'Breña',
+            'CA' => 'Carabayllo', 'CC' => 'Chaclacayo', 'CH' => 'Chorrillos', 'CI' => 'Cieneguilla',
+            'CM' => 'Comas', 'EA' => 'El Agustino', 'IN' => 'Independencia', 'JM' => 'Jesús María',
+            'LM' => 'La Molina', 'LV' => 'La Victoria', 'LI' => 'Lince', 'LO' => 'Los Olivos',
+            'LU' => 'Lurigancho', 'LR' => 'Lurín', 'MM' => 'Magdalena del Mar', 'MO' => 'Miraflores',
+            'PC' => 'Pachacamac', 'PU' => 'Pucusana', 'PL' => 'Pueblo Libre', 'PP' => 'Puente Piedra',
+            'PH' => 'Punta Hermosa', 'PN' => 'Punta Negra', 'RI' => 'Rímac', 'SB' => 'San Bartolo',
+            'SBJ' => 'San Borja', 'SI' => 'San Isidro', 'SL' => 'San Juan de Lurigancho',
+            'SM' => 'San Juan de Miraflores', 'SC' => 'San Luis', 'SP' => 'San Martín de Porres',
+            'SG' => 'San Miguel', 'SA' => 'Santa Anita', 'SMR' => 'Santa María del Mar',
+            'SR' => 'Santa Rosa', 'SS' => 'Santiago de Surco', 'SU' => 'Surquillo',
+            'VS' => 'Villa El Salvador', 'VT' => 'Villa María del Triunfo'
+        ];
+
+        // Determinar nombre del distrito
+        if ($distritoCodigo !== '') {
+            $distritoNombre = $distritos[$distritoCodigo] ?? $distritoNombre;
+        }
+
         if (
             $email === '' ||
             $nombre === '' ||
@@ -118,7 +139,7 @@ class CheckoutController extends BaseController
                 'direccion' => $direccion,
                 'referencia' => $referencia,
                 'distrito' => $distritoCodigo,
-                'distrito_nombre' => $distritoNombre,
+                'distrito_nombre' => $distritoNombre !== '' ? $distritoNombre : $distritoCodigo,
             ];
 
             foreach ($optionalFields as $campo => $valor) {
@@ -276,12 +297,16 @@ class CheckoutController extends BaseController
             'costo_envio' => (float) ($orden['costo_envio'] ?? 0),
             'subtotal' => (float) ($orden['subtotal'] ?? 0),
             'total' => (float) ($orden['total'] ?? 0),
+            'direccion' => (string) ($orden['direccion'] ?? ''),
+            'distrito' => (string) ($orden['distrito'] ?? ''),
+            'referencia' => (string) ($orden['referencia'] ?? ''),
             'cliente' => [
                 'nombre' => (string) ($orden['nombre'] ?? ''),
                 'apellidos' => (string) ($orden['apellidos'] ?? ''),
                 'dni' => (string) ($orden['dni'] ?? ''),
                 'telefono' => (string) ($orden['telefono'] ?? ''),
                 'email' => (string) ($orden['email'] ?? ''),
+                'distrito' => (string) ($orden['distrito'] ?? ''),
                 'distrito_nombre' => (string) ($orden['distrito'] ?? ''),
                 'direccion' => (string) ($orden['direccion'] ?? ''),
                 'referencia' => (string) ($orden['referencia'] ?? ''),
