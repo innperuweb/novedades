@@ -58,5 +58,3 @@
         });
     </script>
     
-<!-- === UBIGEO SCRIPT === -->
-<script src="<?= base_url('public/assets/js/ubigeo.js'); ?>"></script>
