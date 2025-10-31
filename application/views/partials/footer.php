@@ -263,41 +263,113 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
     }
 
-    fetch("<?= base_url('public/assets/data/ubigeo.json'); ?>")
-        .then(res => res.json())
-        .then(data => {
-            Object.keys(data).forEach(dep => {
+    const obtenerValorGuardado = (select) => (select.dataset.valorGuardado || '').trim();
+
+    const actualizarNiceSelect = (select) => {
+        if (window.jQuery && typeof window.jQuery.fn.niceSelect === "function") {
+            window.jQuery(select).niceSelect('update');
+        }
+    };
+
+    const resetSelect = (select) => {
+        select.innerHTML = '<option value="">Seleccionar</option>';
+        actualizarNiceSelect(select);
+    };
+
+    let ubigeoData = {};
+
+    const cargarDepartamentos = () => {
+        resetSelect(departamento);
+        Object.keys(ubigeoData).forEach(dep => {
+            const opt = document.createElement("option");
+            opt.value = dep;
+            opt.textContent = dep;
+            departamento.appendChild(opt);
+        });
+        actualizarNiceSelect(departamento);
+    };
+
+    const cargarProvincias = (departamentoSeleccionado) => {
+        resetSelect(provincia);
+        resetSelect(distrito);
+
+        if (departamentoSeleccionado && ubigeoData[departamentoSeleccionado]) {
+            Object.keys(ubigeoData[departamentoSeleccionado]).forEach(prov => {
                 const opt = document.createElement("option");
-                opt.value = dep;
-                opt.textContent = dep;
-                departamento.appendChild(opt);
+                opt.value = prov;
+                opt.textContent = prov;
+                provincia.appendChild(opt);
             });
+            actualizarNiceSelect(provincia);
+        }
+    };
 
-            departamento.addEventListener("change", function() {
-                provincia.innerHTML = '<option value="">Seleccionar</option>';
-                distrito.innerHTML = '<option value="">Seleccionar</option>';
-                if (this.value && data[this.value]) {
-                    Object.keys(data[this.value]).forEach(prov => {
-                        const opt = document.createElement("option");
-                        opt.value = prov;
-                        opt.textContent = prov;
-                        provincia.appendChild(opt);
-                    });
-                }
-            });
+    const cargarDistritos = (departamentoSeleccionado, provinciaSeleccionada) => {
+        resetSelect(distrito);
 
-            provincia.addEventListener("change", function() {
-                distrito.innerHTML = '<option value="">Seleccionar</option>';
-                const dep = departamento.value;
-                if (dep && this.value && data[dep][this.value]) {
-                    data[dep][this.value].forEach(dist => {
-                        const opt = document.createElement("option");
-                        opt.value = dist;
-                        opt.textContent = dist;
-                        distrito.appendChild(opt);
-                    });
-                }
+        if (
+            departamentoSeleccionado &&
+            provinciaSeleccionada &&
+            ubigeoData[departamentoSeleccionado] &&
+            ubigeoData[departamentoSeleccionado][provinciaSeleccionada]
+        ) {
+            ubigeoData[departamentoSeleccionado][provinciaSeleccionada].forEach(dist => {
+                const opt = document.createElement("option");
+                opt.value = dist;
+                opt.textContent = dist;
+                distrito.appendChild(opt);
             });
+            actualizarNiceSelect(distrito);
+        }
+    };
+
+    departamento.addEventListener("change", function() {
+        cargarProvincias(this.value);
+    });
+
+    provincia.addEventListener("change", function() {
+        cargarDistritos(departamento.value, this.value);
+    });
+
+    fetch("<?= base_url('public/assets/data/ubigeo.json'); ?>")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('No se pudo cargar el archivo de ubigeo.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            ubigeoData = data;
+            cargarDepartamentos();
+
+            const departamentoGuardado = obtenerValorGuardado(departamento);
+            const provinciaGuardada = obtenerValorGuardado(provincia);
+            const distritoGuardado = obtenerValorGuardado(distrito);
+
+            if (departamentoGuardado && ubigeoData[departamentoGuardado]) {
+                departamento.value = departamentoGuardado;
+                actualizarNiceSelect(departamento);
+                cargarProvincias(departamentoGuardado);
+
+                if (provinciaGuardada && ubigeoData[departamentoGuardado][provinciaGuardada]) {
+                    provincia.value = provinciaGuardada;
+                    actualizarNiceSelect(provincia);
+                    cargarDistritos(departamentoGuardado, provinciaGuardada);
+
+                    if (
+                        distritoGuardado &&
+                        ubigeoData[departamentoGuardado][provinciaGuardada].includes(distritoGuardado)
+                    ) {
+                        distrito.value = distritoGuardado;
+                        actualizarNiceSelect(distrito);
+                    }
+                }
+            }
+
+            console.log('Ubigeo cargado correctamente');
+        })
+        .catch(error => {
+            console.error('Error al cargar el ubigeo:', error);
         });
 });
 </script>
