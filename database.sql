@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS ordenes (
     distrito VARCHAR(100),
     referencia TEXT,
     metodo_envio VARCHAR(100),
+    metodo_envio_texto VARCHAR(150),
     costo_envio DECIMAL(10,2) DEFAULT 0,
     metodo_pago VARCHAR(100),
     subtotal DECIMAL(10,2),
