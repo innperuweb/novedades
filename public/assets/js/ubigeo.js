@@ -24,48 +24,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // Recuperar valores guardados (en caso de persistencia)
     const obtenerValorGuardado = (select) => (select.dataset.valorGuardado || '').trim();
 
-    // Actualizar o inicializar nice-select
-    const sincronizarNiceSelect = (select) => {
-        if (!(window.jQuery && typeof window.jQuery.fn.niceSelect === 'function')) return;
-        const $select = window.jQuery(select);
+    // Utilidad: normaliza claves y valores
+    const norm = (s) => (s || '').toString().trim();
 
-        try {
-            if ($select.next('.nice-select').length) {
-                $select.niceSelect('destroy');
-            }
-
-            $select.niceSelect();
-        } catch (error) {
-            console.error('Error al sincronizar nice-select:', error);
+    // Refresca nice-select de un select concreto (sin romper estilos)
+    const refreshNice = (select) => {
+        if (window.jQuery && typeof window.jQuery.fn.niceSelect === 'function') {
+            const $s = window.jQuery(select);
+            if ($s.data('niceSelect')) $s.niceSelect('update'); else $s.niceSelect();
         }
     };
 
-    const dispararEventoChange = (elemento) => {
-        if (!elemento) return;
-
-        let eventoCambio;
-        if (typeof Event === 'function') {
-            eventoCambio = new Event('change', { bubbles: true });
-        } else {
-            eventoCambio = document.createEvent('HTMLEvents');
-            eventoCambio.initEvent('change', true, false);
-        }
-
-        elemento.dispatchEvent(eventoCambio);
+    // Crea la opción "Seleccionar"
+    const makePlaceholder = (txt = 'Seleccionar') => {
+        const o = document.createElement('option');
+        o.value = '';
+        o.textContent = txt;
+        return o;
     };
 
-    // Crear opción por defecto
-    const crearOpcionPorDefecto = () => {
-        const option = document.createElement('option');
-        option.value = '';
-        option.textContent = 'Seleccionar';
-        return option;
-    };
-
-    // Resetear un select
-    const resetSelect = (select) => {
+    // Resetea un select y deja solo el placeholder
+    const resetSelect = (select, placeholder = 'Seleccionar') => {
         select.innerHTML = '';
-        select.appendChild(crearOpcionPorDefecto());
+        select.appendChild(makePlaceholder(placeholder));
+        refreshNice(select);
     };
 
     // Datos del ubigeo
@@ -73,54 +55,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Cargar departamentos
     const cargarDepartamentos = () => {
-        resetSelect(departamentoSelect);
+        resetSelect(departamentoSelect, 'Seleccionar Departamento');
         Object.keys(ubigeoData).forEach(dep => {
             const option = document.createElement('option');
             option.value = dep;
             option.textContent = dep;
             departamentoSelect.appendChild(option);
         });
-        sincronizarNiceSelect(departamentoSelect);
+        refreshNice(departamentoSelect);
     };
 
     // Cargar provincias según el departamento
-    const cargarProvincias = (departamento) => {
-        resetSelect(provinciaSelect);
-        resetSelect(distritoSelect);
-        if (departamento && ubigeoData[departamento]) {
-            Object.keys(ubigeoData[departamento]).forEach(prov => {
-                const option = document.createElement('option');
-                option.value = prov;
-                option.textContent = prov;
-                provinciaSelect.appendChild(option);
-            });
-        }
-        sincronizarNiceSelect(provinciaSelect);
-        sincronizarNiceSelect(distritoSelect);
+    const cargarProvincias = (dep, ubigeoData) => {
+        const d = norm(dep);
+        resetSelect(provinciaSelect, 'Seleccionar Provincia');
+        resetSelect(distritoSelect, 'Seleccionar Distrito');
+
+        if (!d || !ubigeoData[d]) { refreshNice(provinciaSelect); refreshNice(distritoSelect); return; }
+
+        Object.keys(ubigeoData[d]).forEach((prov) => {
+            const opt = document.createElement('option');
+            opt.value = prov;
+            opt.textContent = prov;
+            provinciaSelect.appendChild(opt);
+        });
+
+        refreshNice(provinciaSelect);
+        refreshNice(distritoSelect);
     };
 
     // Cargar distritos según la provincia
-    const cargarDistritos = (departamento, provincia) => {
-        resetSelect(distritoSelect);
-        if (departamento && provincia && ubigeoData[departamento] && ubigeoData[departamento][provincia]) {
-            ubigeoData[departamento][provincia].forEach(dist => {
-                const option = document.createElement('option');
-                option.value = dist;
-                option.textContent = dist;
-                distritoSelect.appendChild(option);
-            });
-        }
-        sincronizarNiceSelect(distritoSelect);
+    const cargarDistritos = (dep, prov, ubigeoData) => {
+        const d = norm(dep);
+        const p = norm(prov);
+        resetSelect(distritoSelect, 'Seleccionar Distrito');
+
+        if (!d || !p || !ubigeoData[d] || !ubigeoData[d][p]) { refreshNice(distritoSelect); return; }
+
+        ubigeoData[d][p].forEach((dist) => {
+            const opt = document.createElement('option');
+            opt.value = dist;
+            opt.textContent = dist;
+            distritoSelect.appendChild(opt);
+        });
+
+        refreshNice(distritoSelect);
     };
 
     // Eventos de cambio
     departamentoSelect.addEventListener('change', function () {
-        cargarProvincias(this.value);
-        dispararEventoChange(provinciaSelect);
+        cargarProvincias(this.value, ubigeoData);
     });
 
     provinciaSelect.addEventListener('change', function () {
-        cargarDistritos(departamentoSelect.value, this.value);
+        cargarDistritos(departamentoSelect.value, this.value, ubigeoData);
     });
 
     // Cargar datos del JSON
@@ -140,17 +128,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (depGuardado && ubigeoData[depGuardado]) {
                 departamentoSelect.value = depGuardado;
-                sincronizarNiceSelect(departamentoSelect);
-                cargarProvincias(depGuardado);
+                refreshNice(departamentoSelect);
+                cargarProvincias(depGuardado, ubigeoData);
 
                 if (provGuardado && ubigeoData[depGuardado][provGuardado]) {
                     provinciaSelect.value = provGuardado;
-                    sincronizarNiceSelect(provinciaSelect);
-                    cargarDistritos(depGuardado, provGuardado);
+                    refreshNice(provinciaSelect);
+                    cargarDistritos(depGuardado, provGuardado, ubigeoData);
 
                     if (ubigeoData[depGuardado][provGuardado].includes(distGuardado)) {
                         distritoSelect.value = distGuardado;
-                        sincronizarNiceSelect(distritoSelect);
+                        refreshNice(distritoSelect);
                     }
                 }
             }
