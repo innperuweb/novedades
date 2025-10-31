@@ -34,6 +34,16 @@ $direccionValor = $direccionCliente !== '' ? $direccionCliente : $direccionGuard
 $referenciaValor = $referenciaCliente !== '' ? $referenciaCliente : $referenciaGuardada;
 ?>
 
+<style>
+    .hidden {
+        display: none !important;
+    }
+
+    .hidden + .nice-select {
+        display: none !important;
+    }
+</style>
+
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
         <div class="row">
@@ -185,7 +195,7 @@ $referenciaValor = $referenciaCliente !== '' ? $referenciaCliente : $referenciaG
                                             <div class="form__group col-12">
                                                 <label for="billing_provincia" class="form__label form__label--2">Provincia
                                                     <span class="required">*</span></label>
-                                                <select id="billing_provincia" name="provincia" class="form__input form__input--2 nice-select" data-valor-guardado="<?= $provinciaGuardada; ?>">
+                                                <select id="billing_provincia" name="provincia" class="form__input form__input--2 nice-select hidden" data-valor-guardado="<?= $provinciaGuardada; ?>">
                                                     <option value="">Seleccionar</option>
                                                 </select>
                                             </div>
@@ -194,7 +204,7 @@ $referenciaValor = $referenciaCliente !== '' ? $referenciaCliente : $referenciaG
                                             <div class="form__group col-12">
                                                 <label for="billing_distrito_provincia" class="form__label form__label--2">Distrito
                                                     <span class="required">*</span></label>
-                                                <select id="billing_distrito_provincia" name="distrito_provincia" class="form__input form__input--2 nice-select" data-valor-guardado="<?= $distritoProvinciaGuardado; ?>">
+                                                <select id="billing_distrito_provincia" name="distrito_provincia" class="form__input form__input--2 nice-select hidden" data-valor-guardado="<?= $distritoProvinciaGuardado; ?>">
                                                     <option value="">Seleccionar</option>
                                                 </select>
                                             </div>

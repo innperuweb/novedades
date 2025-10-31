@@ -27,12 +27,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // Utilidad: normaliza claves y valores
     const norm = (s) => (s || '').toString().trim();
 
-    // Refresca nice-select de un select concreto (sin romper estilos)
-    const refreshNice = (select) => {
+    // Refresca nice-select de un select concreto (sin romper estilos) y sincroniza visibilidad
+    const actualizarNiceSelect = (select) => {
         if (window.jQuery && typeof window.jQuery.fn.niceSelect === 'function') {
             const $s = window.jQuery(select);
-            if ($s.data('niceSelect')) $s.niceSelect('update'); else $s.niceSelect();
+            if ($s.data('niceSelect')) {
+                $s.niceSelect('update');
+            } else {
+                $s.niceSelect();
+            }
         }
+
+        const niceElement = select.nextElementSibling;
+        if (niceElement && niceElement.classList && niceElement.classList.contains('nice-select')) {
+            if (select.classList.contains('hidden')) {
+                niceElement.classList.add('hidden');
+            } else {
+                niceElement.classList.remove('hidden');
+            }
+        }
+    };
+
+    const ocultarSelect = (select) => {
+        if (!select.classList.contains('hidden')) {
+            select.classList.add('hidden');
+        }
+        actualizarNiceSelect(select);
+    };
+
+    const mostrarSelect = (select) => {
+        if (select.classList.contains('hidden')) {
+            select.classList.remove('hidden');
+        }
+        actualizarNiceSelect(select);
     };
 
     // Crea la opción "Seleccionar"
@@ -47,11 +74,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetSelect = (select, placeholder = 'Seleccionar') => {
         select.innerHTML = '';
         select.appendChild(makePlaceholder(placeholder));
-        refreshNice(select);
+        actualizarNiceSelect(select);
     };
 
     // Datos del ubigeo
     let ubigeoData = {};
+
+    ocultarSelect(provinciaSelect);
+    ocultarSelect(distritoSelect);
 
     // Cargar departamentos
     const cargarDepartamentos = () => {
@@ -62,16 +92,18 @@ document.addEventListener('DOMContentLoaded', () => {
             option.textContent = dep;
             departamentoSelect.appendChild(option);
         });
-        refreshNice(departamentoSelect);
+        actualizarNiceSelect(departamentoSelect);
     };
 
     // Cargar provincias según el departamento
-    const cargarProvincias = (dep, ubigeoData) => {
+    const cargarProvincias = (dep) => {
         const d = norm(dep);
         resetSelect(provinciaSelect, 'Seleccionar Provincia');
         resetSelect(distritoSelect, 'Seleccionar Distrito');
+        ocultarSelect(provinciaSelect);
+        ocultarSelect(distritoSelect);
 
-        if (!d || !ubigeoData[d]) { refreshNice(provinciaSelect); refreshNice(distritoSelect); return; }
+        if (!d || !ubigeoData[d]) { return; }
 
         Object.keys(ubigeoData[d]).forEach((prov) => {
             const opt = document.createElement('option');
@@ -80,17 +112,17 @@ document.addEventListener('DOMContentLoaded', () => {
             provinciaSelect.appendChild(opt);
         });
 
-        refreshNice(provinciaSelect);
-        refreshNice(distritoSelect);
+        mostrarSelect(provinciaSelect);
     };
 
     // Cargar distritos según la provincia
-    const cargarDistritos = (dep, prov, ubigeoData) => {
+    const cargarDistritos = (dep, prov) => {
         const d = norm(dep);
         const p = norm(prov);
         resetSelect(distritoSelect, 'Seleccionar Distrito');
+        ocultarSelect(distritoSelect);
 
-        if (!d || !p || !ubigeoData[d] || !ubigeoData[d][p]) { refreshNice(distritoSelect); return; }
+        if (!d || !p || !ubigeoData[d] || !ubigeoData[d][p]) { return; }
 
         ubigeoData[d][p].forEach((dist) => {
             const opt = document.createElement('option');
@@ -99,16 +131,16 @@ document.addEventListener('DOMContentLoaded', () => {
             distritoSelect.appendChild(opt);
         });
 
-        refreshNice(distritoSelect);
+        mostrarSelect(distritoSelect);
     };
 
     // Eventos de cambio
     departamentoSelect.addEventListener('change', function () {
-        cargarProvincias(this.value, ubigeoData);
+        cargarProvincias(this.value);
     });
 
     provinciaSelect.addEventListener('change', function () {
-        cargarDistritos(departamentoSelect.value, this.value, ubigeoData);
+        cargarDistritos(departamentoSelect.value, this.value);
     });
 
     // Cargar datos del JSON
@@ -128,17 +160,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (depGuardado && ubigeoData[depGuardado]) {
                 departamentoSelect.value = depGuardado;
-                refreshNice(departamentoSelect);
-                cargarProvincias(depGuardado, ubigeoData);
+                actualizarNiceSelect(departamentoSelect);
+                cargarProvincias(depGuardado);
 
                 if (provGuardado && ubigeoData[depGuardado][provGuardado]) {
                     provinciaSelect.value = provGuardado;
-                    refreshNice(provinciaSelect);
-                    cargarDistritos(depGuardado, provGuardado, ubigeoData);
+                    actualizarNiceSelect(provinciaSelect);
+                    cargarDistritos(depGuardado, provGuardado);
 
                     if (ubigeoData[depGuardado][provGuardado].includes(distGuardado)) {
                         distritoSelect.value = distGuardado;
-                        refreshNice(distritoSelect);
+                        actualizarNiceSelect(distritoSelect);
                     }
                 }
             }
