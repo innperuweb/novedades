@@ -1,0 +1,23 @@
+{
+  "Amazonas": {
+    "Chachapoyas": ["Chachapoyas", "Asunción", "Balsas", "Cheto", "Chuquibamba"],
+    "Bagua": ["Bagua", "Aramango", "Copallín", "El Parco", "La Peca"]
+  },
+  "Áncash": {
+    "Huaraz": ["Huaraz", "Cochabamba", "Colcabamba", "Huanchay"],
+    "Santa": ["Chimbote", "Coishco", "Moro", "Nepeña", "Samanco"]
+  },
+  "Cajamarca": {
+    "Cajamarca": ["Cajamarca", "Baños del Inca", "La Encañada"],
+    "San Ignacio": ["San Ignacio", "Chirinos", "Namballe", "Tabaconas"],
+    "Jaén": ["Jaén", "Bellavista", "Pomahuaca", "Sallique"]
+  },
+  "Cusco": {
+    "Cusco": ["Cusco", "San Jerónimo", "San Sebastián", "Santiago"],
+    "Urubamba": ["Urubamba", "Chinchero", "Ollantaytambo"]
+  },
+  "Lima": {
+    "Lima": ["Ate", "Barranco", "Breña", "Chorrillos", "Comas", "San Isidro", "San Juan de Lurigancho"],
+    "Cañete": ["San Vicente de Cañete", "Mala", "Asia", "Calango"]
+  }
+}
