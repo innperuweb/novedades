@@ -178,13 +178,6 @@ $referenciaValor = $referenciaCliente !== '' ? $referenciaCliente : $referenciaG
                                                     <span class="required">*</span></label>
                                                 <select id="billing_country_provincia" name="departamento" class="form__input form__input--2 nice-select" data-valor-guardado="<?= $departamentoGuardado; ?>">
                                                     <option value="">Seleccionar</option>
-                                                    <option value="AN">Ancón</option>
-                                                    <option value="AT">Ate</option>
-                                                    <option value="BR">Barranco</option>
-                                                    <option value="BE">Breña</option>
-                                                    <option value="CA">Carabayllo</option>
-                                                    <option value="CC">Chaclacayo</option>
-                                                    <option value="CH">Chorrillos</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -194,13 +187,6 @@ $referenciaValor = $referenciaCliente !== '' ? $referenciaCliente : $referenciaG
                                                     <span class="required">*</span></label>
                                                 <select id="billing_provincia" name="provincia" class="form__input form__input--2 nice-select" data-valor-guardado="<?= $provinciaGuardada; ?>">
                                                     <option value="">Seleccionar</option>
-                                                    <option value="AN">Ancón</option>
-                                                    <option value="AT">Ate</option>
-                                                    <option value="BR">Barranco</option>
-                                                    <option value="BE">Breña</option>
-                                                    <option value="CA">Carabayllo</option>
-                                                    <option value="CC">Chaclacayo</option>
-                                                    <option value="CH">Chorrillos</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -210,13 +196,6 @@ $referenciaValor = $referenciaCliente !== '' ? $referenciaCliente : $referenciaG
                                                     <span class="required">*</span></label>
                                                 <select id="billing_distrito_provincia" name="distrito_provincia" class="form__input form__input--2 nice-select" data-valor-guardado="<?= $distritoProvinciaGuardado; ?>">
                                                     <option value="">Seleccionar</option>
-                                                    <option value="AN">Ancón</option>
-                                                    <option value="AT">Ate</option>
-                                                    <option value="BR">Barranco</option>
-                                                    <option value="BE">Breña</option>
-                                                    <option value="CA">Carabayllo</option>
-                                                    <option value="CC">Chaclacayo</option>
-                                                    <option value="CH">Chorrillos</option>
                                                 </select>
                                             </div>
                                         </div>
