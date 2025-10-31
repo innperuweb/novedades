@@ -62,7 +62,7 @@ $cliente = $orden['cliente'] ?? [];
                             <nav class="nav nav-pills flex-md-column user-tabs" id="acct-tabs" role="tablist" aria-orientation="vertical">
                                 <a class="nav-link active" id="dashboard-tab" href="mi_cuenta.php" role="tab" aria-controls="dashboard" aria-selected="true">Órdenes</a>
                                 <a class="nav-link" id="datosp-tab" data-bs-toggle="pill" href="#datosp" role="tab" aria-controls="datosp" aria-selected="false">Datos personales</a>
-                                <a class="nav-link" href="#">Cerrar sesión</a>
+                                <a class="nav-link" href="<?= e(base_url('logout')) ?>">Cerrar sesión</a>
                             </nav>
                         </div>
 

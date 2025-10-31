@@ -21,7 +21,17 @@ class CheckoutController extends BaseController
 
         $datosGuardados = $_SESSION['datos_cliente'] ?? [];
 
-        $this->render('checkout', compact('carrito', 'total', 'datosGuardados'));
+        $cliente = null;
+        if (!empty($_SESSION['id_cliente'])) {
+            $cliente = ClienteModel::obtenerPorId((int) $_SESSION['id_cliente']);
+
+            if ($cliente !== null) {
+                $_SESSION['email_cliente'] = $cliente['email'] ?? ($_SESSION['email_cliente'] ?? '');
+                $_SESSION['nombre_cliente'] = $cliente['nombre'] ?? ($_SESSION['nombre_cliente'] ?? '');
+            }
+        }
+
+        $this->render('checkout', compact('carrito', 'total', 'datosGuardados', 'cliente'));
     }
 
     public function procesar(): void
@@ -182,6 +192,7 @@ class CheckoutController extends BaseController
             'direccion' => $direccion,
             'distrito' => $distritoNombre !== '' ? $distritoNombre : $distritoCodigo,
             'referencia' => $referencia,
+            'password' => null,
         ];
 
         $idCliente = ClienteModel::obtenerOcrear($clienteData);
@@ -225,6 +236,7 @@ class CheckoutController extends BaseController
         // Guardar información del cliente en sesión
         $_SESSION['id_cliente'] = $idCliente;
         $_SESSION['email_cliente'] = $email;
+        $_SESSION['nombre_cliente'] = $nombre;
 
         clear_cart_session();
         unset($_SESSION['checkout'], $_SESSION['orden_guardada'], $_SESSION['ultima_orden'], $_SESSION['orden_numero']);

@@ -2,6 +2,7 @@
 $carritoItems = isset($carrito) && is_array($carrito) ? $carrito : ($_SESSION['carrito'] ?? []);
 $totalPedido = isset($total) ? (float) $total : 0.0;
 $datosCliente = isset($datosGuardados) && is_array($datosGuardados) ? $datosGuardados : [];
+$cliente = isset($cliente) && is_array($cliente) ? $cliente : [];
 
 $emailGuardado = htmlspecialchars($datosCliente['email'] ?? '', ENT_QUOTES, 'UTF-8');
 $nombreGuardado = htmlspecialchars($datosCliente['nombre'] ?? '', ENT_QUOTES, 'UTF-8');
@@ -17,6 +18,20 @@ $departamentoGuardado = htmlspecialchars($datosCliente['departamento'] ?? '', EN
 $provinciaGuardada = htmlspecialchars($datosCliente['provincia'] ?? '', ENT_QUOTES, 'UTF-8');
 $distritoProvinciaGuardado = htmlspecialchars($datosCliente['distrito_provincia'] ?? '', ENT_QUOTES, 'UTF-8');
 $direccionProvinciaGuardada = htmlspecialchars($datosCliente['direccion_provincia'] ?? '', ENT_QUOTES, 'UTF-8');
+
+$nombreSesion = htmlspecialchars($_SESSION['nombre_cliente'] ?? '', ENT_QUOTES, 'UTF-8');
+$emailSesion = htmlspecialchars($_SESSION['email_cliente'] ?? '', ENT_QUOTES, 'UTF-8');
+$telefonoCliente = htmlspecialchars($cliente['telefono'] ?? '', ENT_QUOTES, 'UTF-8');
+$direccionCliente = htmlspecialchars($cliente['direccion'] ?? '', ENT_QUOTES, 'UTF-8');
+$apellidosCliente = htmlspecialchars($cliente['apellidos'] ?? '', ENT_QUOTES, 'UTF-8');
+$referenciaCliente = htmlspecialchars($cliente['referencia'] ?? '', ENT_QUOTES, 'UTF-8');
+
+$nombreValor = $nombreSesion !== '' ? $nombreSesion : $nombreGuardado;
+$emailValor = $emailSesion !== '' ? $emailSesion : $emailGuardado;
+$apellidosValor = $apellidosGuardados !== '' ? $apellidosGuardados : $apellidosCliente;
+$telefonoValor = $telefonoCliente !== '' ? $telefonoCliente : $telefonoGuardado;
+$direccionValor = $direccionCliente !== '' ? $direccionCliente : $direccionGuardada;
+$referenciaValor = $referenciaCliente !== '' ? $referenciaCliente : $referenciaGuardada;
 ?>
 
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
@@ -42,7 +57,7 @@ $direccionProvinciaGuardada = htmlspecialchars($datosCliente['direccion_provinci
                             <div class="row mb--30">
                                 <div class="form__group col-12">
                                     <label for="shipping_email" class="form__label form__label--2">Correo electrónico <span class="required">*</span></label>
-                                    <input type="email" name="email" id="shipping_email" class="form__input form__input--2" value="<?= $emailGuardado; ?>" required>
+                                    <input type="email" name="email" id="shipping_email" class="form__input form__input--2" value="<?= $emailValor; ?>" required>
                                 </div>
                             </div>
 
@@ -54,12 +69,12 @@ $direccionProvinciaGuardada = htmlspecialchars($datosCliente['direccion_provinci
                                 <div class="form__group col-md-6 mb-sm--30">
                                     <label for="billing_fname" class="form__label form__label--2">Nombre
                                         <span class="required">*</span></label>
-                                    <input type="text" name="nombre" id="billing_fname" class="form__input form__input--2" value="<?= $nombreGuardado; ?>" required>
+                                    <input type="text" name="nombre" id="billing_fname" class="form__input form__input--2" value="<?= $nombreValor; ?>" required>
                                 </div>
                                 <div class="form__group col-md-6">
                                     <label for="billing_lname" class="form__label form__label--2">Apellidos
                                         <span class="required">*</span></label>
-                                    <input type="text" name="apellidos" id="billing_lname" class="form__input form__input--2" value="<?= $apellidosGuardados; ?>">
+                                    <input type="text" name="apellidos" id="billing_lname" class="form__input form__input--2" value="<?= $apellidosValor; ?>">
                                 </div>
                             </div>
                             <div class="row mb--30">
@@ -71,7 +86,7 @@ $direccionProvinciaGuardada = htmlspecialchars($datosCliente['direccion_provinci
                                 <div class="form__group col-md-6">
                                     <label for="billing_phone" class="form__label form__label--2">N° de Whatsapp
                                         <span class="required">*</span></label>
-                                    <input type="text" name="telefono" id="billing_phone" class="form__input form__input--2" value="<?= $telefonoGuardado; ?>" required>
+                                    <input type="text" name="telefono" id="billing_phone" class="form__input form__input--2" value="<?= $telefonoValor; ?>" required>
                                 </div>
                             </div>
 
@@ -138,13 +153,13 @@ $direccionProvinciaGuardada = htmlspecialchars($datosCliente['direccion_provinci
                                         <div class="row mb--30">
                                             <div class="form__group col-12">
                                                 <label for="billing_company" class="form__label form__label--2">Escriba la dirección de entrega completa</label>
-                                                <input type="text" name="direccion" id="billing_company" class="form__input form__input--2" value="<?= $direccionGuardada; ?>" required>
+                                                <input type="text" name="direccion" id="billing_company" class="form__input form__input--2" value="<?= $direccionValor; ?>" required>
                                             </div>
                                         </div>
                                         <div class="row mb--30">
                                             <div class="form__group col-12">
                                                 <label for="billing_reference" class="form__label form__label--2">Referencia</label>
-                                                <input type="text" name="referencia" id="billing_reference" class="form__input form__input--2" value="<?= $referenciaGuardada; ?>">
+                                                <input type="text" name="referencia" id="billing_reference" class="form__input form__input--2" value="<?= $referenciaValor; ?>">
                                             </div>
                                         </div>
                                     </div>
