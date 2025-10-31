@@ -123,14 +123,14 @@ $cliente = $orden['cliente'] ?? [];
                                         <div class="col-lg-6 col-md-6 mb-sm--30">
                                             <div class="about-text">
                                                 <h3>Dirección de envío</h3>
-                                                <?php if (!empty($cliente['distrito_nombre'])): ?>
-                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Distrito:</strong> <?= e($cliente['distrito_nombre']) ?></p>
+                                                <?php if (!empty($orden['direccion'])): ?>
+                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Dirección:</strong> <?= e($orden['direccion']) ?></p>
                                                 <?php endif; ?>
-                                                <?php if (!empty($cliente['direccion'])): ?>
-                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Dirección:</strong> <?= e($cliente['direccion']) ?></p>
+                                                <?php if (!empty($orden['distrito'])): ?>
+                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Distrito:</strong> <?= e($orden['distrito']) ?></p>
                                                 <?php endif; ?>
-                                                <?php if (!empty($cliente['referencia'])): ?>
-                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Referencia:</strong> <?= e($cliente['referencia']) ?></p>
+                                                <?php if (!empty($orden['referencia'])): ?>
+                                                  <p class="ver_orden mb--25 mb-md--20"><strong>Referencia:</strong> <?= e($orden['referencia']) ?></p>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
@@ -160,14 +160,14 @@ $cliente = $orden['cliente'] ?? [];
 
                                             <div class="direccion-envio">
                                               <h4>Dirección de Entrega</h4>
-                                              <?php if (!empty($cliente['distrito_nombre'])): ?>
-                                                <p><strong>Distrito:</strong> <?= e($cliente['distrito_nombre']) ?></p>
+                                              <?php if (!empty($orden['direccion'])): ?>
+                                                <p><strong>Dirección:</strong> <?= e($orden['direccion']) ?></p>
                                               <?php endif; ?>
-                                              <?php if (!empty($cliente['direccion'])): ?>
-                                                <p><strong>Dirección:</strong> <?= e($cliente['direccion']) ?></p>
+                                              <?php if (!empty($orden['distrito'])): ?>
+                                                <p><strong>Distrito:</strong> <?= e($orden['distrito']) ?></p>
                                               <?php endif; ?>
-                                              <?php if (!empty($cliente['referencia'])): ?>
-                                                <p><strong>Referencia:</strong> <?= e($cliente['referencia']) ?></p>
+                                              <?php if (!empty($orden['referencia'])): ?>
+                                                <p><strong>Referencia:</strong> <?= e($orden['referencia']) ?></p>
                                               <?php endif; ?>
                                             </div>
                                             <p><strong>Total:</strong> S/ <?= number_format($total_final, 2) ?></p>
