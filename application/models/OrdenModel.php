@@ -9,9 +9,9 @@ class OrdenModel
         $pdo = Database::connect();
 
         $stmt = $pdo->prepare(
-            "INSERT INTO ordenes 
-            (id_cliente, nro_orden, metodo_envio, costo_envio, metodo_pago, subtotal, total, estado)
-            VALUES (:id_cliente, :nro_orden, :metodo_envio, :costo_envio, :metodo_pago, :subtotal, :total, 'Pendiente')"
+            "INSERT INTO ordenes
+            (id_cliente, nro_orden, nombre, apellidos, email, telefono, dni, direccion, distrito, referencia, metodo_envio, metodo_envio_texto, costo_envio, metodo_pago, subtotal, total, estado)
+            VALUES (:id_cliente, :nro_orden, :nombre, :apellidos, :email, :telefono, :dni, :direccion, :distrito, :referencia, :metodo_envio, :metodo_envio_texto, :costo_envio, :metodo_pago, :subtotal, :total, 'Pendiente')"
         );
         $stmt->execute($data);
         $idOrden = (int) $pdo->lastInsertId();

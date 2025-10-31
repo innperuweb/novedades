@@ -58,6 +58,7 @@ class CheckoutController extends BaseController
         $dni = trim($_POST['dni'] ?? '');
         $telefono = trim($_POST['telefono'] ?? '');
         $direccion = trim($_POST['direccion'] ?? '');
+        $direccionProvincia = trim($_POST['direccion_provincia'] ?? '');
         $referencia = trim($_POST['referencia'] ?? '');
         $distritoCodigo = trim($_POST['distrito'] ?? '');
         $distritoNombre = trim($_POST['distrito_nombre'] ?? '');
@@ -135,9 +136,17 @@ class CheckoutController extends BaseController
             'departamento' => trim($_POST['departamento'] ?? ''),
             'provincia' => trim($_POST['provincia'] ?? ''),
             'distrito_provincia' => trim($_POST['distrito_provincia'] ?? ''),
-            'direccion_provincia' => trim($_POST['direccion_provincia'] ?? ''),
+            'direccion_provincia' => $direccionProvincia,
             'notas' => trim($_POST['notas'] ?? ''),
         ];
+
+        $direccionEnvio = '';
+
+        if ($direccionProvincia !== '') {
+            $direccionEnvio = $direccionProvincia;
+        } elseif ($direccion !== '') {
+            $direccionEnvio = $direccion;
+        }
 
         if ($guardarDatos) {
             $_SESSION['datos_cliente'] = [
@@ -146,7 +155,7 @@ class CheckoutController extends BaseController
                 'apellidos' => $apellidos,
                 'dni' => $dni,
                 'telefono' => $telefono,
-                'direccion' => $direccion,
+                'direccion' => $direccionEnvio,
                 'referencia' => $referencia,
                 'distrito' => $distritoCodigo,
                 'distrito_nombre' => $distritoNombre !== '' ? $distritoNombre : $distritoCodigo,
@@ -187,7 +196,7 @@ class CheckoutController extends BaseController
             'apellidos' => $apellidos,
             'email' => $email,
             'telefono' => $telefono,
-            'direccion' => $direccion,
+            'direccion' => $direccionEnvio,
             'distrito' => $distritoNombre !== '' ? $distritoNombre : $distritoCodigo,
             'referencia' => $referencia,
             'password' => null,
@@ -201,10 +210,21 @@ class CheckoutController extends BaseController
         $total = round($total, 2);
         $costoEnvio = round($costoEnvio, 2);
 
+        $distritoFinal = $distritoNombre !== '' ? $distritoNombre : $distritoCodigo;
+
         $data = [
             ':id_cliente' => $idCliente,
             ':nro_orden' => $numeroOrden,
+            ':nombre' => $nombre,
+            ':apellidos' => $apellidos,
+            ':email' => $email,
+            ':telefono' => $telefono,
+            ':dni' => $dni,
+            ':direccion' => $direccionEnvio,
+            ':distrito' => $distritoFinal,
+            ':referencia' => $referencia,
             ':metodo_envio' => $metodoEnvioTexto,
+            ':metodo_envio_texto' => $metodoEnvioTexto,
             ':costo_envio' => number_format($costoEnvio, 2, '.', ''),
             ':metodo_pago' => $metodoPagoTitulo,
             ':subtotal' => number_format($subtotal, 2, '.', ''),
