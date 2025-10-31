@@ -9,11 +9,11 @@ class OrdenModel
         $pdo = Database::connect();
         $stmt = $pdo->prepare(
             "INSERT INTO ordenes (
-                nro_orden, nombre, apellidos, email, telefono, dni, direccion,
+                id_cliente, nro_orden, nombre, apellidos, email, telefono, dni, direccion,
                 distrito, referencia, metodo_envio, metodo_envio_texto, costo_envio,
                 metodo_pago, subtotal, total, estado
             ) VALUES (
-                :nro_orden, :nombre, :apellidos, :email, :telefono, :dni, :direccion,
+                :id_cliente, :nro_orden, :nombre, :apellidos, :email, :telefono, :dni, :direccion,
                 :distrito, :referencia, :metodo_envio, :metodo_envio_texto, :costo_envio,
                 :metodo_pago, :subtotal, :total, 'Pendiente'
             )"
@@ -39,6 +39,15 @@ class OrdenModel
         $pdo = Database::connect();
         $stmt = $pdo->prepare('SELECT * FROM ordenes WHERE email = ? ORDER BY fecha DESC');
         $stmt->execute([$email]);
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public static function obtenerPorCliente(int $idCliente): array
+    {
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT * FROM ordenes WHERE id_cliente = ? ORDER BY fecha DESC');
+        $stmt->execute([$idCliente]);
 
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }

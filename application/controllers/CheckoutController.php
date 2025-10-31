@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once APP_PATH . '/controllers/BaseController.php';
 require_once APP_PATH . '/helpers/session_helper.php';
+require_once APP_PATH . '/models/ClienteModel.php';
 
 class CheckoutController extends BaseController
 {
@@ -152,12 +153,25 @@ class CheckoutController extends BaseController
 
         $pdo = Database::connect();
 
+        $clienteData = [
+            'nombre' => $nombre,
+            'apellidos' => $apellidos,
+            'email' => $email,
+            'telefono' => $telefono,
+            'direccion' => $direccion,
+            'distrito' => $distritoNombre !== '' ? $distritoNombre : $distritoCodigo,
+            'referencia' => $referencia,
+        ];
+
+        $idCliente = ClienteModel::obtenerOcrear($clienteData);
+
         try {
             if (!$pdo->inTransaction()) {
                 $pdo->beginTransaction();
             }
 
             $ordenId = OrdenModel::crear([
+                ':id_cliente' => $idCliente,
                 ':nro_orden' => $numeroOrden,
                 ':nombre' => $nombre,
                 ':apellidos' => $apellidos,
@@ -187,7 +201,8 @@ class CheckoutController extends BaseController
             exit;
         }
 
-        // Guardar correo del cliente en sesión
+        // Guardar información del cliente en sesión
+        $_SESSION['id_cliente'] = $idCliente;
         $_SESSION['email_cliente'] = $email;
 
         clear_cart_session();

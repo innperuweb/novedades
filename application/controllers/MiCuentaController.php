@@ -13,8 +13,13 @@ class MiCuentaController extends BaseController
             session_start();
         }
 
-        $emailCliente = $_SESSION['email_cliente'] ?? null;
-        $ordenes = $emailCliente ? OrdenModel::obtenerPorEmail($emailCliente) : [];
+        $idCliente = isset($_SESSION['id_cliente']) ? (int) $_SESSION['id_cliente'] : null;
+        if ($idCliente !== null) {
+            $ordenes = OrdenModel::obtenerPorCliente($idCliente);
+        } else {
+            $emailCliente = $_SESSION['email_cliente'] ?? null;
+            $ordenes = $emailCliente ? OrdenModel::obtenerPorEmail($emailCliente) : [];
+        }
 
         $this->render('mi_cuenta', compact('ordenes'));
     }
