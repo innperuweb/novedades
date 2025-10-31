@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once APP_PATH . '/controllers/BaseController.php';
+require_once APP_PATH . '/models/OrdenModel.php';
 
 class MiCuentaController extends BaseController
 {
@@ -12,9 +13,10 @@ class MiCuentaController extends BaseController
             session_start();
         }
 
-        $orden = $_SESSION['ultima_orden'] ?? null;
+        $emailCliente = $_SESSION['email_cliente'] ?? null;
+        $ordenes = $emailCliente ? OrdenModel::obtenerPorEmail($emailCliente) : [];
 
-        $this->render('mi_cuenta', compact('orden'));
+        $this->render('mi_cuenta', compact('ordenes'));
     }
 
     public function eliminar(): void
@@ -23,7 +25,20 @@ class MiCuentaController extends BaseController
             session_start();
         }
 
-        unset($_SESSION['ultima_orden']);
+        $numeroOrden = $_GET['nro'] ?? '';
+
+        if ($numeroOrden !== '') {
+            OrdenModel::eliminarPorNro($numeroOrden);
+        }
+
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true]);
+            exit;
+        }
 
         header('Location: ' . base_url('mi_cuenta'));
         exit;

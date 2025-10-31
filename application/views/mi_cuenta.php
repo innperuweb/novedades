@@ -4,11 +4,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once APP_PATH . '/helpers/security_helper.php';
-require_once APP_PATH . '/models/OrdenModel.php';
 
-$email_cliente = $_SESSION['email_cliente'] ?? null;
-
-$ordenes = $email_cliente ? OrdenModel::obtenerPorEmail($email_cliente) : [];
+$ordenes = $ordenes ?? [];
 ?>
 
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
@@ -61,7 +58,14 @@ $ordenes = $email_cliente ? OrdenModel::obtenerPorEmail($email_cliente) : [];
                                                                 <td>S/ <?= number_format((float) $orden['total'], 2) ?></td>
                                                                 <td><?= e($orden['estado']) ?></td>
                                                                 <td><a href="<?= base_url('ver_orden?nro=' . urlencode($orden['nro_orden'])) ?>">Ver</a></td>
-                                                                <td><a href="<?= base_url('mi_cuenta/eliminar?nro=' . urlencode($orden['nro_orden'])) ?>" class="text-danger" onclick="return confirm('¿Eliminar esta orden?');">✕</a></td>
+                                                                <td>
+                                                                    <a
+                                                                        href="<?= base_url('mi_cuenta/eliminar?nro=' . urlencode($orden['nro_orden'])) ?>"
+                                                                        class="text-danger"
+                                                                        data-action="eliminar-orden"
+                                                                        onclick="return confirm('¿Eliminar esta orden?')"
+                                                                    >✕</a>
+                                                                </td>
                                                             </tr>
                                                         <?php endforeach; ?>
                                                     <?php else: ?>
@@ -129,16 +133,45 @@ $ordenes = $email_cliente ? OrdenModel::obtenerPorEmail($email_cliente) : [];
     </div>
 </div>
 
-<!-- Main Content Wrapper Start -->
-<div id="content" class="main-content-wrapper">
-    <div class="page-content-inner">
-        <div class="container">
-            <div class="row ptb--80 ptb-md--60 ptb-sm--40">
-                <div class="col-12" id="main-content">
+<script>
+document.querySelectorAll('a[data-action="eliminar-orden"]').forEach((btn) => {
+    btn.addEventListener('click', function (event) {
+        if (event.defaultPrevented) {
+            return;
+        }
 
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+        event.preventDefault();
+
+        const url = this.href;
+        const row = this.closest('tr');
+
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('No se pudo eliminar la orden.');
+                }
+
+                const contentType = response.headers.get('Content-Type') || '';
+                if (contentType.includes('application/json')) {
+                    return response.json();
+                }
+
+                return {};
+            })
+            .then(() => {
+                if (row) {
+                    row.remove();
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                window.location.href = url;
+            });
+    });
+});
+</script>
 
