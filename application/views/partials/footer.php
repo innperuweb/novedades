@@ -253,6 +253,55 @@
 
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const departamento = document.getElementById("billing_country_provincia");
+    const provincia = document.getElementById("billing_provincia");
+    const distrito = document.getElementById("billing_distrito_provincia");
+
+    if (!departamento || !provincia || !distrito) {
+        return;
+    }
+
+    fetch("<?= base_url('public/assets/data/ubigeo.json'); ?>")
+        .then(res => res.json())
+        .then(data => {
+            Object.keys(data).forEach(dep => {
+                const opt = document.createElement("option");
+                opt.value = dep;
+                opt.textContent = dep;
+                departamento.appendChild(opt);
+            });
+
+            departamento.addEventListener("change", function() {
+                provincia.innerHTML = '<option value="">Seleccionar</option>';
+                distrito.innerHTML = '<option value="">Seleccionar</option>';
+                if (this.value && data[this.value]) {
+                    Object.keys(data[this.value]).forEach(prov => {
+                        const opt = document.createElement("option");
+                        opt.value = prov;
+                        opt.textContent = prov;
+                        provincia.appendChild(opt);
+                    });
+                }
+            });
+
+            provincia.addEventListener("change", function() {
+                distrito.innerHTML = '<option value="">Seleccionar</option>';
+                const dep = departamento.value;
+                if (dep && this.value && data[dep][this.value]) {
+                    data[dep][this.value].forEach(dist => {
+                        const opt = document.createElement("option");
+                        opt.value = dist;
+                        opt.textContent = dist;
+                        distrito.appendChild(opt);
+                    });
+                }
+            });
+        });
+});
+</script>
+
 </body>
 
 </html>
