@@ -160,7 +160,7 @@ class CheckoutController extends BaseController
         }
 
         $subtotal = 0.0;
-        $detalleItems = [];
+        $productos = [];
 
         foreach ($carrito as $item) {
             $cantidad = max(1, (int) ($item['cantidad'] ?? 0));
@@ -168,7 +168,7 @@ class CheckoutController extends BaseController
             $subtotalProducto = $cantidad * $precio;
             $subtotal += $subtotalProducto;
 
-            $detalleItems[] = [
+            $productos[] = [
                 'id' => (int) ($item['id'] ?? 0),
                 'nombre' => (string) ($item['nombre'] ?? ''),
                 'color' => (string) ($item['color'] ?? ''),
@@ -182,8 +182,6 @@ class CheckoutController extends BaseController
 
         $numeroOrden = $this->generarNumeroOrden();
 
-        $pdo = Database::connect();
-
         $clienteData = [
             'nombre' => $nombre,
             'apellidos' => $apellidos,
@@ -195,49 +193,36 @@ class CheckoutController extends BaseController
             'password' => null,
         ];
 
-        $idCliente = ClienteModel::obtenerOcrear($clienteData);
+        $idCliente = isset($_SESSION['id_cliente'])
+            ? (int) $_SESSION['id_cliente']
+            : ClienteModel::obtenerOcrear($clienteData);
+
+        $subtotal = round($subtotal, 2);
+        $total = round($total, 2);
+        $costoEnvio = round($costoEnvio, 2);
+
+        $data = [
+            ':id_cliente' => $idCliente,
+            ':nro_orden' => $numeroOrden,
+            ':metodo_envio' => $metodoEnvioTexto,
+            ':costo_envio' => number_format($costoEnvio, 2, '.', ''),
+            ':metodo_pago' => $metodoPagoTitulo,
+            ':subtotal' => number_format($subtotal, 2, '.', ''),
+            ':total' => number_format($total, 2, '.', ''),
+        ];
 
         try {
-            if (!$pdo->inTransaction()) {
-                $pdo->beginTransaction();
-            }
-
-            $ordenId = OrdenModel::crear([
-                ':id_cliente' => $idCliente,
-                ':nro_orden' => $numeroOrden,
-                ':nombre' => $nombre,
-                ':apellidos' => $apellidos,
-                ':email' => $email,
-                ':telefono' => $telefono,
-                ':dni' => $dni,
-                ':direccion' => $direccion,
-                ':distrito' => $distritoNombre !== '' ? $distritoNombre : $distritoCodigo,
-                ':referencia' => $referencia,
-                ':metodo_envio' => $metodoEnvio,
-                ':metodo_envio_texto' => $metodoEnvioTexto,
-                ':costo_envio' => round($costoEnvio, 2),
-                ':metodo_pago' => $metodoPagoTitulo,
-                ':subtotal' => round($subtotal, 2),
-                ':total' => round($total, 2),
-            ]);
-
-            OrdenDetalleModel::crear($ordenId, $detalleItems);
-
-            $pdo->commit();
+            OrdenModel::crearOrden($data, $productos);
         } catch (\Throwable $exception) {
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
-
             echo "<script>alert('Ocurrió un problema al guardar tu orden. Inténtalo nuevamente.'); window.history.back();</script>";
             exit;
         }
 
-        // Guardar información del cliente en sesión
         $_SESSION['id_cliente'] = $idCliente;
         $_SESSION['email_cliente'] = $email;
         $_SESSION['nombre_cliente'] = $nombre;
 
+        unset($_SESSION['carrito']);
         clear_cart_session();
         unset($_SESSION['checkout'], $_SESSION['orden_guardada'], $_SESSION['ultima_orden'], $_SESSION['orden_numero']);
 
@@ -258,83 +243,15 @@ class CheckoutController extends BaseController
             exit;
         }
 
-        $orden = OrdenModel::obtenerPorNumero($numeroOrden);
+        $orden = OrdenModel::obtenerOrdenCompleta($numeroOrden);
 
         if ($orden === null) {
             http_response_code(404);
-            $this->render('ver_orden', [
-                'orden' => null,
-                'items' => [],
-                'mensajeError' => 'Orden no encontrada.',
-            ]);
+            $this->render('ver_orden', ['orden' => null]);
             return;
         }
 
-        $fecha = $orden['fecha'] ?? '';
-        $fechaFormateada = '';
-
-        if ($fecha !== '') {
-            try {
-                $fechaObjeto = new \DateTime($fecha);
-                $fechaObjeto->setTimezone(new \DateTimeZone('America/Lima'));
-                $fechaFormateada = $fechaObjeto->format('d/m/Y H:i');
-            } catch (\Exception $exception) {
-                $fechaFormateada = date('d/m/Y H:i', strtotime($fecha));
-            }
-        }
-
-        $detalles = OrdenDetalleModel::obtenerPorOrden((int) ($orden['id'] ?? 0));
-
-        $items = [];
-
-        foreach ($detalles as $detalle) {
-            $items[] = [
-                'id' => (int) ($detalle['producto_id'] ?? 0),
-                'nombre' => (string) ($detalle['nombre_producto'] ?? ''),
-                'cantidad' => (int) ($detalle['cantidad'] ?? 0),
-                'precio' => (float) ($detalle['precio_unitario'] ?? 0),
-                'subtotal' => (float) ($detalle['subtotal'] ?? 0),
-                'color' => (string) ($detalle['color'] ?? ''),
-                'talla' => (string) ($detalle['talla'] ?? ''),
-            ];
-        }
-
-        $ordenPreparada = [
-            'numero' => (string) ($orden['nro_orden'] ?? ''),
-            'fecha' => $fechaFormateada,
-            'estado' => (string) ($orden['estado'] ?? 'Pendiente'),
-            'metodo_envio' => (string) ($orden['metodo_envio'] ?? ''),
-            'metodo_envio_texto' => (string) ($orden['metodo_envio_texto'] ?? ''),
-            'metodo_pago' => (string) ($orden['metodo_pago'] ?? ''),
-            'costo_envio' => (float) ($orden['costo_envio'] ?? 0),
-            'subtotal' => (float) ($orden['subtotal'] ?? 0),
-            'total' => (float) ($orden['total'] ?? 0),
-            'direccion' => (string) ($orden['direccion'] ?? ''),
-            'distrito' => (string) ($orden['distrito'] ?? ''),
-            'referencia' => (string) ($orden['referencia'] ?? ''),
-            'cliente' => [
-                'nombre' => (string) ($orden['nombre'] ?? ''),
-                'apellidos' => (string) ($orden['apellidos'] ?? ''),
-                'dni' => (string) ($orden['dni'] ?? ''),
-                'telefono' => (string) ($orden['telefono'] ?? ''),
-                'email' => (string) ($orden['email'] ?? ''),
-                'distrito' => (string) ($orden['distrito'] ?? ''),
-                'distrito_nombre' => (string) ($orden['distrito'] ?? ''),
-                'direccion' => (string) ($orden['direccion'] ?? ''),
-                'referencia' => (string) ($orden['referencia'] ?? ''),
-            ],
-            'totales' => [
-                'subtotal' => (float) ($orden['subtotal'] ?? 0),
-                'costo_envio' => (float) ($orden['costo_envio'] ?? 0),
-                'total' => (float) ($orden['total'] ?? 0),
-            ],
-        ];
-
-        $this->render('ver_orden', [
-            'orden' => $ordenPreparada,
-            'items' => $items,
-            'mensajeError' => null,
-        ]);
+        $this->render('ver_orden', ['orden' => $orden]);
     }
 
     public function carrito(): void
