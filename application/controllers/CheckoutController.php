@@ -213,20 +213,20 @@ class CheckoutController extends BaseController
         $distritoFinal = $distritoNombre !== '' ? $distritoNombre : $distritoCodigo;
 
         $data = [
-            ':id_cliente' => $idCliente,
+            ':id_cliente' => $idCliente > 0 ? $idCliente : null,
             ':nro_orden' => $numeroOrden,
             ':nombre' => $nombre,
             ':apellidos' => $apellidos,
             ':email' => $email,
             ':telefono' => $telefono,
             ':dni' => $dni,
-            ':direccion' => $direccionEnvio,
-            ':distrito' => $distritoFinal,
-            ':referencia' => $referencia,
-            ':metodo_envio' => $metodoEnvioTexto,
-            ':metodo_envio_texto' => $metodoEnvioTexto,
+            ':direccion' => $direccionEnvio !== '' ? $direccionEnvio : '',
+            ':distrito' => $distritoFinal !== '' ? $distritoFinal : '',
+            ':referencia' => $referencia !== '' ? $referencia : '',
+            ':metodo_envio' => $metodoEnvioTexto !== '' ? $metodoEnvioTexto : 'Sin especificar',
+            ':metodo_envio_texto' => $metodoEnvioTexto !== '' ? $metodoEnvioTexto : 'Sin especificar',
             ':costo_envio' => number_format($costoEnvio, 2, '.', ''),
-            ':metodo_pago' => $metodoPagoTitulo,
+            ':metodo_pago' => $metodoPagoTitulo !== '' ? $metodoPagoTitulo : strtoupper($metodoPago),
             ':subtotal' => number_format($subtotal, 2, '.', ''),
             ':total' => number_format($total, 2, '.', ''),
         ];
