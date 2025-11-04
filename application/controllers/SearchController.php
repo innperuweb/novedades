@@ -14,8 +14,7 @@ class SearchController extends BaseController
         $resultados = [];
 
         if ($term !== '') {
-            $model = new ProductoModel();
-            $resultados = $model->buscarProductos($term);
+            $resultados = ProductoModel::buscar($term);
         }
 
         $this->render('search/index', [
@@ -36,8 +35,7 @@ class SearchController extends BaseController
         }
 
         $term = sanitize((string) $_GET['term']);
-        $model = new ProductoModel();
-        $resultados = $term === '' ? [] : $model->buscarProductos($term);
+        $resultados = $term === '' ? [] : ProductoModel::buscar($term);
 
         header('Content-Type: application/json');
         echo json_encode($resultados);

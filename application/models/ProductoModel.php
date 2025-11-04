@@ -185,4 +185,112 @@ class ProductoModel
 
         return $cache[$clave];
     }
+
+    public static function obtenerPorSubcategoria(string $slug): array
+    {
+        $slug = trim($slug);
+
+        if ($slug === '') {
+            return [];
+        }
+
+        try {
+            $db = Database::connect();
+            $stmt = $db->prepare(
+                'SELECT p.* FROM productos p ' .
+                'INNER JOIN subcategorias s ON p.subcategoria_id = s.id ' .
+                'WHERE s.slug = :slug AND p.estado = 1 ORDER BY p.id DESC'
+            );
+            $stmt->execute([':slug' => $slug]);
+
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+        } catch (\Throwable $exception) {
+            return [];
+        }
+    }
+
+    public static function obtenerFiltrados(string $slug, string $orden): array
+    {
+        $slug = trim($slug);
+
+        if ($slug === '') {
+            return [];
+        }
+
+        $ordenSQL = match ($orden) {
+            'precio_asc' => 'p.precio ASC',
+            'precio_desc' => 'p.precio DESC',
+            'nombre_asc' => 'p.nombre ASC',
+            'nombre_desc' => 'p.nombre DESC',
+            default => 'p.id DESC',
+        };
+
+        try {
+            $db = Database::connect();
+            $stmt = $db->prepare(
+                'SELECT p.* FROM productos p ' .
+                'INNER JOIN subcategorias s ON p.subcategoria_id = s.id ' .
+                'WHERE s.slug = :slug AND p.estado = 1 ORDER BY ' . $ordenSQL
+            );
+            $stmt->execute([':slug' => $slug]);
+
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+        } catch (\Throwable $exception) {
+            return [];
+        }
+    }
+
+    public static function filtrarPorPrecio(string $slug, float $min, float $max): array
+    {
+        $slug = trim($slug);
+
+        if ($slug === '') {
+            return [];
+        }
+
+        $min = (float) $min;
+        $max = (float) $max;
+
+        try {
+            $db = Database::connect();
+            $stmt = $db->prepare(
+                'SELECT p.* FROM productos p ' .
+                'INNER JOIN subcategorias s ON p.subcategoria_id = s.id ' .
+                'WHERE s.slug = :slug AND p.precio BETWEEN :min AND :max AND p.estado = 1 '
+                . 'ORDER BY p.id DESC'
+            );
+            $stmt->execute([
+                ':slug' => $slug,
+                ':min' => $min,
+                ':max' => $max,
+            ]);
+
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+        } catch (\Throwable $exception) {
+            return [];
+        }
+    }
+
+    public static function buscar(string $termino): array
+    {
+        $termino = trim($termino);
+
+        if ($termino === '') {
+            return [];
+        }
+
+        try {
+            $db = Database::connect();
+            $stmt = $db->prepare(
+                'SELECT * FROM productos WHERE (nombre LIKE :q OR descripcion LIKE :q) ' .
+                'AND estado = 1 ORDER BY id DESC'
+            );
+            $like = '%' . $termino . '%';
+            $stmt->execute([':q' => $like]);
+
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+        } catch (\Throwable $exception) {
+            return [];
+        }
+    }
 }
