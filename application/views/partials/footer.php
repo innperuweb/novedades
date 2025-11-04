@@ -120,26 +120,25 @@
         <div class="side-navigation-inner">
             <div class="widget">
                 <ul class="sidenav-menu sidenav-menu--icons">
-                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Relojes</span><img class="cat-icon" src="<?= asset_url('img/categoria_menu.png'); ?>"
-                                alt=""></a></li>
-                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Carteras</span><img class="cat-icon"
-                                src="<?= asset_url('img/categoria_menu.png'); ?>" alt=""></a></li>
-                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Polos</span><img class="cat-icon" src="<?= asset_url('img/categoria_menu.png'); ?>"
-                                alt=""></a></li>
-                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Zapatillas</span><img class="cat-icon"
-                                src="<?= asset_url('img/categoria_menu.png'); ?>" alt=""></a></li>
-                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Móviles</span><img class="cat-icon" src="<?= asset_url('img/categoria_menu.png'); ?>"
-                                alt=""></a></li>
-                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Cosméticos</span><img class="cat-icon"
-                                src="<?= asset_url('img/categoria_menu.png'); ?>" alt=""></a></li>
-                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Case</span><img class="cat-icon" src="<?= asset_url('img/categoria_menu.png'); ?>"
-                                alt=""></a></li>
-                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Laptops</span><img class="cat-icon" src="<?= asset_url('img/categoria_menu.png'); ?>"
-                                alt=""></a></li>
-                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Juguetes</span><img class="cat-icon"
-                                src="<?= asset_url('img/categoria_menu.png'); ?>" alt=""></a></li>
-                    <li><a href="<?= base_url('productos'); ?>"><span class="label">Accesorios</span><img class="cat-icon"
-                                src="<?= asset_url('img/categoria_menu.png'); ?>" alt=""></a></li>
+                    <?php foreach ($categorias as $cat): ?>
+                        <?php $tieneSubcategorias = !empty($cat['subcategorias']); ?>
+                        <li class="sidenav-item <?= $tieneSubcategorias ? 'has-submenu' : ''; ?>">
+                            <a href="<?= base_url('categoria/' . e($cat['slug'] ?? '')); ?>">
+                                <i class="dl-icon-folder2"></i> <?= e($cat['nombre'] ?? ''); ?>
+                            </a>
+                            <?php if ($tieneSubcategorias): ?>
+                                <ul class="submenu">
+                                    <?php foreach ($cat['subcategorias'] as $sub): ?>
+                                        <li>
+                                            <a href="<?= base_url('categoria/' . e($sub['slug'] ?? '')); ?>">
+                                                <?= e($sub['nombre'] ?? ''); ?>
+                                            </a>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+                        </li>
+                    <?php endforeach; ?>
                 </ul>
             </div>
             <br><br>

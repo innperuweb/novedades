@@ -8,6 +8,8 @@ return [
     'productos/detalle' => ['ProductosController', 'detalle'],
     'detalle_producto' => ['ProductosController', 'detalle'],
     'ofertas' => ['ProductosController', 'ofertas'],
+    'categoria' => ['CategoriaController', 'index'],
+    'categoria/(:segment)' => ['CategoriaController', 'ver'],
     'checkout' => ['CheckoutController', 'index'],
     'checkout/procesar' => ['CheckoutController', 'procesar'],
     'checkout/obtener_datos_cliente' => ['CheckoutController', 'obtener_datos_cliente'],

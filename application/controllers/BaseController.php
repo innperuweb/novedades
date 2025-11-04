@@ -19,6 +19,19 @@ abstract class BaseController
             $data['missingView'] = $view;
         }
 
+        $menuCategorias = $data['categorias'] ?? null;
+
+        if ($menuCategorias === null) {
+            try {
+                $categoriaModel = new CategoriaModel();
+                $menuCategorias = $categoriaModel->obtenerCategoriasConSubcategorias();
+            } catch (\Throwable $exception) {
+                $menuCategorias = [];
+            }
+        }
+
+        $data['categorias'] = $menuCategorias;
+
         extract($data);
         require VIEW_PATH . 'partials/head.php';
         require VIEW_PATH . 'partials/header.php';

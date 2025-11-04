@@ -27938,6 +27938,37 @@ a:hover {
     color: #d2a35c;
 }
 
+/* ===== SUBMENÚ DE CATEGORÍAS ===== */
+.sidenav-menu .submenu {
+    display: none;
+    list-style: none;
+    margin-left: 20px;
+    padding-left: 10px;
+    border-left: 1px solid #eee;
+}
+
+.sidenav-menu .submenu li a {
+    font-size: 14px;
+    color: #666;
+    padding: 5px 0;
+    display: block;
+}
+
+.sidenav-menu .has-submenu > a::after {
+    content: "\f107";
+    font-family: "FontAwesome";
+    float: right;
+    transition: transform 0.3s;
+}
+
+.sidenav-menu .has-submenu.open > a::after {
+    transform: rotate(180deg);
+}
+
+.sidenav-menu .has-submenu.open .submenu {
+    display: block;
+}
+
 .template-color-2 .blog-entry-meta a {
     color: #d2a35c;
 }
