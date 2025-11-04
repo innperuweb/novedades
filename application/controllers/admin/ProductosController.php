@@ -7,12 +7,14 @@ final class ProductosController extends AdminBaseController
     private AdminProductoModel $productoModel;
     private AdminCategoriaModel $categoriaModel;
     private string $directorioUploads;
+    private string $directorioImagenes;
 
     public function __construct()
     {
         $this->productoModel = new AdminProductoModel();
         $this->categoriaModel = new AdminCategoriaModel();
         $this->directorioUploads = ROOT_PATH . '/public/assets/uploads/productos';
+        $this->directorioImagenes = ROOT_PATH . '/public/assets/uploads/products';
     }
 
     public function index(): void
@@ -41,7 +43,8 @@ final class ProductosController extends AdminBaseController
             'colores' => [],
             'tallas' => [],
             'subcategorias' => [],
-            'activo' => 1,
+            'visible' => 1,
+            'estado' => 1,
         ], [], false);
     }
 
@@ -88,10 +91,19 @@ final class ProductosController extends AdminBaseController
         $datos = $this->obtenerDatosProductoDesdeRequest();
         $errores = $this->validarProducto($datos);
         $subcategorias = $this->obtenerSubcategoriasDesdeRequest();
+        $imagenesPreparadas = $this->prepararImagenesDesdeRequest();
 
         if ($errores !== []) {
             $datos['subcategorias'] = $subcategorias;
             $this->mostrarFormularioProducto($datos, $errores, false);
+
+            return;
+        }
+
+        if ($imagenesPreparadas['errores'] !== []) {
+            admin_set_flash('danger', implode(' ', $imagenesPreparadas['errores']));
+            $datos['subcategorias'] = $subcategorias;
+            $this->mostrarFormularioProducto($datos, [], false);
 
             return;
         }
@@ -109,18 +121,24 @@ final class ProductosController extends AdminBaseController
             $datos['tabla_tallas'] = $tablaTallas['archivo'];
         }
 
-        $imagenesResultado = $this->manejarImagenes(null);
-        if (!empty($imagenesResultado['errores'])) {
-            admin_set_flash('danger', implode(' ', $imagenesResultado['errores']));
-            $datos['subcategorias'] = $subcategorias;
-            $this->mostrarFormularioProducto($datos, [], false);
-
-            return;
+        $indicePrincipalNuevo = $this->obtenerIndicePrincipalNuevo(count($imagenesPreparadas['imagenes']));
+        if ($indicePrincipalNuevo === null && $imagenesPreparadas['imagenes'] !== []) {
+            $indicePrincipalNuevo = 0;
         }
 
         $nuevoId = $this->productoModel->crear($datos, $subcategorias);
-        if (!empty($imagenesResultado['archivos'])) {
-            $this->productoModel->guardarImagenes($nuevoId, $imagenesResultado['archivos']);
+
+        if ($imagenesPreparadas['imagenes'] !== []) {
+            $resultadoImagenes = $this->procesarImagenesSubidas(
+                $nuevoId,
+                $imagenesPreparadas['imagenes'],
+                $indicePrincipalNuevo,
+                false
+            );
+
+            if (!empty($resultadoImagenes['errores'])) {
+                admin_set_flash('warning', implode(' ', $resultadoImagenes['errores']));
+            }
         }
         admin_set_flash('success', 'Producto creado correctamente.');
         $this->redirect('admin/productos/editar/' . $nuevoId);
@@ -156,11 +174,21 @@ final class ProductosController extends AdminBaseController
         $datos = $this->obtenerDatosProductoDesdeRequest();
         $errores = $this->validarProducto($datos);
         $subcategorias = $this->obtenerSubcategoriasDesdeRequest();
+        $imagenesPreparadas = $this->prepararImagenesDesdeRequest();
 
         if ($errores !== []) {
             $datos['id'] = $productoId;
             $datos['subcategorias'] = $subcategorias;
             $this->mostrarFormularioProducto($datos, $errores, true);
+
+            return;
+        }
+
+        if ($imagenesPreparadas['errores'] !== []) {
+            admin_set_flash('danger', implode(' ', $imagenesPreparadas['errores']));
+            $datos['id'] = $productoId;
+            $datos['subcategorias'] = $subcategorias;
+            $this->mostrarFormularioProducto($datos, [], true);
 
             return;
         }
@@ -179,20 +207,34 @@ final class ProductosController extends AdminBaseController
             $datos['tabla_tallas'] = $tablaTallas['archivo'];
         }
 
-        $imagenesResultado = $this->manejarImagenes($productoActual);
-        if (!empty($imagenesResultado['errores'])) {
-            admin_set_flash('danger', implode(' ', $imagenesResultado['errores']));
-            $datos['id'] = $productoId;
-            $datos['subcategorias'] = $subcategorias;
-            $this->mostrarFormularioProducto($datos, [], true);
+        $indicePrincipalNuevo = $this->obtenerIndicePrincipalNuevo(count($imagenesPreparadas['imagenes']));
+        $tienePrincipalActual = $this->coleccionTienePrincipal($productoActual['imagenes'] ?? []);
+        $mantenerPrincipal = $tienePrincipalActual && $indicePrincipalNuevo === null;
 
-            return;
+        if (!$tienePrincipalActual && $imagenesPreparadas['imagenes'] !== []) {
+            if ($indicePrincipalNuevo === null) {
+                $indicePrincipalNuevo = 0;
+            }
+            $mantenerPrincipal = false;
+        }
+
+        if ($indicePrincipalNuevo !== null) {
+            $mantenerPrincipal = false;
         }
 
         $this->productoModel->actualizarProducto($productoId, $datos, $subcategorias);
-        if (!empty($imagenesResultado['archivos'])) {
-            $this->eliminarArchivosFisicos($productoActual['imagenes'] ?? []);
-            $this->productoModel->reemplazarImagenes($productoId, $imagenesResultado['archivos']);
+
+        if ($imagenesPreparadas['imagenes'] !== []) {
+            $resultadoImagenes = $this->procesarImagenesSubidas(
+                $productoId,
+                $imagenesPreparadas['imagenes'],
+                $indicePrincipalNuevo,
+                $mantenerPrincipal
+            );
+
+            if (!empty($resultadoImagenes['errores'])) {
+                admin_set_flash('warning', implode(' ', $resultadoImagenes['errores']));
+            }
         }
         admin_set_flash('success', 'Producto actualizado correctamente.');
         $this->redirect('admin/productos/editar/' . $productoId);
@@ -228,6 +270,53 @@ final class ProductosController extends AdminBaseController
         $this->redirect('admin/productos');
     }
 
+    public function eliminarImagen(string $id, string $imagenId): void
+    {
+        $this->requireLogin();
+
+        if (!$this->isPost()) {
+            $this->responderJson(['success' => false, 'message' => 'Método no permitido.'], 405);
+
+            return;
+        }
+
+        $token = $_POST['csrf_token'] ?? '';
+        if (!$this->validateCsrfToken($token)) {
+            $this->responderJson(['success' => false, 'message' => 'Sesión inválida, recargue la página.'], 400);
+
+            return;
+        }
+
+        $productoId = sanitize_int($id);
+        $imagenIdSanitizada = sanitize_int($imagenId);
+
+        if ($productoId === null || $imagenIdSanitizada === null) {
+            $this->responderJson(['success' => false, 'message' => 'Parámetros inválidos.'], 400);
+
+            return;
+        }
+
+        $resultado = $this->productoModel->eliminarImagen($productoId, $imagenIdSanitizada);
+
+        if ($resultado === null) {
+            $this->responderJson(['success' => false, 'message' => 'La imagen indicada no existe.'], 404);
+
+            return;
+        }
+
+        $this->eliminarArchivoFisico((string) ($resultado['ruta'] ?? ''));
+
+        $nuevoPrincipalId = null;
+        if (!empty($resultado['era_principal'])) {
+            $nuevoPrincipalId = $this->productoModel->asignarPrincipalRestante($productoId);
+        }
+
+        $this->responderJson([
+            'success' => true,
+            'nuevoPrincipalId' => $nuevoPrincipalId,
+        ]);
+    }
+
     private function mostrarFormularioProducto(array $producto, array $errores, bool $esEdicion): void
     {
         $categorias = $this->categoriaModel->listarCategorias();
@@ -248,16 +337,19 @@ final class ProductosController extends AdminBaseController
         $precio = (string) ($_POST['precio'] ?? '0');
         $precio = str_replace(',', '.', $precio);
 
+        $visibleMarcado = isset($_POST['visible']);
+
         return [
             'nombre' => trim((string) ($_POST['nombre'] ?? '')),
             'marca' => trim((string) ($_POST['marca'] ?? '')),
             'descripcion' => trim((string) ($_POST['descripcion'] ?? '')),
             'precio' => (float) $precio,
-            'stock' => isset($_POST['stock']) ? max(0, (int) $_POST['stock']) : 0,
+            'stock' => max(0, (int) ($_POST['stock'] ?? 0)),
             'sku' => trim((string) ($_POST['sku'] ?? '')),
             'colores' => $_POST['colores'] ?? '',
             'tallas' => $_POST['tallas'] ?? '',
-            'activo' => isset($_POST['activo']) ? 1 : 0,
+            'visible' => $visibleMarcado ? 1 : 0,
+            'estado' => $visibleMarcado ? 1 : 0,
         ];
     }
 
@@ -302,6 +394,29 @@ final class ProductosController extends AdminBaseController
         return array_values(array_unique($valores));
     }
 
+    private function obtenerIndicePrincipalNuevo(int $cantidadArchivos): ?int
+    {
+        if ($cantidadArchivos <= 0) {
+            return null;
+        }
+
+        $valor = $_POST['imagen_principal_nueva'] ?? '';
+        if ($valor === '' && $valor !== '0') {
+            return null;
+        }
+
+        $indice = filter_var($valor, FILTER_VALIDATE_INT);
+        if ($indice === false) {
+            return null;
+        }
+
+        if ($indice < 0 || $indice >= $cantidadArchivos) {
+            return null;
+        }
+
+        return $indice;
+    }
+
     private function manejarTablaTallas(?array $productoActual): array
     {
         if (!isset($_FILES['tabla_tallas']) || !is_array($_FILES['tabla_tallas'])) {
@@ -338,10 +453,10 @@ final class ProductosController extends AdminBaseController
         return ['archivo' => $nombreArchivo];
     }
 
-    private function manejarImagenes(?array $productoActual): array
+    private function prepararImagenesDesdeRequest(): array
     {
         if (!isset($_FILES['imagenes']) || !is_array($_FILES['imagenes'])) {
-            return ['archivos' => [], 'errores' => []];
+            return ['imagenes' => [], 'errores' => []];
         }
 
         $imagenes = $_FILES['imagenes'];
@@ -350,16 +465,16 @@ final class ProductosController extends AdminBaseController
         $errores = $imagenes['error'] ?? [];
         $cantidad = is_array($nombres) ? count($nombres) : 0;
 
-        $resultados = [];
+        $archivosPreparados = [];
         $erroresEncontrados = [];
 
         for ($i = 0; $i < $cantidad; $i++) {
-            $error = (int) ($errores[$i] ?? UPLOAD_ERR_NO_FILE);
-            if ($error === UPLOAD_ERR_NO_FILE) {
+            $codigoError = (int) ($errores[$i] ?? UPLOAD_ERR_NO_FILE);
+            if ($codigoError === UPLOAD_ERR_NO_FILE) {
                 continue;
             }
 
-            if ($error !== UPLOAD_ERR_OK) {
+            if ($codigoError !== UPLOAD_ERR_OK) {
                 $erroresEncontrados[] = 'Ocurrió un error al subir una de las imágenes.';
                 continue;
             }
@@ -377,25 +492,72 @@ final class ProductosController extends AdminBaseController
             }
 
             $nombreArchivo = $this->generarNombreArchivo((string) ($nombres[$i] ?? 'imagen-producto'));
-            $destino = $this->asegurarDirectorioUploads() . '/' . $nombreArchivo;
-
-            if (!move_uploaded_file($tmp, $destino)) {
-                $erroresEncontrados[] = 'No se pudo guardar una de las imágenes en el servidor.';
-                continue;
-            }
-
-            $resultados[] = $nombreArchivo;
+            $archivosPreparados[] = [
+                'tmp_name' => $tmp,
+                'nombre' => $nombreArchivo,
+            ];
         }
 
         if ($erroresEncontrados !== []) {
-            foreach ($resultados as $archivoGuardado) {
-                $this->eliminarArchivoFisico((string) $archivoGuardado);
-            }
-
-            return ['archivos' => [], 'errores' => $erroresEncontrados];
+            return ['imagenes' => [], 'errores' => $erroresEncontrados];
         }
 
-        return ['archivos' => $resultados, 'errores' => []];
+        return ['imagenes' => $archivosPreparados, 'errores' => []];
+    }
+
+    private function procesarImagenesSubidas(int $productoId, array $imagenesPreparadas, ?int $indicePrincipal, bool $mantenerPrincipal): array
+    {
+        if ($imagenesPreparadas === []) {
+            return ['errores' => []];
+        }
+
+        $directorio = $this->asegurarDirectorioImagenesProducto($productoId);
+        $rutasGuardadas = [];
+        $errores = [];
+
+        foreach ($imagenesPreparadas as $imagen) {
+            $tmp = $imagen['tmp_name'] ?? '';
+            $nombre = $imagen['nombre'] ?? '';
+
+            if ($tmp === '' || $nombre === '') {
+                $errores[] = 'No se pudo procesar una de las imágenes seleccionadas.';
+                break;
+            }
+
+            $destino = $directorio . '/' . $nombre;
+
+            if (!move_uploaded_file($tmp, $destino)) {
+                $errores[] = 'No se pudo guardar una de las imágenes en el servidor.';
+                break;
+            }
+
+            $rutasGuardadas[] = [
+                'ruta' => 'products/' . $productoId . '/' . $nombre,
+            ];
+        }
+
+        if ($errores !== []) {
+            foreach ($rutasGuardadas as $ruta) {
+                $this->eliminarArchivoFisico((string) ($ruta['ruta'] ?? ''));
+            }
+
+            return ['errores' => $errores];
+        }
+
+        $this->productoModel->guardarImagenes($productoId, $rutasGuardadas, $indicePrincipal, $mantenerPrincipal);
+
+        return ['errores' => []];
+    }
+
+    private function coleccionTienePrincipal(array $imagenes): bool
+    {
+        foreach ($imagenes as $imagen) {
+            if (is_array($imagen) && (int) ($imagen['es_principal'] ?? 0) === 1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function asegurarDirectorioUploads(): string
@@ -405,6 +567,22 @@ final class ProductosController extends AdminBaseController
         }
 
         return $this->directorioUploads;
+    }
+
+    private function asegurarDirectorioImagenesProducto(int $productoId): string
+    {
+        if (!is_dir($this->directorioImagenes)) {
+            mkdir($this->directorioImagenes, 0755, true);
+        }
+
+        $productoId = max(1, $productoId);
+        $ruta = rtrim($this->directorioImagenes, '/') . '/' . $productoId;
+
+        if (!is_dir($ruta)) {
+            mkdir($ruta, 0755, true);
+        }
+
+        return $ruta;
     }
 
     private function generarNombreArchivo(string $nombreOriginal): string
@@ -435,18 +613,42 @@ final class ProductosController extends AdminBaseController
         }
 
         $rutaNormalizada = ltrim($ruta, '/');
-        if (strpos($rutaNormalizada, 'uploads/productos/') === 0) {
+        $base = $this->directorioUploads;
+
+        if (strpos($rutaNormalizada, 'uploads/products/') === 0) {
+            $rutaNormalizada = substr($rutaNormalizada, strlen('uploads/products/')) ?: '';
+            $base = $this->directorioImagenes;
+        } elseif (strpos($rutaNormalizada, 'products/') === 0) {
+            $rutaNormalizada = substr($rutaNormalizada, strlen('products/')) ?: '';
+            $base = $this->directorioImagenes;
+        } elseif (strpos($rutaNormalizada, 'uploads/productos/') === 0) {
             $rutaNormalizada = substr($rutaNormalizada, strlen('uploads/productos/')) ?: '';
+            $base = $this->directorioUploads;
         }
 
-        $archivo = $this->directorioUploads . '/' . $rutaNormalizada;
+        if ($rutaNormalizada === '') {
+            return;
+        }
 
-        if (strpos(realpath(dirname($archivo)) ?: '', realpath($this->directorioUploads)) !== 0) {
+        $archivo = rtrim($base, '/') . '/' . $rutaNormalizada;
+
+        $baseReal = realpath($base);
+        $directorioArchivo = realpath(dirname($archivo));
+
+        if ($baseReal !== false && $directorioArchivo !== false && strpos($directorioArchivo, $baseReal) !== 0) {
             return;
         }
 
         if (is_file($archivo)) {
             @unlink($archivo);
         }
+    }
+
+    private function responderJson(array $payload, int $status = 200): void
+    {
+        http_response_code($status);
+        header('Content-Type: application/json');
+        echo json_encode($payload, JSON_UNESCAPED_UNICODE);
+        exit;
     }
 }
