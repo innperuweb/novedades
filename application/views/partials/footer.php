@@ -121,17 +121,26 @@
             <div class="widget">
                 <ul class="sidenav-menu sidenav-menu--icons">
                     <?php foreach ($categorias as $cat): ?>
-                        <?php $tieneSubcategorias = !empty($cat['subcategorias']); ?>
+                        <?php
+                            $subcategorias = $cat['subcategorias'] ?? [];
+                            $tieneSubcategorias = !empty($subcategorias);
+                            $categoriaNombre = $cat['nombre'] ?? '';
+                        ?>
                         <li class="sidenav-item <?= $tieneSubcategorias ? 'has-submenu' : ''; ?>">
-                            <a href="<?= base_url('categoria/' . e($cat['slug'] ?? '')); ?>">
-                                <i class="dl-icon-folder2"></i> <?= e($cat['nombre'] ?? ''); ?>
+                            <a href="#" class="categoria-toggle">
+                                <i class="dl-icon-folder2"></i> <?= e($categoriaNombre); ?>
                             </a>
                             <?php if ($tieneSubcategorias): ?>
                                 <ul class="submenu">
-                                    <?php foreach ($cat['subcategorias'] as $sub): ?>
+                                    <?php foreach ($subcategorias as $sub): ?>
+                                        <?php
+                                            $subNombre = $sub['nombre'] ?? '';
+                                            $subSlug = $sub['slug'] ?? '';
+                                            $subcatUrl = base_url('productos?subcat=' . rawurlencode($subSlug));
+                                        ?>
                                         <li>
-                                            <a href="<?= base_url('categoria/' . e($sub['slug'] ?? '')); ?>">
-                                                <?= e($sub['nombre'] ?? ''); ?>
+                                            <a href="<?= e($subcatUrl); ?>">
+                                                <?= e($subNombre); ?>
                                             </a>
                                         </li>
                                     <?php endforeach; ?>
