@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-final class ClienteModel
+class ClienteModel
 {
     public static function obtenerPorId(int $id): ?array
     {
