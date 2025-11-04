@@ -195,9 +195,11 @@ final class AdminProductoModel extends ProductoModel
             'precio' => (float) ($data['precio'] ?? 0),
             'stock' => isset($data['stock']) ? (int) $data['stock'] : 0,
             'sku' => trim((string) ($data['sku'] ?? '')),
-            'imagen' => trim((string) ($data['imagen'] ?? '')),
             'activo' => isset($data['activo']) && $data['activo'] ? 1 : 0,
         ];
+
+        // La columna legacy `imagen`/`imagen_url` se mantiene solo por compatibilidad histórica
+        // y no debe actualizarse ni leerse desde el backend nuevo.
 
         if (array_key_exists('tabla_tallas', $data)) {
             $mapa['tabla_tallas'] = trim((string) ($data['tabla_tallas'] ?? ''));
@@ -249,13 +251,25 @@ final class AdminProductoModel extends ProductoModel
         }
 
         $pdo = Database::connect();
-        $stmt = $pdo->prepare('INSERT INTO producto_imagenes (producto_id, ruta) VALUES (:producto, :ruta)');
+        $tienePrincipal = $this->columnaExisteEnTabla('producto_imagenes', 'es_principal');
 
-        foreach ($imagenes as $ruta) {
-            $stmt->execute([
+        if ($tienePrincipal) {
+            $stmt = $pdo->prepare('INSERT INTO producto_imagenes (producto_id, ruta, es_principal) VALUES (:producto, :ruta, :principal)');
+        } else {
+            $stmt = $pdo->prepare('INSERT INTO producto_imagenes (producto_id, ruta) VALUES (:producto, :ruta)');
+        }
+
+        foreach ($imagenes as $indice => $ruta) {
+            $parametros = [
                 ':producto' => $productoId,
                 ':ruta' => (string) $ruta,
-            ]);
+            ];
+
+            if ($tienePrincipal) {
+                $parametros[':principal'] = $indice === 0 ? 1 : 0;
+            }
+
+            $stmt->execute($parametros);
         }
     }
 
@@ -279,17 +293,48 @@ final class AdminProductoModel extends ProductoModel
         }
 
         $pdo = Database::connect();
-        $stmt = $pdo->prepare('SELECT id, ruta FROM producto_imagenes WHERE producto_id = :producto ORDER BY id ASC');
+        $tienePrincipal = $this->columnaExisteEnTabla('producto_imagenes', 'es_principal');
+
+        $columnas = 'id, ruta';
+        if ($tienePrincipal) {
+            $columnas .= ', es_principal';
+        }
+
+        $orden = $tienePrincipal ? 'es_principal DESC, id ASC' : 'id ASC';
+
+        $stmt = $pdo->prepare('SELECT ' . $columnas . ' FROM producto_imagenes WHERE producto_id = :producto ORDER BY ' . $orden);
         $stmt->execute([':producto' => $productoId]);
 
         $imagenes = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
-        return array_map(static function ($item): array {
+        return array_map(static function ($item) use ($tienePrincipal): array {
             return [
                 'id' => (int) ($item['id'] ?? 0),
                 'ruta' => trim((string) ($item['ruta'] ?? '')),
+                'es_principal' => $tienePrincipal ? (int) ($item['es_principal'] ?? 0) : 0,
             ];
         }, $imagenes);
+    }
+
+    private function columnaExisteEnTabla(string $tabla, string $columna): bool
+    {
+        static $cache = [];
+
+        $clave = $tabla . '.' . $columna;
+        if (array_key_exists($clave, $cache)) {
+            return $cache[$clave];
+        }
+
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = :tabla AND column_name = :columna');
+        $stmt->execute([
+            ':tabla' => $tabla,
+            ':columna' => $columna,
+        ]);
+
+        $cache[$clave] = ((int) $stmt->fetchColumn()) > 0;
+
+        return $cache[$clave];
     }
 
     private function normalizarLista($valor): array

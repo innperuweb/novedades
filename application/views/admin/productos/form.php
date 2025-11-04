@@ -57,12 +57,7 @@
                     </div>
                 </div>
                 <div class="row g-3 mt-1">
-                    <div class="col-md-6">
-                        <label for="imagen" class="form-label">Imagen (URL)</label>
-                        <input type="text" name="imagen" id="imagen" class="form-control" value="<?= e($producto['imagen'] ?? ''); ?>">
-                        <div class="form-hint">Utiliza una URL accesible públicamente.</div>
-                    </div>
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <label class="form-label">Estado</label>
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" role="switch" id="activo" name="activo" value="1" <?= (int) ($producto['activo'] ?? 1) === 1 ? 'checked' : ''; ?>>
