@@ -994,4 +994,15 @@
         }
     });
 
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.sidenav-menu .has-submenu > a').forEach((trigger) => {
+            trigger.addEventListener('click', (event) => {
+                event.preventDefault();
+                const parent = trigger.parentElement;
+                if (parent) {
+                    parent.classList.toggle('open');
+                }
+            });
+        });
+    });
 })(jQuery);
