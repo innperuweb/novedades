@@ -27939,6 +27939,15 @@ a:hover {
 }
 
 /* ===== SUBMENÚ DE CATEGORÍAS ===== */
+.sidenav-menu li {
+    text-align: left;
+}
+
+.sidenav-menu .categoria-toggle {
+    cursor: pointer;
+    display: block;
+}
+
 .sidenav-menu .submenu {
     display: none;
     list-style: none;

@@ -995,10 +995,10 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.sidenav-menu .has-submenu > a').forEach((trigger) => {
+        document.querySelectorAll('.sidenav-menu .has-submenu > .categoria-toggle').forEach((trigger) => {
             trigger.addEventListener('click', (event) => {
                 event.preventDefault();
-                const parent = trigger.parentElement;
+                const parent = trigger.closest('.has-submenu');
                 if (parent) {
                     parent.classList.toggle('open');
                 }
