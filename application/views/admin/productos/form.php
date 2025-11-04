@@ -11,6 +11,15 @@
     $seleccionadas = $producto['subcategorias'] ?? [];
     $seleccionadas = is_array($seleccionadas) ? array_map('intval', $seleccionadas) : [];
 ?>
+<style>
+.grid-imagenes{display:flex;flex-wrap:wrap;gap:12px}
+.grid-imagenes .item{position:relative;width:200px;height:200px;border:1px solid #eee;border-radius:8px;overflow:hidden;cursor:pointer;background:#fafafa}
+.grid-imagenes .item img{width:100%;height:100%;object-fit:cover}
+.grid-imagenes .item .btn-del{position:absolute;top:6px;right:6px;background:#fff;border:1px solid #ccc;border-radius:50%;width:28px;height:28px;line-height:26px;text-align:center;cursor:pointer;color:#333;padding:0;font-weight:bold}
+.grid-imagenes .item .tag-principal{position:absolute;bottom:6px;left:6px;background:#111;color:#fff;padding:2px 6px;border-radius:4px;font-size:12px;display:none}
+.grid-imagenes .item .tag-principal.activo{display:inline-block}
+.grid-imagenes .item .btn-del:hover{background:#f8f8f8}
+</style>
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h4 mb-0"><?= $esEdicion ? 'Editar producto' : 'Nuevo producto'; ?></h1>
     <a class="btn btn-outline-secondary" href="<?= base_url('admin/productos'); ?>">Volver</a>
@@ -46,22 +55,27 @@
                     </div>
                     <div class="col-md-4">
                         <label for="stock" class="form-label">Stock</label>
-                        <input type="number" name="stock" id="stock" min="0" class="form-control <?= isset($errores['stock']) ? 'is-invalid' : ''; ?>" value="<?= e($producto['stock'] ?? '0'); ?>">
+                        <input type="number" name="stock" id="stock" min="0" class="form-control <?= isset($errores['stock']) ? 'is-invalid' : ''; ?>" value="<?= e(old('stock', (string) ($producto['stock'] ?? '0'))); ?>">
                         <?php if (isset($errores['stock'])): ?>
                             <div class="invalid-feedback"><?= e($errores['stock']); ?></div>
                         <?php endif; ?>
                     </div>
                     <div class="col-md-4">
                         <label for="sku" class="form-label">SKU</label>
-                        <input type="text" name="sku" id="sku" class="form-control" value="<?= e($producto['sku'] ?? ''); ?>">
+                        <input type="text" name="sku" id="sku" class="form-control" value="<?= e(old('sku', $producto['sku'] ?? '')); ?>">
                     </div>
                 </div>
                 <div class="row g-3 mt-1">
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Estado</label>
+                        <label class="form-label">Visibilidad</label>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" id="activo" name="activo" value="1" <?= (int) ($producto['activo'] ?? 1) === 1 ? 'checked' : ''; ?>>
-                            <label class="form-check-label" for="activo">Producto visible en la tienda</label>
+                            <?php
+                                $visiblePredeterminado = (int) ($producto['visible'] ?? ($producto['estado'] ?? 1));
+                                $visibleOld = old('visible', $visiblePredeterminado ? '1' : '0');
+                                $visibleMarcado = $visibleOld === '1' || $visibleOld === 'on';
+                            ?>
+                            <input class="form-check-input" type="checkbox" role="switch" id="visible" name="visible" value="1" <?= $visibleMarcado ? 'checked' : ''; ?>>
+                            <label class="form-check-label" for="visible">Producto visible en la tienda</label>
                         </div>
                     </div>
                 </div>
@@ -96,23 +110,38 @@
                     <div class="col-md-6">
                         <label for="imagenes" class="form-label">Imágenes del producto</label>
                         <input type="file" name="imagenes[]" id="imagenes" accept="image/*" multiple class="form-control">
-                        <div class="form-text">Puedes seleccionar múltiples imágenes.</div>
+                        <small class="form-text d-block mt-1">JPG/PNG. Tamaño recomendado 1000×1000. Se generará miniatura.</small>
+                        <input type="hidden" name="imagen_principal_nueva" id="imagen_principal_nueva" value="<?= e(old('imagen_principal_nueva', '')); ?>">
+                        <div id="grid-imagenes" class="grid-imagenes mt-3"></div>
+                        <small class="form-text text-muted">Haz clic en una imagen para marcarla como principal. Usa la ✕ para quitarla antes de guardar.</small>
                         <?php if (!empty($producto['imagenes']) && is_array($producto['imagenes'])): ?>
-                            <div class="preview-imagenes mt-3">
+                            <div id="grid-imagenes-existentes" class="grid-imagenes mt-3">
                                 <?php foreach ($producto['imagenes'] as $imagen): ?>
                                     <?php
                                         $ruta = trim((string) ($imagen['ruta'] ?? ''));
                                         if ($ruta === '') {
                                             continue;
                                         }
+                                        $limpia = ltrim($ruta, '/');
+                                        if (strpos($limpia, 'uploads/products/') === 0 || strpos($limpia, 'uploads/productos/') === 0) {
+                                            $rutaPublica = asset_url($limpia);
+                                        } elseif (strpos($limpia, 'products/') === 0 || strpos($limpia, 'productos/') === 0) {
+                                            $rutaPublica = asset_url('uploads/' . $limpia);
+                                        } else {
+                                            $rutaPublica = asset_url('uploads/productos/' . $limpia);
+                                        }
                                         $esPrincipal = (int) ($imagen['es_principal'] ?? 0) === 1;
-                                        $rutaPublica = asset_url('uploads/productos/' . ltrim($ruta, '/'));
+                                        $imagenId = (int) ($imagen['id'] ?? 0);
+                                        $deleteUrl = ($esEdicion && !empty($producto['id']) && $imagenId > 0)
+                                            ? base_url('admin/productos/' . (int) $producto['id'] . '/imagenes/' . $imagenId . '/eliminar')
+                                            : '';
                                     ?>
-                                    <div class="img-preview-item<?= $esPrincipal ? ' principal' : ''; ?>">
-                                        <?php if ($esPrincipal): ?>
-                                            <span class="badge-principal">★ Principal</span>
-                                        <?php endif; ?>
+                                    <div class="item" data-imagen-id="<?= (int) $imagenId; ?>">
                                         <img src="<?= e($rutaPublica); ?>" alt="<?= e($ruta); ?>">
+                                        <?php if ($deleteUrl !== ''): ?>
+                                            <button type="button" class="btn-del btn-del-existente" data-url="<?= e($deleteUrl); ?>">&times;</button>
+                                        <?php endif; ?>
+                                        <span class="tag-principal<?= $esPrincipal ? ' activo' : ''; ?>">Principal</span>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -159,39 +188,266 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('imagenes');
-    if (!input) {
+    const gridNuevas = document.getElementById('grid-imagenes');
+    const gridExistentes = document.getElementById('grid-imagenes-existentes');
+    const inputPrincipal = document.getElementById('imagen_principal_nueva');
+    const csrfInput = document.querySelector('input[name="csrf_token"]');
+
+    if (typeof DataTransfer === 'undefined') {
         return;
     }
 
-    const preview = document.createElement('div');
-    preview.classList.add('preview-imagenes');
-    preview.classList.add('preview-imagenes-dinamica');
-    input.insertAdjacentElement('afterend', preview);
+    if (!input || !gridNuevas || !inputPrincipal) {
+        return;
+    }
 
-    input.addEventListener('change', function() {
-        preview.innerHTML = '';
-        Array.from(this.files).forEach((file, index) => {
+    let dataTransfer = new DataTransfer();
+    let principalIndex = null;
+    let tienePrincipalExistente = gridExistentes ? gridExistentes.querySelector('.tag-principal.activo') !== null : false;
+
+    const valorInicialPrincipal = inputPrincipal.value.trim();
+    if (valorInicialPrincipal !== '') {
+        const indice = parseInt(valorInicialPrincipal, 10);
+        if (!Number.isNaN(indice)) {
+            principalIndex = indice;
+        }
+    }
+
+    const sincronizarInput = () => {
+        input.files = dataTransfer.files;
+    };
+
+    const actualizarPrincipalHidden = () => {
+        if (principalIndex === null || dataTransfer.files.length === 0) {
+            inputPrincipal.value = '';
+        } else {
+            inputPrincipal.value = String(principalIndex);
+        }
+    };
+
+    const renderPreviews = () => {
+        const archivos = Array.from(dataTransfer.files);
+
+        if (archivos.length === 0) {
+            gridNuevas.innerHTML = '';
+            principalIndex = null;
+            actualizarPrincipalHidden();
+            return;
+        }
+
+        if (principalIndex === null) {
+            if (!tienePrincipalExistente) {
+                principalIndex = 0;
+            }
+        } else if (principalIndex >= archivos.length) {
+            principalIndex = archivos.length - 1;
+        }
+
+        if (principalIndex !== null && principalIndex < 0) {
+            principalIndex = 0;
+        }
+
+        gridNuevas.innerHTML = '';
+
+        archivos.forEach((file, index) => {
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.dataset.index = String(index);
+
+            const img = document.createElement('img');
             const reader = new FileReader();
-            reader.onload = e => {
-                const imgWrap = document.createElement('div');
-                imgWrap.classList.add('img-preview-item');
-                if (index === 0) {
-                    imgWrap.classList.add('principal');
-                    imgWrap.setAttribute('title', 'Imagen principal');
-                    const badge = document.createElement('span');
-                    badge.classList.add('badge-principal');
-                    badge.textContent = '★ Principal';
-                    imgWrap.appendChild(badge);
+            reader.onload = function (event) {
+                if (event && event.target && event.target.result) {
+                    img.src = event.target.result;
                 }
-
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.alt = file.name;
-                imgWrap.appendChild(img);
-                preview.appendChild(imgWrap);
             };
             reader.readAsDataURL(file);
+            item.appendChild(img);
+
+            const btnDel = document.createElement('button');
+            btnDel.type = 'button';
+            btnDel.className = 'btn-del';
+            btnDel.innerHTML = '&times;';
+            btnDel.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                eliminarImagenNueva(index);
+            });
+            item.appendChild(btnDel);
+
+            const tagPrincipal = document.createElement('span');
+            tagPrincipal.className = 'tag-principal';
+            tagPrincipal.textContent = 'Principal';
+            if (principalIndex === index) {
+                tagPrincipal.classList.add('activo');
+            }
+            item.appendChild(tagPrincipal);
+
+            item.addEventListener('click', (event) => {
+                if (event.target instanceof HTMLElement && event.target.classList.contains('btn-del')) {
+                    return;
+                }
+                marcarPrincipal(index);
+            });
+
+            gridNuevas.appendChild(item);
         });
+
+        actualizarPrincipalHidden();
+    };
+
+    const marcarPrincipal = (index) => {
+        if (index < 0 || index >= dataTransfer.files.length) {
+            return;
+        }
+        principalIndex = index;
+        tienePrincipalExistente = false;
+        renderPreviews();
+    };
+
+    const eliminarImagenNueva = (index) => {
+        const archivos = Array.from(dataTransfer.files);
+        if (index < 0 || index >= archivos.length) {
+            return;
+        }
+
+        archivos.splice(index, 1);
+        dataTransfer = new DataTransfer();
+        archivos.forEach((file) => dataTransfer.items.add(file));
+
+        if (principalIndex !== null) {
+            if (archivos.length === 0) {
+                principalIndex = null;
+            } else if (index === principalIndex) {
+                principalIndex = 0;
+            } else if (index < principalIndex) {
+                principalIndex -= 1;
+            }
+        }
+
+        sincronizarInput();
+        renderPreviews();
+    };
+
+    input.addEventListener('change', (event) => {
+        const archivosNuevos = Array.from(event.target.files || []);
+        if (archivosNuevos.length === 0) {
+            return;
+        }
+
+        const existentes = Array.from(dataTransfer.files);
+        dataTransfer = new DataTransfer();
+        existentes.forEach((file) => dataTransfer.items.add(file));
+        archivosNuevos.forEach((file) => dataTransfer.items.add(file));
+
+        sincronizarInput();
+
+        if (principalIndex === null && !tienePrincipalExistente) {
+            principalIndex = 0;
+        }
+
+        renderPreviews();
+        actualizarPrincipalHidden();
+        input.value = '';
     });
+
+    const marcarPrincipalExistente = (nuevoId) => {
+        if (!gridExistentes) {
+            return;
+        }
+
+        const items = gridExistentes.querySelectorAll('.item');
+        items.forEach((item) => {
+            const badge = item.querySelector('.tag-principal');
+            if (!(badge instanceof HTMLElement)) {
+                return;
+            }
+
+            if (nuevoId !== null && parseInt(item.dataset.imagenId || '0', 10) === nuevoId) {
+                badge.classList.add('activo');
+            } else if (nuevoId === null) {
+                badge.classList.remove('activo');
+            } else {
+                badge.classList.remove('activo');
+            }
+        });
+
+        if (nuevoId !== null) {
+            tienePrincipalExistente = true;
+        } else {
+            tienePrincipalExistente = gridExistentes.querySelector('.tag-principal.activo') !== null;
+        }
+
+        if (!tienePrincipalExistente && principalIndex === null && dataTransfer.files.length > 0) {
+            renderPreviews();
+        }
+    };
+
+    if (gridExistentes) {
+        gridExistentes.addEventListener('click', async (event) => {
+            const boton = event.target instanceof HTMLElement ? event.target.closest('.btn-del-existente') : null;
+            if (!boton) {
+                return;
+            }
+
+            event.preventDefault();
+            const url = boton.dataset.url || '';
+            if (url === '') {
+                return;
+            }
+
+            const item = boton.closest('.item');
+            if (!item) {
+                return;
+            }
+
+            const confirmar = window.confirm('¿Eliminar esta imagen?');
+            if (!confirmar) {
+                return;
+            }
+
+            const csrfToken = csrfInput ? csrfInput.value : '';
+            const badgePrincipal = item.querySelector('.tag-principal');
+            const eraPrincipal = badgePrincipal ? badgePrincipal.classList.contains('activo') : false;
+
+            try {
+                const respuesta = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        csrf_token: csrfToken,
+                    }),
+                });
+
+                if (!respuesta.ok) {
+                    throw new Error('No se pudo eliminar la imagen.');
+                }
+
+                const data = await respuesta.json();
+                if (!data.success) {
+                    throw new Error(data.message || 'Ocurrió un error al eliminar la imagen.');
+                }
+
+                item.remove();
+
+                if (eraPrincipal || typeof data.nuevoPrincipalId !== 'undefined') {
+                    const valorNuevo = data.nuevoPrincipalId;
+                    const nuevoId = valorNuevo !== null && valorNuevo !== undefined
+                        ? parseInt(String(valorNuevo), 10)
+                        : null;
+                    if (!isNaN(nuevoId) && nuevoId !== null) {
+                        marcarPrincipalExistente(nuevoId);
+                    } else if (eraPrincipal) {
+                        marcarPrincipalExistente(null);
+                    }
+                }
+            } catch (error) {
+                alert(error.message || 'Ocurrió un error al eliminar la imagen.');
+            }
+        });
+    }
 });
 </script>

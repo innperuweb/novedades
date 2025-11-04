@@ -40,8 +40,13 @@
                                         <span class="text-muted">Sin asignar</span>
                                     <?php endif; ?>
                                 </td>
+                                <?php
+                                    $visible = (int) ($producto['visible'] ?? ($producto['activo'] ?? 0));
+                                    $estado = (int) ($producto['estado'] ?? ($producto['activo'] ?? 0));
+                                    $esActivo = $visible === 1 && $estado === 1;
+                                ?>
                                 <td>
-                                    <?php if ((int) ($producto['activo'] ?? 0) === 1): ?>
+                                    <?php if ($esActivo): ?>
                                         <span class="badge bg-success-subtle text-success">Activo</span>
                                     <?php else: ?>
                                         <span class="badge bg-secondary">Inactivo</span>

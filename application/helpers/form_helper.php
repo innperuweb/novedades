@@ -19,3 +19,20 @@ function form_error($key, $errors)
 
     return '<span class="form-error">' . $message . '</span>';
 }
+
+if (!function_exists('old')) {
+    function old(string $key, $default = '')
+    {
+        if (!isset($_POST[$key])) {
+            return $default;
+        }
+
+        $valor = $_POST[$key];
+
+        if (is_array($valor)) {
+            return $valor;
+        }
+
+        return (string) $valor;
+    }
+}
