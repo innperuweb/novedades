@@ -97,6 +97,26 @@
                         <label for="imagenes" class="form-label">Imágenes del producto</label>
                         <input type="file" name="imagenes[]" id="imagenes" accept="image/*" multiple class="form-control">
                         <div class="form-text">Puedes seleccionar múltiples imágenes.</div>
+                        <?php if (!empty($producto['imagenes']) && is_array($producto['imagenes'])): ?>
+                            <div class="preview-imagenes mt-3">
+                                <?php foreach ($producto['imagenes'] as $imagen): ?>
+                                    <?php
+                                        $ruta = trim((string) ($imagen['ruta'] ?? ''));
+                                        if ($ruta === '') {
+                                            continue;
+                                        }
+                                        $esPrincipal = (int) ($imagen['es_principal'] ?? 0) === 1;
+                                        $rutaPublica = asset_url('uploads/productos/' . ltrim($ruta, '/'));
+                                    ?>
+                                    <div class="img-preview-item<?= $esPrincipal ? ' principal' : ''; ?>">
+                                        <?php if ($esPrincipal): ?>
+                                            <span class="badge-principal">★ Principal</span>
+                                        <?php endif; ?>
+                                        <img src="<?= e($rutaPublica); ?>" alt="<?= e($ruta); ?>">
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -135,3 +155,43 @@
         </div>
     </div>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('imagenes');
+    if (!input) {
+        return;
+    }
+
+    const preview = document.createElement('div');
+    preview.classList.add('preview-imagenes');
+    preview.classList.add('preview-imagenes-dinamica');
+    input.insertAdjacentElement('afterend', preview);
+
+    input.addEventListener('change', function() {
+        preview.innerHTML = '';
+        Array.from(this.files).forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const imgWrap = document.createElement('div');
+                imgWrap.classList.add('img-preview-item');
+                if (index === 0) {
+                    imgWrap.classList.add('principal');
+                    imgWrap.setAttribute('title', 'Imagen principal');
+                    const badge = document.createElement('span');
+                    badge.classList.add('badge-principal');
+                    badge.textContent = '★ Principal';
+                    imgWrap.appendChild(badge);
+                }
+
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = file.name;
+                imgWrap.appendChild(img);
+                preview.appendChild(imgWrap);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+});
+</script>
