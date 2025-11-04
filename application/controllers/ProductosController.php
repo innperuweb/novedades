@@ -2,13 +2,70 @@
 
 require_once APP_PATH . '/controllers/BaseController.php';
 require_once APP_PATH . '/models/ProductoModel.php';
+require_once APP_PATH . '/models/SubcategoriaModel.php';
 require_once APP_PATH . '/helpers/security_helper.php';
 
 class ProductosController extends BaseController
 {
     public function index(): void
     {
-        $this->render('productos');
+        $slugSubcategoria = isset($_GET['subcat']) ? sanitize_string((string) $_GET['subcat']) : '';
+        $slugSubcategoria = trim($slugSubcategoria);
+
+        $orden = isset($_GET['order']) ? sanitize_string((string) $_GET['order']) : '';
+        $ordenesPermitidos = ['precio_asc', 'precio_desc', 'nombre_asc', 'nombre_desc'];
+        if (!in_array($orden, $ordenesPermitidos, true)) {
+            $orden = '';
+        }
+
+        $paginaActual = isset($_GET['page']) ? sanitize_int($_GET['page']) : 1;
+        $paginaActual = $paginaActual !== null && $paginaActual > 0 ? $paginaActual : 1;
+        $limite = 20;
+
+        $productos = [];
+        $categoriaId = null;
+        $subcategorias = [];
+
+        $minPrecio = $this->sanitizarPrecio($_POST['min_precio'] ?? null, 0.0);
+        $maxPrecio = $this->sanitizarPrecio($_POST['max_precio'] ?? null, 10000.0);
+
+        $esSolicitudPost = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST';
+        $aplicarFiltroPrecio = $esSolicitudPost && ($slugSubcategoria !== '');
+
+        if ($slugSubcategoria !== '') {
+            $subcategoria = SubcategoriaModel::obtenerPorSlug($slugSubcategoria);
+
+            if ($subcategoria !== null) {
+                $categoriaId = (int) ($subcategoria['categoria_id'] ?? 0);
+                if ($categoriaId > 0) {
+                    $subcategorias = SubcategoriaModel::obtenerPorCategoria($categoriaId);
+                }
+
+                if ($aplicarFiltroPrecio) {
+                    if ($minPrecio > $maxPrecio) {
+                        [$minPrecio, $maxPrecio] = [$maxPrecio, $minPrecio];
+                    }
+
+                    $productos = ProductoModel::filtrarPorPrecio($slugSubcategoria, $minPrecio, $maxPrecio);
+                } elseif ($orden !== '') {
+                    $productos = ProductoModel::obtenerFiltrados($slugSubcategoria, $orden);
+                } else {
+                    $productos = ProductoModel::obtenerPorSubcategoria($slugSubcategoria);
+                }
+            }
+        }
+
+        $this->render('productos', [
+            'productos' => $productos,
+            'slug_subcat' => $slugSubcategoria,
+            'orden' => $orden,
+            'pagina_actual' => $paginaActual,
+            'limite' => $limite,
+            'categoria_id' => $categoriaId,
+            'subcategorias' => $subcategorias,
+            'min_precio' => $minPrecio,
+            'max_precio' => $maxPrecio,
+        ]);
     }
 
     public function detalle(): void
@@ -35,5 +92,26 @@ class ProductosController extends BaseController
     public function ofertas(): void
     {
         $this->render('ofertas');
+    }
+
+    private function sanitizarPrecio($valor, float $predeterminado): float
+    {
+        if ($valor === null || $valor === '') {
+            return $predeterminado;
+        }
+
+        if (is_numeric($valor)) {
+            return (float) $valor;
+        }
+
+        $valor = (string) $valor;
+        $valor = str_replace(',', '.', $valor);
+        $valor = preg_replace('/[^0-9.\-]/', '', $valor);
+
+        if ($valor === '' || !is_numeric($valor)) {
+            return $predeterminado;
+        }
+
+        return (float) $valor;
     }
 }
