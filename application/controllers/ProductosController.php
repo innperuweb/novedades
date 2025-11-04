@@ -27,7 +27,9 @@ class ProductosController extends BaseController
             }
         }
 
-        $this->render('detalle_producto', compact('producto'));
+        $imagenes = $producto['imagenes'] ?? [];
+
+        $this->render('detalle_producto', compact('producto', 'imagenes'));
     }
 
     public function ofertas(): void

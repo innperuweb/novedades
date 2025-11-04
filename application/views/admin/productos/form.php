@@ -16,7 +16,7 @@
     <a class="btn btn-outline-secondary" href="<?= base_url('admin/productos'); ?>">Volver</a>
 </div>
 
-<form action="<?= $formAction; ?>" method="post" class="row g-4">
+<form action="<?= $formAction; ?>" method="post" class="row g-4" enctype="multipart/form-data">
     <?= csrf_field(); ?>
     <div class="col-lg-8">
         <div class="card shadow-sm border-0 mb-4">
@@ -27,6 +27,10 @@
                     <?php if (isset($errores['nombre'])): ?>
                         <div class="invalid-feedback"><?= e($errores['nombre']); ?></div>
                     <?php endif; ?>
+                </div>
+                <div class="mb-3">
+                    <label for="marca" class="form-label">Marca</label>
+                    <input type="text" name="marca" id="marca" class="form-control" placeholder="Ejemplo: Nike" value="<?= e($producto['marca'] ?? ''); ?>">
                 </div>
                 <div class="mb-3">
                     <label for="descripcion" class="form-label">Descripción</label>
@@ -79,6 +83,25 @@
                     <div class="col-md-6">
                         <label for="tallas" class="form-label">Tallas (separadas por coma)</label>
                         <input type="text" name="tallas" id="tallas" class="form-control" value="<?= e($tallasTexto); ?>" placeholder="S, M, L">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-body">
+                <h2 class="h6 text-uppercase text-muted mb-3">Recursos multimedia</h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="tabla_tallas" class="form-label">Tabla de Tallas</label>
+                        <input type="file" name="tabla_tallas" id="tabla_tallas" accept="image/*" class="form-control">
+                        <?php if (!empty($producto['tabla_tallas'])): ?>
+                            <div class="form-text">Archivo actual: <?= e($producto['tabla_tallas']); ?></div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="imagenes" class="form-label">Imágenes del producto</label>
+                        <input type="file" name="imagenes[]" id="imagenes" accept="image/*" multiple class="form-control">
+                        <div class="form-text">Puedes seleccionar múltiples imágenes.</div>
                     </div>
                 </div>
             </div>

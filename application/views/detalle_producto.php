@@ -47,6 +47,68 @@ if (empty($productosRelacionados)) {
 if (!empty($productosRelacionados)) {
     $productosRelacionados = array_slice($productosRelacionados, 0, 10);
 }
+
+$imagenes = $imagenes ?? null;
+if ($imagenes === null) {
+    $imagenes = $producto['imagenes'] ?? [];
+}
+
+if (!is_array($imagenes)) {
+    $imagenes = [];
+}
+
+$galeriaImagenes = [];
+foreach ($imagenes as $itemImagen) {
+    if (is_array($itemImagen)) {
+        $ruta = trim((string) ($itemImagen['ruta'] ?? ''));
+    } else {
+        $ruta = trim((string) $itemImagen);
+    }
+
+    if ($ruta === '') {
+        continue;
+    }
+
+    $galeriaImagenes[] = ['ruta' => $ruta];
+}
+
+if ($galeriaImagenes === []) {
+    if (preg_match('#^https?://#i', $productoImagen) === 1) {
+        $galeriaImagenes[] = ['ruta' => $productoImagen];
+    } else {
+        $galeriaImagenes[] = ['ruta' => 'legacy:' . ltrim($productoImagen, '/')];
+    }
+}
+
+$normalizarRuta = static function (string $ruta): string {
+    $ruta = trim($ruta);
+
+    if ($ruta === '') {
+        return '';
+    }
+
+    if (strpos($ruta, 'legacy:') === 0) {
+        $ruta = substr($ruta, strlen('legacy:')) ?: '';
+        $ruta = ltrim($ruta, '/');
+
+        return asset_url('img/products/' . $ruta);
+    }
+
+    if (preg_match('#^https?://#i', $ruta) === 1) {
+        return $ruta;
+    }
+
+    $rutaLimpia = ltrim($ruta, '/');
+    if (strpos($rutaLimpia, 'uploads/productos/') === 0) {
+        $rutaLimpia = substr($rutaLimpia, strlen('uploads/productos/')) ?: '';
+    }
+
+    return asset_url('uploads/productos/' . $rutaLimpia);
+};
+
+$stockCantidad = (int) ($producto['stock'] ?? 0);
+$tablaTallasArchivo = trim((string) ($producto['tabla_tallas'] ?? ''));
+$tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchivo) : '';
 ?>
 
 <style>
@@ -90,6 +152,22 @@ if (!empty($productosRelacionados)) {
 .product-card img:hover {
     transform: scale(1.05);
 }
+
+.stock.disponible {
+    color: #2ecc71;
+    font-weight: bold;
+}
+
+.stock.agotado {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.tabla-tallas img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
 </style>
 
 <div class="breadcrumb-area pt--70 pt-md--25">
@@ -113,91 +191,19 @@ if (!empty($productosRelacionados)) {
                 <div class="col-md-6 product-main-image">
                     <div class="product-image">
                         <div class="product-gallery vertical-slide-nav">
-                            <div class="product-gallery__thumb">
-                                <div class="product-gallery__thumb--image">
-                                    <div class="airi-element-carousel nav-slider slick-vertical" data-slick-options='{
-                                                "slidesToShow": 3,
-                                                "slidesToScroll": 1,
-                                                "vertical": true,
-                                                "swipe": true,
-                                                "verticalSwiping": true,
-                                                "infinite": true,
-                                                "focusOnSelect": true,
-                                                "asNavFor": ".main-slider",
-                                                "arrows": true, 
-                                                "prevArrow": {"buttonClass": "slick-btn slick-prev", "iconClass": "fa fa-angle-up" },
-                                                "nextArrow": {"buttonClass": "slick-btn slick-next", "iconClass": "fa fa-angle-down" }
-                                            }' data-slick-responsive='[
-                                                {
-                                                    "breakpoint":992, 
-                                                    "settings": {
-                                                        "slidesToShow": 4,
-                                                        "vertical": false,
-                                                        "verticalSwiping": false
-                                                    } 
-                                                },
-                                                {
-                                                    "breakpoint":575, 
-                                                    "settings": {
-                                                        "slidesToShow": 3,
-                                                        "vertical": false,
-                                                        "verticalSwiping": false
-                                                    } 
-                                                },
-                                                {
-                                                    "breakpoint":480, 
-                                                    "settings": {
-                                                        "slidesToShow": 2,
-                                                        "vertical": false,
-                                                        "verticalSwiping": false
-                                                    } 
-                                                }
-                                            ]'>
-                                        <figure class="product-gallery__thumb--single">
-                                            <img src="<?= e($productoImagenUrl) ?>" alt="<?= $productoNombre ?>">
-                                        </figure>
-                                        <figure class="product-gallery__thumb--single">
-                                            <img src="<?= asset_url('img/products/prod-19-2-2.jpg'); ?>" alt="Products">
-                                        </figure>
-                                        <figure class="product-gallery__thumb--single">
-                                            <img src="<?= asset_url('img/products/prod-19-3-2.jpg'); ?>" alt="Products">
-                                        </figure>
-                                        <figure class="product-gallery__thumb--single">
-                                            <img src="<?= asset_url('img/products/prod-19-4-2.jpg'); ?>" alt="Products">
-                                        </figure>
-                                    </div>
+                            <?php foreach ($galeriaImagenes as $img): ?>
+                                <?php
+                                    $rutaImagen = (string) ($img['ruta'] ?? '');
+                                    $imagenUrl = $normalizarRuta($rutaImagen);
+
+                                    if ($imagenUrl === '') {
+                                        continue;
+                                    }
+                                ?>
+                                <div class="product-gallery__item">
+                                    <img src="<?= e($imagenUrl) ?>" alt="<?= e($productoNombre) ?>">
                                 </div>
-                            </div>
-                            <div class="product-gallery__large-image">
-                                <div class="gallery-with-thumbs">
-                                    <div class="product-gallery__wrapper">
-                                        <div class="airi-element-carousel main-slider product-gallery__full-image image-popup" data-slick-options='{
-                                                    "slidesToShow": 1,
-                                                    "slidesToScroll": 1,
-                                                    "infinite": true,
-                                                    "arrows": false, 
-                                                    "asNavFor": ".nav-slider"
-                                                }'>
-                                            <figure class="product-gallery__image zoom">
-                                                <img src="<?= e($productoImagenUrl) ?>" alt="<?= $productoNombre ?>">
-                                            </figure>
-                                            <figure class="product-gallery__image zoom">
-                                                <img src="<?= asset_url('img/products/prod-19-2-big.jpg'); ?>" alt="Product">
-                                            </figure>
-                                            <figure class="product-gallery__image zoom">
-                                                <img src="<?= asset_url('img/products/prod-19-3-big.jpg'); ?>" alt="Product">
-                                            </figure>
-                                            <figure class="product-gallery__image zoom">
-                                                <img src="<?= asset_url('img/products/prod-19-4-big.jpg'); ?>" alt="Product">
-                                            </figure>
-                                        </div>
-                                        <div class="product-gallery__actions">
-                                            <button class="action-btn btn-zoom-popup"><i
-                                                    class="dl-icon-zoom-in"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <?php endforeach; ?>
                         </div>
                         <span class="product-badge new">New</span>
                     </div>
@@ -205,17 +211,30 @@ if (!empty($productosRelacionados)) {
                 <div class="col-md-6 product-main-details mt-md--10 mt-sm--30">
                     <div class="product-summary">
                         <div class="clearfix"></div>
-                        <span class="sku_wrapper font-size-12">MARCA: <span class="sku">SONY</span></span>
                         <h3 class="product-title"><?= $productoNombre ?></h3>
 
-                        <div class="stock-row">
-                            <span class="product-stock in-stock">
-                                <i class="dl-icon-check-circle1"></i> Con stock
-                            </span>
+                        <?php if (!empty($producto['marca'])): ?>
+                            <p><strong>Marca:</strong> <?= e($producto['marca']) ?></p>
+                        <?php endif; ?>
 
-                            <span class="product-stock-red in-stock">
-                                <i class="dl-icon-check-circle1"></i> Sin stock
-                            </span>
+                        <?php if (!empty($producto['sku'])): ?>
+                            <p><strong>SKU:</strong> <?= e($producto['sku']) ?></p>
+                        <?php endif; ?>
+
+                        <?php if (!empty($producto['color'])): ?>
+                            <p><strong>Color:</strong> <?= e($producto['color']) ?></p>
+                        <?php endif; ?>
+
+                        <?php if (!empty($producto['talla'])): ?>
+                            <p><strong>Talla:</strong> <?= e($producto['talla']) ?></p>
+                        <?php endif; ?>
+
+                        <div class="stock-row">
+                            <?php if ($stockCantidad > 0): ?>
+                                <span class="stock disponible">Con Stock</span>
+                            <?php else: ?>
+                                <span class="stock agotado">Sin Stock</span>
+                            <?php endif; ?>
                         </div>
 
                         <div class="product-price-wrapper mb--40 mb-md--10">
@@ -225,18 +244,11 @@ if (!empty($productosRelacionados)) {
                         <p class="product-short-description mb--45 mb-sm--20">Donec accumsan auctor iaculis. Sed suscipit arcu ligula, at egestas magna molestie a. Proin ac ex maximus, ultrices justo eget, sodales orci. Aliquam egestas libero ac turpis pharetra, in vehicula lacus scelerisque. Vestibulum
                             ut sem laoreet, feugiat tellus at, hendrerit.</p>
 
-                        <div class="product-gallery__large-image">
-                            <div class="gallery-with-thumbs">
-                                <div class="product-gallery__wrapper">
-                                    <div class="product-gallery__actions" style="left: 0px;">
-                                        <a href="<?= asset_url('img/tallas.jpg'); ?>"
-                                            class="action-btn video-popup">
-                                            <i class="fa-solid fa-ruler ubicacion"> </i> <span class="tabla">Tabla de tallas</span>
-                                        </a>
-                                    </div>
-                                </div>
+                        <?php if ($tablaTallasUrl !== ''): ?>
+                            <div class="tabla-tallas mt-3">
+                                <img src="<?= e($tablaTallasUrl) ?>" alt="Tabla de tallas">
                             </div>
-                        </div>
+                        <?php endif; ?>
 
                         <br>
 

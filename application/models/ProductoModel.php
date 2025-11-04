@@ -11,7 +11,15 @@ class ProductoModel
         $pdo = Database::connect();
         $stmt = $pdo->query('SELECT * FROM productos');
 
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $productos = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+
+        foreach ($productos as &$producto) {
+            $producto['colores'] = $this->decodificarLista($producto['colores'] ?? null);
+            $producto['tallas'] = $this->decodificarLista($producto['tallas'] ?? null);
+        }
+        unset($producto);
+
+        return $productos;
     }
 
     public function getById($id): ?array
@@ -21,6 +29,12 @@ class ProductoModel
         }
 
         $producto = $this->fetchProductoDesdeBaseDeDatos($id);
+        if ($producto !== null) {
+            $producto['colores'] = $this->decodificarLista($producto['colores'] ?? null);
+            $producto['tallas'] = $this->decodificarLista($producto['tallas'] ?? null);
+            $producto['imagenes'] = $this->getImagenes((int) ($producto['id'] ?? 0));
+        }
+
         $mock = $this->getMockProductos();
         $mockProducto = $mock[$id] ?? null;
 
@@ -33,8 +47,13 @@ class ProductoModel
                 $producto['imagen'] = $mockProducto['imagen'];
             }
 
-            $producto['colores'] = $mockProducto['colores'] ?? [];
-            $producto['tallas'] = $mockProducto['tallas'] ?? [];
+            if (empty($producto['colores'])) {
+                $producto['colores'] = $mockProducto['colores'] ?? [];
+            }
+
+            if (empty($producto['tallas'])) {
+                $producto['tallas'] = $mockProducto['tallas'] ?? [];
+            }
         } else {
             $producto['colores'] = $producto['colores'] ?? [];
             $producto['tallas'] = $producto['tallas'] ?? [];
@@ -88,5 +107,50 @@ class ProductoModel
                 'tallas' => ['28', '30', '32', '34'],
             ],
         ];
+    }
+
+    private function decodificarLista($valor): array
+    {
+        if ($valor === null || $valor === '') {
+            return [];
+        }
+
+        if (is_array($valor)) {
+            return array_values(array_map('strval', $valor));
+        }
+
+        $decoded = json_decode((string) $valor, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return array_values(array_map('strval', $decoded));
+        }
+
+        $partes = preg_split('/[;,]+/', (string) $valor) ?: [];
+        $partes = array_map(static function ($item): string {
+            return trim((string) $item);
+        }, $partes);
+        $partes = array_filter($partes, static fn ($item): bool => $item !== '');
+
+        return array_values(array_unique($partes));
+    }
+
+    public function getImagenes(int $productoId): array
+    {
+        if ($productoId <= 0) {
+            return [];
+        }
+
+        try {
+            $pdo = Database::connect();
+            $stmt = $pdo->prepare('SELECT ruta FROM producto_imagenes WHERE producto_id = :id ORDER BY id ASC');
+            $stmt->execute([':id' => $productoId]);
+
+            $imagenes = $stmt->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+
+            return array_map(static function ($ruta): array {
+                return ['ruta' => trim((string) $ruta)];
+            }, $imagenes);
+        } catch (\Throwable $exception) {
+            return [];
+        }
     }
 }
