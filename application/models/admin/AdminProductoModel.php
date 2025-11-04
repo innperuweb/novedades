@@ -50,6 +50,7 @@ final class AdminProductoModel extends ProductoModel
         $producto['colores'] = $this->decodificarCampoJson($producto['colores'] ?? null);
         $producto['tallas'] = $this->decodificarCampoJson($producto['tallas'] ?? null);
         $producto['subcategorias'] = $this->obtenerSubcategoriasAsignadas($id);
+        $producto['imagenes'] = $this->obtenerImagenes($id);
 
         return $producto;
     }
@@ -189,6 +190,7 @@ final class AdminProductoModel extends ProductoModel
 
         $mapa = [
             'nombre' => trim((string) ($data['nombre'] ?? '')),
+            'marca' => trim((string) ($data['marca'] ?? '')),
             'descripcion' => (string) ($data['descripcion'] ?? ''),
             'precio' => (float) ($data['precio'] ?? 0),
             'stock' => isset($data['stock']) ? (int) $data['stock'] : 0,
@@ -196,6 +198,18 @@ final class AdminProductoModel extends ProductoModel
             'imagen' => trim((string) ($data['imagen'] ?? '')),
             'activo' => isset($data['activo']) && $data['activo'] ? 1 : 0,
         ];
+
+        if (array_key_exists('tabla_tallas', $data)) {
+            $mapa['tabla_tallas'] = trim((string) ($data['tabla_tallas'] ?? ''));
+        }
+
+        if (array_key_exists('color', $data)) {
+            $mapa['color'] = trim((string) ($data['color'] ?? ''));
+        }
+
+        if (array_key_exists('talla', $data)) {
+            $mapa['talla'] = trim((string) ($data['talla'] ?? ''));
+        }
 
         if (isset($data['colores'])) {
             $colores = $this->normalizarLista($data['colores']);
@@ -226,6 +240,56 @@ final class AdminProductoModel extends ProductoModel
         }
 
         return $resultado;
+    }
+
+    public function guardarImagenes(int $productoId, array $imagenes): void
+    {
+        if ($imagenes === [] || !$this->tablaExiste('producto_imagenes')) {
+            return;
+        }
+
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('INSERT INTO producto_imagenes (producto_id, ruta) VALUES (:producto, :ruta)');
+
+        foreach ($imagenes as $ruta) {
+            $stmt->execute([
+                ':producto' => $productoId,
+                ':ruta' => (string) $ruta,
+            ]);
+        }
+    }
+
+    public function reemplazarImagenes(int $productoId, array $imagenes): void
+    {
+        if (!$this->tablaExiste('producto_imagenes')) {
+            return;
+        }
+
+        $pdo = Database::connect();
+        $pdo->prepare('DELETE FROM producto_imagenes WHERE producto_id = :producto')
+            ->execute([':producto' => $productoId]);
+
+        $this->guardarImagenes($productoId, $imagenes);
+    }
+
+    public function obtenerImagenes(int $productoId): array
+    {
+        if (!$this->tablaExiste('producto_imagenes')) {
+            return [];
+        }
+
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT id, ruta FROM producto_imagenes WHERE producto_id = :producto ORDER BY id ASC');
+        $stmt->execute([':producto' => $productoId]);
+
+        $imagenes = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+
+        return array_map(static function ($item): array {
+            return [
+                'id' => (int) ($item['id'] ?? 0),
+                'ruta' => trim((string) ($item['ruta'] ?? '')),
+            ];
+        }, $imagenes);
     }
 
     private function normalizarLista($valor): array
