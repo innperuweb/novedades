@@ -43,10 +43,6 @@ class ProductoModel
         }
 
         if ($mockProducto !== null) {
-            if (empty($producto['imagen']) && !empty($mockProducto['imagen'])) {
-                $producto['imagen'] = $mockProducto['imagen'];
-            }
-
             if (empty($producto['colores'])) {
                 $producto['colores'] = $mockProducto['colores'] ?? [];
             }
@@ -57,6 +53,13 @@ class ProductoModel
         } else {
             $producto['colores'] = $producto['colores'] ?? [];
             $producto['tallas'] = $producto['tallas'] ?? [];
+        }
+
+        if (!empty($producto['imagenes'])) {
+            $principal = $producto['imagenes'][0]['ruta'] ?? '';
+            if ($principal !== '') {
+                $producto['imagen'] = $principal;
+            }
         }
 
         return $producto;
@@ -141,16 +144,45 @@ class ProductoModel
 
         try {
             $pdo = Database::connect();
-            $stmt = $pdo->prepare('SELECT ruta FROM producto_imagenes WHERE producto_id = :id ORDER BY id ASC');
+            $tienePrincipal = $this->columnaExisteEnTabla('producto_imagenes', 'es_principal');
+
+            $columnas = $tienePrincipal ? 'ruta, es_principal' : 'ruta';
+            $orden = $tienePrincipal ? 'es_principal DESC, id ASC' : 'id ASC';
+
+            $stmt = $pdo->prepare('SELECT ' . $columnas . ' FROM producto_imagenes WHERE producto_id = :id ORDER BY ' . $orden);
             $stmt->execute([':id' => $productoId]);
 
-            $imagenes = $stmt->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+            $imagenes = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
-            return array_map(static function ($ruta): array {
-                return ['ruta' => trim((string) $ruta)];
+            return array_map(static function ($item) use ($tienePrincipal): array {
+                return [
+                    'ruta' => trim((string) ($item['ruta'] ?? '')),
+                    'es_principal' => $tienePrincipal ? (int) ($item['es_principal'] ?? 0) : 0,
+                ];
             }, $imagenes);
         } catch (\Throwable $exception) {
             return [];
         }
+    }
+
+    private function columnaExisteEnTabla(string $tabla, string $columna): bool
+    {
+        static $cache = [];
+
+        $clave = $tabla . '.' . $columna;
+        if (array_key_exists($clave, $cache)) {
+            return $cache[$clave];
+        }
+
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = :tabla AND column_name = :columna');
+        $stmt->execute([
+            ':tabla' => $tabla,
+            ':columna' => $columna,
+        ]);
+
+        $cache[$clave] = ((int) $stmt->fetchColumn()) > 0;
+
+        return $cache[$clave];
     }
 }

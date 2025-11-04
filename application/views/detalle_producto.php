@@ -23,9 +23,6 @@ if ($producto === null) {
 $productoId = (int) ($producto['id'] ?? 0);
 $productoNombre = e($producto['nombre'] ?? 'Producto');
 $productoPrecio = (float) ($producto['precio'] ?? 0);
-$productoImagen = trim((string) ($producto['imagen'] ?? 'producto1.jpg'));
-$productoImagen = $productoImagen !== '' ? $productoImagen : 'producto1.jpg';
-$productoImagenUrl = asset_url('img/products/' . $productoImagen);
 $coloresDisponibles = array_map('strval', $producto['colores'] ?? []);
 $tallasDisponibles = array_map('strval', $producto['tallas'] ?? []);
 $productosRelacionados = $productosRelacionados ?? [];
@@ -61,24 +58,32 @@ $galeriaImagenes = [];
 foreach ($imagenes as $itemImagen) {
     if (is_array($itemImagen)) {
         $ruta = trim((string) ($itemImagen['ruta'] ?? ''));
+        $principal = (int) ($itemImagen['es_principal'] ?? 0);
     } else {
         $ruta = trim((string) $itemImagen);
+        $principal = 0;
     }
 
     if ($ruta === '') {
         continue;
     }
 
-    $galeriaImagenes[] = ['ruta' => $ruta];
+    $galeriaImagenes[] = [
+        'ruta' => $ruta,
+        'es_principal' => $principal,
+    ];
 }
 
 if ($galeriaImagenes === []) {
-    if (preg_match('#^https?://#i', $productoImagen) === 1) {
-        $galeriaImagenes[] = ['ruta' => $productoImagen];
-    } else {
-        $galeriaImagenes[] = ['ruta' => 'legacy:' . ltrim($productoImagen, '/')];
-    }
+    $galeriaImagenes[] = [
+        'ruta' => 'legacy:producto1.jpg',
+        'es_principal' => 1,
+    ];
 }
+
+usort($galeriaImagenes, static function ($a, $b): int {
+    return ($b['es_principal'] ?? 0) <=> ($a['es_principal'] ?? 0);
+});
 
 $normalizarRuta = static function (string $ruta): string {
     $ruta = trim($ruta);
