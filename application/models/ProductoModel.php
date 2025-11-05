@@ -69,21 +69,16 @@ class ProductoModel
         $mockProducto = $mock[$id] ?? null;
 
         if ($producto === null) {
+            if ($mockProducto !== null) {
+                $mockProducto['colores'] = $this->limpiarOpciones($mockProducto['colores'] ?? []);
+                $mockProducto['tallas'] = $this->limpiarOpciones($mockProducto['tallas'] ?? []);
+            }
+
             return $mockProducto;
         }
 
-        if ($mockProducto !== null) {
-            if (empty($producto['colores'])) {
-                $producto['colores'] = $this->limpiarOpciones($mockProducto['colores'] ?? []);
-            }
-
-            if (empty($producto['tallas'])) {
-                $producto['tallas'] = $this->limpiarOpciones($mockProducto['tallas'] ?? []);
-            }
-        } else {
-            $producto['colores'] = $this->limpiarOpciones($producto['colores'] ?? []);
-            $producto['tallas'] = $this->limpiarOpciones($producto['tallas'] ?? []);
-        }
+        $producto['colores'] = $this->limpiarOpciones($producto['colores'] ?? []);
+        $producto['tallas'] = $this->limpiarOpciones($producto['tallas'] ?? []);
 
         if (!empty($producto['imagenes'])) {
             $principal = $producto['imagenes'][0]['ruta'] ?? '';

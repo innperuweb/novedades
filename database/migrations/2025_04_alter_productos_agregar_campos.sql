@@ -5,6 +5,10 @@ ALTER TABLE productos
   ADD COLUMN IF NOT EXISTS estado TINYINT(1) NOT NULL DEFAULT 1 AFTER stock,
   ADD COLUMN IF NOT EXISTS visible TINYINT(1) NOT NULL DEFAULT 1 AFTER estado;
 
+ALTER TABLE productos
+  ADD COLUMN IF NOT EXISTS colores TEXT NULL AFTER visible,
+  ADD COLUMN IF NOT EXISTS tallas TEXT NULL AFTER colores;
+
 -- Tabla de imágenes de productos (crear si no existe)
 CREATE TABLE IF NOT EXISTS productos_imagenes (
   id INT AUTO_INCREMENT PRIMARY KEY,

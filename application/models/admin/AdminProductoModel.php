@@ -150,19 +150,22 @@ final class AdminProductoModel extends ProductoModel
         }
 
         if (is_array($valor)) {
-            return $valor;
+            $items = $valor;
+        } else {
+            $valorCadena = (string) $valor;
+            $decoded = json_decode($valorCadena, true);
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $items = $decoded;
+            } else {
+                $items = preg_split('/[;,]+/', $valorCadena) ?: [];
+            }
         }
 
-        $decoded = json_decode((string) $valor, true);
+        $items = array_map(static fn ($item): string => trim((string) $item), $items);
+        $items = array_filter($items, static fn ($item): bool => $item !== '');
 
-        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-            return $decoded;
-        }
-
-        $partes = array_map('trim', explode(',', (string) $valor));
-        $partes = array_filter($partes, static fn ($item): bool => $item !== '');
-
-        return array_values($partes);
+        return array_values($items);
     }
 
     private function obtenerRelacionesSubcategorias(array $ids): array
