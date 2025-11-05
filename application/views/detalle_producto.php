@@ -25,7 +25,18 @@ $productoNombre = e($producto['nombre'] ?? 'Producto');
 $productoPrecio = (float) ($producto['precio'] ?? 0);
 $normalizarOpciones = static function ($valor): array {
     if (!is_array($valor)) {
-        return [];
+        if ($valor === null || $valor === '') {
+            return [];
+        }
+
+        $valorCadena = (string) $valor;
+        $decoded = json_decode($valorCadena, true);
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            $valor = $decoded;
+        } else {
+            $valor = preg_split('/[;,]+/', $valorCadena) ?: [];
+        }
     }
 
     $items = array_map(static fn ($item): string => trim((string) $item), $valor);
@@ -344,6 +355,28 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
 
                         <?php if (!empty($producto['talla'])): ?>
                             <p><strong>Talla:</strong> <?= e($producto['talla']) ?></p>
+                        <?php endif; ?>
+
+                        <?php if (!empty($coloresDisponibles)): ?>
+                            <div class="product-color">
+                                <h6>Colores:</h6>
+                                <ul class="color-options">
+                                    <?php foreach ($coloresDisponibles as $color): ?>
+                                        <li><?= e($color) ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if (!empty($tallasDisponibles)): ?>
+                            <div class="product-size">
+                                <h6>Tallas:</h6>
+                                <ul class="size-options">
+                                    <?php foreach ($tallasDisponibles as $talla): ?>
+                                        <li><?= e($talla) ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
                         <?php endif; ?>
 
                         <div class="stock-row">

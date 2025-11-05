@@ -1,11 +1,29 @@
 <?php
     $formAction = $esEdicion ? base_url('admin/productos/actualizar/' . (int) ($producto['id'] ?? 0)) : base_url('admin/productos/guardar');
     $coloresTexto = '';
-    if (!empty($producto['colores'])) {
+    $coloresOld = old('colores', null);
+    if ($coloresOld !== null) {
+        if (is_array($coloresOld)) {
+            $coloresOld = array_map(static fn ($item): string => trim((string) $item), $coloresOld);
+            $coloresOld = array_filter($coloresOld, static fn ($item): bool => $item !== '');
+            $coloresTexto = implode(', ', $coloresOld);
+        } else {
+            $coloresTexto = trim((string) $coloresOld);
+        }
+    } elseif (!empty($producto['colores'])) {
         $coloresTexto = is_array($producto['colores']) ? implode(', ', $producto['colores']) : (string) $producto['colores'];
     }
     $tallasTexto = '';
-    if (!empty($producto['tallas'])) {
+    $tallasOld = old('tallas', null);
+    if ($tallasOld !== null) {
+        if (is_array($tallasOld)) {
+            $tallasOld = array_map(static fn ($item): string => trim((string) $item), $tallasOld);
+            $tallasOld = array_filter($tallasOld, static fn ($item): bool => $item !== '');
+            $tallasTexto = implode(', ', $tallasOld);
+        } else {
+            $tallasTexto = trim((string) $tallasOld);
+        }
+    } elseif (!empty($producto['tallas'])) {
         $tallasTexto = is_array($producto['tallas']) ? implode(', ', $producto['tallas']) : (string) $producto['tallas'];
     }
     $seleccionadas = $producto['subcategorias'] ?? [];
@@ -104,7 +122,7 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label for="colores" class="form-label">Colores (separados por coma)</label>
-                        <input type="text" name="colores" id="colores" class="form-control" value="<?= e($coloresTexto); ?>" placeholder="Rojo, Azul, Negro">
+                        <input type="text" name="colores" id="colores" class="form-control" value="<?= e($coloresTexto); ?>" placeholder="Rojo, Azul, Verde">
                     </div>
                     <div class="col-md-6">
                         <label for="tallas" class="form-label">Tallas (separadas por coma)</label>
