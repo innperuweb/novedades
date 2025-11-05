@@ -160,6 +160,14 @@ $normalizarRuta = static function (string $ruta): string {
 
     $rutaLimpia = ltrim($ruta, '/');
 
+    if (strpos($rutaLimpia, 'public/assets/') === 0) {
+        $rutaLimpia = ltrim(substr($rutaLimpia, strlen('public/assets/')) ?: '', '/');
+    }
+
+    if (strpos($rutaLimpia, 'assets/') === 0) {
+        $rutaLimpia = ltrim(substr($rutaLimpia, strlen('assets/')) ?: '', '/');
+    }
+
     if (strpos($rutaLimpia, 'uploads/') === 0) {
         return asset_url($rutaLimpia);
     }
@@ -281,6 +289,7 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
     font-weight: bold;
 }
 
+.product-size-chart img,
 .tabla-tallas img {
     max-width: 100%;
     height: auto;
@@ -395,8 +404,11 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
                             ut sem laoreet, feugiat tellus at, hendrerit.</p>
 
                         <?php if ($tablaTallasUrl !== ''): ?>
-                            <div class="tabla-tallas mt-3">
-                                <img src="<?= e($tablaTallasUrl) ?>" alt="Tabla de tallas">
+                            <div class="product-size-chart mt--20">
+                                <h6>Tabla de tallas</h6>
+                                <a href="<?= e($tablaTallasUrl) ?>" target="_blank" rel="noopener">
+                                    <img src="<?= e($tablaTallasUrl) ?>" alt="Tabla de tallas" width="400">
+                                </a>
                             </div>
                         <?php endif; ?>
 

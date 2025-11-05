@@ -33,12 +33,21 @@
 
     if ($tablaTallasArchivo !== '') {
         $limpiaTabla = ltrim($tablaTallasArchivo, '/');
-        if (strpos($limpiaTabla, 'uploads/productos/') === 0) {
+
+        if (strpos($limpiaTabla, 'assets/') === 0) {
+            $limpiaTabla = ltrim(substr($limpiaTabla, strlen('assets/')) ?: '', '/');
+        }
+
+        if (strpos($limpiaTabla, 'uploads/') === 0) {
             $tablaTallasUrl = asset_url($limpiaTabla);
-        } elseif (strpos($limpiaTabla, 'uploads/') === 0) {
+        } elseif (strpos($limpiaTabla, 'tabla_tallas/') === 0) {
+            $tablaTallasUrl = asset_url('uploads/' . $limpiaTabla);
+        } elseif (strpos($limpiaTabla, 'uploads/productos/') === 0) {
             $tablaTallasUrl = asset_url($limpiaTabla);
+        } elseif (strpos($limpiaTabla, 'productos/') === 0 || strpos($limpiaTabla, 'products/') === 0) {
+            $tablaTallasUrl = asset_url('uploads/' . $limpiaTabla);
         } else {
-            $tablaTallasUrl = asset_url('uploads/productos/' . $limpiaTabla);
+            $tablaTallasUrl = asset_url('uploads/tabla_tallas/' . $limpiaTabla);
         }
     }
 ?>
@@ -51,7 +60,7 @@
 .grid-imagenes .item .tag-principal.activo{display:inline-block}
 .grid-imagenes .item .btn-del:hover{background:#f8f8f8}
 .tabla-tallas-preview{position:relative;display:inline-block;margin-top:12px}
-.tabla-tallas-preview img{width:200px;max-width:100%;height:auto;border-radius:8px;border:1px solid #eee;object-fit:cover}
+.tabla-tallas-preview img{width:120px;height:120px;border-radius:8px;border:1px solid #eee;object-fit:cover}
 .tabla-tallas-preview .btn-del-tabla{position:absolute;top:6px;right:6px;background:#e74c3c;color:#fff;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:16px;line-height:24px;padding:0}
 .tabla-tallas-preview .btn-del-tabla:hover{opacity:0.85}
 </style>
@@ -136,14 +145,18 @@
                 <h2 class="h6 text-uppercase text-muted mb-3">Recursos multimedia</h2>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label for="tabla_tallas" class="form-label">Tabla de Tallas</label>
-                        <input type="file" name="tabla_tallas" id="tabla_tallas" accept=".jpg,.jpeg,.png,.webp,image/*" class="form-control">
+                        <label for="tablaTallasInput" class="form-label">Tabla de Tallas</label>
+                        <input type="file" name="tabla_tallas" id="tablaTallasInput" accept=".jpg,.jpeg,.png,.webp,image/*" class="form-control">
                         <small class="form-text d-block mt-1">Formatos permitidos: JPG, PNG o WEBP.</small>
                         <?php if ($tablaTallasUrl !== ''): ?>
-                            <div class="tabla-tallas-preview" data-has-tabla="1">
-                                <img src="<?= e($tablaTallasUrl); ?>" alt="Tabla de tallas actual">
+                            <div class="tabla-tallas-preview mt-2" data-has-tabla="1">
+                                <img src="<?= e($tablaTallasUrl); ?>" alt="Tabla de tallas actual" width="120" height="120" style="border:1px solid #ccc;border-radius:4px;">
                                 <?php if ($esEdicion && !empty($producto['id'])): ?>
-                                    <button type="button" class="btn-del-tabla" data-url="<?= e(base_url('admin/productos/eliminar_tabla_tallas/' . (int) $producto['id'])); ?>" title="Eliminar tabla de tallas">&times;</button>
+                                    <button type="button"
+                                            class="btn btn-danger btn-sm btn-delete-tabla-tallas btn-del-tabla"
+                                            data-id="<?= (int) $producto['id']; ?>"
+                                            data-url="<?= e(base_url('admin/productos/eliminar_tabla_tallas/' . (int) $producto['id'])); ?>"
+                                            title="Eliminar tabla de tallas">&times;</button>
                                 <?php endif; ?>
                             </div>
                         <?php endif; ?>
@@ -233,8 +246,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const gridExistentes = document.getElementById('grid-imagenes-existentes');
     const inputPrincipal = document.getElementById('imagen_principal_nueva');
     const csrfInput = document.querySelector('input[name="csrf_token"]');
-    const tablaTallasPreview = document.querySelector('.tabla-tallas-preview');
     const csrfToken = csrfInput ? csrfInput.value : '';
+
+    const tablaTallasButtons = document.querySelectorAll('.btn-delete-tabla-tallas');
+
+    tablaTallasButtons.forEach((button) => {
+        button.addEventListener('click', async (event) => {
+            event.preventDefault();
+
+            if (!window.confirm('¿Eliminar esta imagen de tabla de tallas?')) {
+                return;
+            }
+
+            const url = button.dataset.url || '';
+            if (url === '') {
+                return;
+            }
+
+            try {
+                const respuesta = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        csrf_token: csrfToken,
+                    }),
+                });
+
+                if (!respuesta.ok) {
+                    throw new Error('No se pudo eliminar la tabla de tallas.');
+                }
+
+                const data = await respuesta.json();
+                if (!data.success) {
+                    throw new Error(data.message || 'Ocurrió un error al eliminar la tabla de tallas.');
+                }
+
+                const preview = button.closest('.tabla-tallas-preview');
+                if (preview) {
+                    preview.remove();
+                }
+            } catch (error) {
+                alert(error && error.message ? error.message : 'Ocurrió un error al eliminar la tabla de tallas.');
+            }
+        });
+    });
 
     if (typeof DataTransfer === 'undefined') {
         return;
@@ -242,49 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!input || !gridNuevas || !inputPrincipal) {
         return;
-    }
-
-    if (tablaTallasPreview) {
-        const btnTabla = tablaTallasPreview.querySelector('.btn-del-tabla');
-        if (btnTabla) {
-            btnTabla.addEventListener('click', async (event) => {
-                event.preventDefault();
-                if (!window.confirm('¿Eliminar la tabla de tallas?')) {
-                    return;
-                }
-
-                const url = btnTabla.dataset.url || '';
-                if (url === '') {
-                    return;
-                }
-
-                try {
-                    const respuesta = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: new URLSearchParams({
-                            csrf_token: csrfToken,
-                        }),
-                    });
-
-                    if (!respuesta.ok) {
-                        throw new Error('No se pudo eliminar la tabla de tallas.');
-                    }
-
-                    const data = await respuesta.json();
-                    if (!data.success) {
-                        throw new Error(data.message || 'Ocurrió un error al eliminar la tabla de tallas.');
-                    }
-
-                    tablaTallasPreview.remove();
-                } catch (error) {
-                    alert(error.message || 'Ocurrió un error al eliminar la tabla de tallas.');
-                }
-            });
-        }
     }
 
     let dataTransfer = new DataTransfer();
