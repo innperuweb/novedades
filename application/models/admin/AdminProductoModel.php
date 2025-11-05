@@ -5,7 +5,7 @@ declare(strict_types=1);
 final class AdminProductoModel extends ProductoModel
 {
     private ?array $tablaColumnas = null;
-    private ?string $tablaImagenes = null;
+    protected ?string $tablaImagenes = null;
 
     public function obtenerTodos(): array
     {
@@ -457,7 +457,7 @@ final class AdminProductoModel extends ProductoModel
         return (int) $nuevoId;
     }
 
-    private function obtenerTablaImagenes(): ?string
+    protected function obtenerTablaImagenes(): ?string
     {
         if ($this->tablaImagenes !== null) {
             return $this->tablaImagenes;
@@ -529,7 +529,7 @@ final class AdminProductoModel extends ProductoModel
         return ((int) $maximo) + 1;
     }
 
-    private function columnaExisteEnTabla(string $tabla, string $columna): bool
+    protected function columnaExisteEnTabla(string $tabla, string $columna): bool
     {
         static $cache = [];
 
@@ -629,7 +629,7 @@ final class AdminProductoModel extends ProductoModel
         return $this->tablaColumnas;
     }
 
-    private function tablaExiste(string $tabla): bool
+    protected function tablaExiste(string $tabla): bool
     {
         static $cache = [];
 

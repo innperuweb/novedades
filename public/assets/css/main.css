@@ -4217,6 +4217,7 @@ span,
     overflow: auto;
     height: 100%;
     padding: 7rem;
+    margin-top: 20px;
 }
 
 @media (max-width: 93.6875em) {
@@ -18050,8 +18051,8 @@ span,
 .btn-close {
     font-size: 40px;
     z-index: 5;
-    line-height: 40px;
-    height: 40px;
+    line-height: 26px;
+    height: 26px;
     opacity: 1;
 }
 
