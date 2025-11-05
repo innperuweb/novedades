@@ -49,7 +49,7 @@ $carrito = isset($carrito) && is_array($carrito)
                                                 <?php foreach ($carrito as $item): ?>
                                                     <?php
                                                         $precio = (float) ($item['precio'] ?? 0);
-                                                        $imagenRuta = 'img/products/' . ($item['imagen'] ?? 'no-image.jpg');
+                                                        $imagenRuta = 'img/products/' . ($item['imagen'] ?? 'producto1.jpg');
                                                         $uid = (string) ($item['uid'] ?? '');
                                                         $color = trim((string) ($item['color'] ?? ''));
                                                         $talla = trim((string) ($item['talla'] ?? ''));

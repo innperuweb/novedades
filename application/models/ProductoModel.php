@@ -36,8 +36,8 @@ class ProductoModel
         $productos = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
         foreach ($productos as &$producto) {
-            $producto['colores'] = $this->decodificarLista($producto['colores'] ?? null);
-            $producto['tallas'] = $this->decodificarLista($producto['tallas'] ?? null);
+            $producto['colores'] = $this->limpiarOpciones($this->decodificarLista($producto['colores'] ?? null));
+            $producto['tallas'] = $this->limpiarOpciones($this->decodificarLista($producto['tallas'] ?? null));
             $producto['stock'] = (int) ($producto['stock'] ?? 0);
             if (!empty($producto['imagen_principal'])) {
                 $producto['imagen'] = $producto['imagen_principal'];
@@ -56,8 +56,8 @@ class ProductoModel
 
         $producto = $this->fetchProductoDesdeBaseDeDatos($id);
         if ($producto !== null) {
-            $producto['colores'] = $this->decodificarLista($producto['colores'] ?? null);
-            $producto['tallas'] = $this->decodificarLista($producto['tallas'] ?? null);
+            $producto['colores'] = $this->limpiarOpciones($this->decodificarLista($producto['colores'] ?? null));
+            $producto['tallas'] = $this->limpiarOpciones($this->decodificarLista($producto['tallas'] ?? null));
             $producto['imagenes'] = $this->getImagenes((int) ($producto['id'] ?? 0));
             $producto['stock'] = (int) ($producto['stock'] ?? 0);
             if (!empty($producto['imagen_principal'])) {
@@ -74,15 +74,15 @@ class ProductoModel
 
         if ($mockProducto !== null) {
             if (empty($producto['colores'])) {
-                $producto['colores'] = $mockProducto['colores'] ?? [];
+                $producto['colores'] = $this->limpiarOpciones($mockProducto['colores'] ?? []);
             }
 
             if (empty($producto['tallas'])) {
-                $producto['tallas'] = $mockProducto['tallas'] ?? [];
+                $producto['tallas'] = $this->limpiarOpciones($mockProducto['tallas'] ?? []);
             }
         } else {
-            $producto['colores'] = $producto['colores'] ?? [];
-            $producto['tallas'] = $producto['tallas'] ?? [];
+            $producto['colores'] = $this->limpiarOpciones($producto['colores'] ?? []);
+            $producto['tallas'] = $this->limpiarOpciones($producto['tallas'] ?? []);
         }
 
         if (!empty($producto['imagenes'])) {
@@ -214,6 +214,18 @@ class ProductoModel
         $partes = array_filter($partes, static fn ($item): bool => $item !== '');
 
         return array_values(array_unique($partes));
+    }
+
+    private function limpiarOpciones($valor): array
+    {
+        if (!is_array($valor)) {
+            return [];
+        }
+
+        $items = array_map(static fn ($item): string => trim((string) $item), $valor);
+        $items = array_filter($items, static fn ($item): bool => $item !== '');
+
+        return array_values(array_unique($items));
     }
 
     public function getImagenes(int $productoId): array

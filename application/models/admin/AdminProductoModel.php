@@ -14,8 +14,8 @@ final class AdminProductoModel extends ProductoModel
         $productos = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
         foreach ($productos as &$producto) {
-            $producto['colores'] = $this->decodificarCampoJson($producto['colores'] ?? null);
-            $producto['tallas'] = $this->decodificarCampoJson($producto['tallas'] ?? null);
+            $producto['colores'] = $this->sanitizarOpciones($this->decodificarCampoJson($producto['colores'] ?? null));
+            $producto['tallas'] = $this->sanitizarOpciones($this->decodificarCampoJson($producto['tallas'] ?? null));
             $producto['subcategorias'] = [];
             $producto['subcategorias_nombres'] = [];
             $producto['stock'] = (int) ($producto['stock'] ?? 0);
@@ -53,8 +53,8 @@ final class AdminProductoModel extends ProductoModel
             return null;
         }
 
-        $producto['colores'] = $this->decodificarCampoJson($producto['colores'] ?? null);
-        $producto['tallas'] = $this->decodificarCampoJson($producto['tallas'] ?? null);
+        $producto['colores'] = $this->sanitizarOpciones($this->decodificarCampoJson($producto['colores'] ?? null));
+        $producto['tallas'] = $this->sanitizarOpciones($this->decodificarCampoJson($producto['tallas'] ?? null));
         $producto['subcategorias'] = $this->obtenerSubcategoriasAsignadas($id);
         $producto['imagenes'] = $this->obtenerImagenes($id);
         $producto['stock'] = (int) ($producto['stock'] ?? 0);
@@ -398,37 +398,6 @@ final class AdminProductoModel extends ProductoModel
         }, $imagenes);
     }
 
-    public function eliminarImagen(int $productoId, int $imagenId): ?array
-    {
-        $tabla = $this->obtenerTablaImagenes();
-        if ($tabla === null) {
-            return null;
-        }
-
-        $pdo = Database::connect();
-        $stmt = $pdo->prepare('SELECT id, ruta, es_principal FROM ' . $tabla . ' WHERE id = :id AND producto_id = :producto LIMIT 1');
-        $stmt->execute([
-            ':id' => $imagenId,
-            ':producto' => $productoId,
-        ]);
-
-        $imagen = $stmt->fetch(\PDO::FETCH_ASSOC);
-        if ($imagen === false) {
-            return null;
-        }
-
-        $pdo->prepare('DELETE FROM ' . $tabla . ' WHERE id = :id AND producto_id = :producto LIMIT 1')
-            ->execute([
-                ':id' => $imagenId,
-                ':producto' => $productoId,
-            ]);
-
-        return [
-            'ruta' => (string) ($imagen['ruta'] ?? ''),
-            'era_principal' => $this->columnaExisteEnTabla($tabla, 'es_principal') ? (int) ($imagen['es_principal'] ?? 0) : 0,
-        ];
-    }
-
     public function asignarPrincipalRestante(int $productoId): ?int
     {
         $tabla = $this->obtenerTablaImagenes();
@@ -564,6 +533,97 @@ final class AdminProductoModel extends ProductoModel
         $items = array_filter($items, static fn ($item): bool => $item !== '');
 
         return array_values(array_unique($items));
+    }
+
+    private function sanitizarOpciones(array $items): array
+    {
+        $items = array_map(static fn ($valor): string => trim((string) $valor), $items);
+        $items = array_filter($items, static fn ($valor): bool => $valor !== '');
+
+        return array_values(array_unique($items));
+    }
+
+    public function eliminarImagen(int $productoId, int $imagenId): ?array
+    {
+        $datosImagen = $this->obtenerDatosImagen($imagenId);
+        if ($datosImagen === null || (int) ($datosImagen['producto_id'] ?? 0) !== $productoId) {
+            return null;
+        }
+
+        $this->borrarImagen((int) $datosImagen['id'], $productoId);
+
+        return [
+            'ruta' => (string) ($datosImagen['ruta'] ?? ''),
+            'era_principal' => (int) ($datosImagen['es_principal'] ?? 0),
+        ];
+    }
+
+    public function eliminarImagenPorId(int $imagenId): ?array
+    {
+        $datosImagen = $this->obtenerDatosImagen($imagenId);
+        if ($datosImagen === null) {
+            return null;
+        }
+
+        $productoId = (int) ($datosImagen['producto_id'] ?? 0);
+        $this->borrarImagen((int) $datosImagen['id'], $productoId);
+
+        return [
+            'ruta' => (string) ($datosImagen['ruta'] ?? ''),
+            'era_principal' => (int) ($datosImagen['es_principal'] ?? 0),
+            'producto_id' => $productoId,
+        ];
+    }
+
+    public function limpiarTablaTallas(int $productoId): bool
+    {
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('UPDATE productos SET tabla_tallas = NULL WHERE id = :id');
+
+        return $stmt->execute([':id' => $productoId]);
+    }
+
+    private function obtenerDatosImagen(int $imagenId): ?array
+    {
+        $tabla = $this->obtenerTablaImagenes();
+        if ($tabla === null) {
+            return null;
+        }
+
+        $pdo = Database::connect();
+        $columnas = 'id, producto_id, ruta';
+        if ($this->columnaExisteEnTabla($tabla, 'es_principal')) {
+            $columnas .= ', es_principal';
+        }
+
+        $stmt = $pdo->prepare('SELECT ' . $columnas . ' FROM ' . $tabla . ' WHERE id = :id LIMIT 1');
+        $stmt->execute([':id' => $imagenId]);
+
+        $imagen = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if ($imagen === false) {
+            return null;
+        }
+
+        if (!$this->columnaExisteEnTabla($tabla, 'es_principal')) {
+            $imagen['es_principal'] = 0;
+        }
+
+        return $imagen;
+    }
+
+    private function borrarImagen(int $imagenId, int $productoId): void
+    {
+        $tabla = $this->obtenerTablaImagenes();
+        if ($tabla === null) {
+            return;
+        }
+
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('DELETE FROM ' . $tabla . ' WHERE id = :id AND producto_id = :producto LIMIT 1');
+        $stmt->execute([
+            ':id' => $imagenId,
+            ':producto' => $productoId,
+        ]);
     }
 
     private function sincronizarSubcategorias(int $productoId, array $subcategorias): void

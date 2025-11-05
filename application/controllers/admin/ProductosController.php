@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 final class ProductosController extends AdminBaseController
 {
+    private const MIMES_PERMITIDOS = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+    ];
+
     private AdminProductoModel $productoModel;
     private AdminCategoriaModel $categoriaModel;
     private string $directorioUploads;
@@ -317,6 +323,92 @@ final class ProductosController extends AdminBaseController
         ]);
     }
 
+    public function eliminarImagenAjax(string $imagenId): void
+    {
+        $this->requireLogin();
+
+        if (!$this->isPost()) {
+            $this->responderJson(['success' => false, 'message' => 'Método no permitido.'], 405);
+
+            return;
+        }
+
+        $token = $_POST['csrf_token'] ?? '';
+        if (!$this->validateCsrfToken($token)) {
+            $this->responderJson(['success' => false, 'message' => 'Sesión inválida, recargue la página.'], 400);
+
+            return;
+        }
+
+        $imagenIdSanitizada = sanitize_int($imagenId);
+        if ($imagenIdSanitizada === null) {
+            $this->responderJson(['success' => false, 'message' => 'Parámetros inválidos.'], 400);
+
+            return;
+        }
+
+        $resultado = $this->productoModel->eliminarImagenPorId($imagenIdSanitizada);
+        if ($resultado === null) {
+            $this->responderJson(['success' => false, 'message' => 'La imagen indicada no existe.'], 404);
+
+            return;
+        }
+
+        $this->eliminarArchivoFisico((string) ($resultado['ruta'] ?? ''));
+
+        $nuevoPrincipalId = null;
+        $productoId = (int) ($resultado['producto_id'] ?? 0);
+        if (!empty($resultado['era_principal']) && $productoId > 0) {
+            $nuevoPrincipalId = $this->productoModel->asignarPrincipalRestante($productoId);
+        }
+
+        $this->responderJson([
+            'success' => true,
+            'nuevoPrincipalId' => $nuevoPrincipalId,
+        ]);
+    }
+
+    public function eliminarTablaTallas(string $id): void
+    {
+        $this->requireLogin();
+
+        if (!$this->isPost()) {
+            $this->responderJson(['success' => false, 'message' => 'Método no permitido.'], 405);
+
+            return;
+        }
+
+        $token = $_POST['csrf_token'] ?? '';
+        if (!$this->validateCsrfToken($token)) {
+            $this->responderJson(['success' => false, 'message' => 'Sesión inválida, recargue la página.'], 400);
+
+            return;
+        }
+
+        $productoId = sanitize_int($id);
+        if ($productoId === null) {
+            $this->responderJson(['success' => false, 'message' => 'Producto inválido.'], 400);
+
+            return;
+        }
+
+        $producto = $this->productoModel->obtenerProducto($productoId);
+        if ($producto === null) {
+            $this->responderJson(['success' => false, 'message' => 'Producto no encontrado.'], 404);
+
+            return;
+        }
+
+        $rutaAnterior = (string) ($producto['tabla_tallas'] ?? '');
+        $this->productoModel->limpiarTablaTallas($productoId);
+
+        if ($rutaAnterior !== '') {
+            $this->eliminarArchivoFisico($rutaAnterior);
+        }
+
+        $this->responderJson(['success' => true]);
+    }
+
     private function mostrarFormularioProducto(array $producto, array $errores, bool $esEdicion): void
     {
         $categorias = $this->categoriaModel->listarCategorias();
@@ -439,7 +531,13 @@ final class ProductosController extends AdminBaseController
             return ['error' => 'El archivo de la tabla de tallas debe ser una imagen válida.'];
         }
 
-        $nombreArchivo = $this->generarNombreArchivo((string) ($archivo['name'] ?? 'tabla-tallas'));
+        $mime = is_array($info) ? (string) ($info['mime'] ?? '') : '';
+        if ($mime === '' || !array_key_exists($mime, self::MIMES_PERMITIDOS)) {
+            return ['error' => 'El archivo de la tabla de tallas debe ser JPG, PNG o WEBP.'];
+        }
+
+        $extension = $this->obtenerExtensionDesdeMime($mime, (string) ($archivo['name'] ?? 'tabla-tallas'));
+        $nombreArchivo = $this->generarNombreArchivo((string) ($archivo['name'] ?? 'tabla-tallas'), $extension);
         $destino = $this->asegurarDirectorioUploads() . '/' . $nombreArchivo;
 
         if (!move_uploaded_file($archivo['tmp_name'], $destino)) {
@@ -491,7 +589,14 @@ final class ProductosController extends AdminBaseController
                 continue;
             }
 
-            $nombreArchivo = $this->generarNombreArchivo((string) ($nombres[$i] ?? 'imagen-producto'));
+            $mime = is_array($info) ? (string) ($info['mime'] ?? '') : '';
+            if ($mime === '' || !array_key_exists($mime, self::MIMES_PERMITIDOS)) {
+                $erroresEncontrados[] = 'Una de las imágenes tiene un formato no permitido. Usa JPG, PNG o WEBP.';
+                continue;
+            }
+
+            $extension = $this->obtenerExtensionDesdeMime($mime, (string) ($nombres[$i] ?? 'imagen-producto'));
+            $nombreArchivo = $this->generarNombreArchivo((string) ($nombres[$i] ?? 'imagen-producto'), $extension);
             $archivosPreparados[] = [
                 'tmp_name' => $tmp,
                 'nombre' => $nombreArchivo,
@@ -585,12 +690,33 @@ final class ProductosController extends AdminBaseController
         return $ruta;
     }
 
-    private function generarNombreArchivo(string $nombreOriginal): string
+    private function generarNombreArchivo(string $nombreOriginal, ?string $extensionForzada = null): string
     {
-        $extension = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
-        $extension = $extension !== '' ? '.' . strtolower($extension) : '';
+        $extension = $extensionForzada ?? '';
+
+        if ($extension === '') {
+            $extension = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
+            $extension = $extension !== '' ? '.' . strtolower($extension) : '';
+        }
 
         return uniqid('producto_', true) . $extension;
+    }
+
+    private function obtenerExtensionDesdeMime(string $mime, string $nombreOriginal): string
+    {
+        $mime = strtolower($mime);
+        $extension = strtolower(pathinfo($nombreOriginal, PATHINFO_EXTENSION));
+
+        if ($extension === 'jpeg') {
+            $extension = 'jpg';
+        }
+
+        $permitidos = array_values(self::MIMES_PERMITIDOS);
+        if ($extension === '' || !in_array($extension, $permitidos, true)) {
+            $extension = self::MIMES_PERMITIDOS[$mime] ?? 'jpg';
+        }
+
+        return '.' . $extension;
     }
 
     private function eliminarArchivosFisicos(array $imagenes): void
