@@ -572,19 +572,42 @@ final class AdminProductoModel extends ProductoModel
             return;
         }
 
-        $pdo = Database::connect();
-        $pdo->prepare('DELETE FROM producto_subcategoria WHERE producto_id = :producto')
-            ->execute([':producto' => $productoId]);
+        $subcategoriasLimpias = array_values(array_unique(array_filter(array_map(
+            static fn ($valor): int => (int) $valor,
+            $subcategorias
+        ), static fn (int $valor): bool => $valor > 0)));
 
-        if ($subcategorias === []) {
+        $pdo = Database::connect();
+
+        if ($subcategoriasLimpias === []) {
+            $pdo->prepare('DELETE FROM producto_subcategoria WHERE producto_id = :producto')
+                ->execute([':producto' => $productoId]);
+
             return;
         }
 
-        $stmt = $pdo->prepare('INSERT INTO producto_subcategoria (producto_id, subcategoria_id) VALUES (:producto, :subcategoria)');
-        foreach ($subcategorias as $subcategoriaId) {
+        $placeholders = [];
+        $params = [':producto' => $productoId];
+        foreach ($subcategoriasLimpias as $indice => $subcategoriaId) {
+            $placeholder = ':sub' . $indice;
+            $placeholders[] = $placeholder;
+            $params[$placeholder] = $subcategoriaId;
+        }
+
+        $sqlEliminar = 'DELETE FROM producto_subcategoria WHERE producto_id = :producto'
+            . ' AND subcategoria_id NOT IN (' . implode(',', $placeholders) . ')';
+        $pdo->prepare($sqlEliminar)->execute($params);
+
+        $stmt = $pdo->prepare(
+            'INSERT INTO producto_subcategoria (producto_id, subcategoria_id) '
+            . 'VALUES (:producto, :subcategoria) '
+            . 'ON DUPLICATE KEY UPDATE subcategoria_id = VALUES(subcategoria_id)'
+        );
+
+        foreach ($subcategoriasLimpias as $subcategoriaId) {
             $stmt->execute([
                 ':producto' => $productoId,
-                ':subcategoria' => (int) $subcategoriaId,
+                ':subcategoria' => $subcategoriaId,
             ]);
         }
     }
