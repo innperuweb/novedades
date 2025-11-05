@@ -23,8 +23,19 @@ if ($producto === null) {
 $productoId = (int) ($producto['id'] ?? 0);
 $productoNombre = e($producto['nombre'] ?? 'Producto');
 $productoPrecio = (float) ($producto['precio'] ?? 0);
-$coloresDisponibles = array_map('strval', $producto['colores'] ?? []);
-$tallasDisponibles = array_map('strval', $producto['tallas'] ?? []);
+$normalizarOpciones = static function ($valor): array {
+    if (!is_array($valor)) {
+        return [];
+    }
+
+    $items = array_map(static fn ($item): string => trim((string) $item), $valor);
+    $items = array_filter($items, static fn ($item): bool => $item !== '');
+
+    return array_values(array_unique($items));
+};
+
+$coloresDisponibles = $normalizarOpciones($producto['colores'] ?? []);
+$tallasDisponibles = $normalizarOpciones($producto['tallas'] ?? []);
 $productosRelacionados = $productosRelacionados ?? [];
 
 if (empty($productosRelacionados)) {
@@ -55,13 +66,15 @@ if (!is_array($imagenes)) {
 }
 
 $galeriaImagenes = [];
-foreach ($imagenes as $itemImagen) {
+foreach ($imagenes as $indice => $itemImagen) {
     if (is_array($itemImagen)) {
         $ruta = trim((string) ($itemImagen['ruta'] ?? ''));
         $principal = (int) ($itemImagen['es_principal'] ?? 0);
+        $orden = (int) ($itemImagen['orden'] ?? $indice);
     } else {
         $ruta = trim((string) $itemImagen);
         $principal = 0;
+        $orden = $indice;
     }
 
     if ($ruta === '') {
@@ -71,25 +84,56 @@ foreach ($imagenes as $itemImagen) {
     $galeriaImagenes[] = [
         'ruta' => $ruta,
         'es_principal' => $principal,
+        'orden' => $orden,
     ];
 }
 
 if ($galeriaImagenes === []) {
     $galeriaImagenes[] = [
-        'ruta' => 'legacy:producto1.jpg',
+        'ruta' => 'default:products/producto1.jpg',
         'es_principal' => 1,
+        'orden' => 0,
     ];
 }
 
 usort($galeriaImagenes, static function ($a, $b): int {
-    return ($b['es_principal'] ?? 0) <=> ($a['es_principal'] ?? 0);
+    $principalA = (int) ($a['es_principal'] ?? 0);
+    $principalB = (int) ($b['es_principal'] ?? 0);
+
+    if ($principalA !== $principalB) {
+        return $principalB <=> $principalA;
+    }
+
+    $ordenA = (int) ($a['orden'] ?? 0);
+    $ordenB = (int) ($b['orden'] ?? 0);
+
+    return $ordenA <=> $ordenB;
 });
+
+$principalAsignado = false;
+foreach ($galeriaImagenes as &$imagenOrdenada) {
+    if ((int) ($imagenOrdenada['es_principal'] ?? 0) === 1 && !$principalAsignado) {
+        $principalAsignado = true;
+    }
+}
+unset($imagenOrdenada);
+
+if (!$principalAsignado && $galeriaImagenes !== []) {
+    $galeriaImagenes[0]['es_principal'] = 1;
+}
 
 $normalizarRuta = static function (string $ruta): string {
     $ruta = trim($ruta);
 
     if ($ruta === '') {
         return '';
+    }
+
+    if (strpos($ruta, 'default:') === 0) {
+        $archivo = substr($ruta, strlen('default:')) ?: '';
+        $archivo = ltrim($archivo, '/');
+
+        return asset_url('img/' . $archivo);
     }
 
     if (strpos($ruta, 'legacy:') === 0) {
@@ -110,6 +154,42 @@ $normalizarRuta = static function (string $ruta): string {
 
     return asset_url('uploads/productos/' . $rutaLimpia);
 };
+
+foreach ($galeriaImagenes as &$imagenNormalizada) {
+    $imagenNormalizada['url'] = $normalizarRuta((string) ($imagenNormalizada['ruta'] ?? ''));
+}
+unset($imagenNormalizada);
+
+$galeriaImagenes = array_values(array_filter($galeriaImagenes, static fn ($item): bool => ($item['url'] ?? '') !== ''));
+
+$sliderMainId = 'product-gallery-main-' . $productoId;
+$sliderThumbId = 'product-gallery-thumb-' . $productoId;
+$slidesThumbs = max(1, min(4, count($galeriaImagenes)));
+
+$thumbOptions = json_encode([
+    'vertical' => true,
+    'verticalSwiping' => true,
+    'slidesToShow' => $slidesThumbs,
+    'asNavFor' => '#' . $sliderMainId,
+    'focusOnSelect' => true,
+    'arrows' => true,
+    'infinite' => false,
+], JSON_UNESCAPED_SLASHES);
+
+$thumbResponsive = json_encode([
+    ['breakpoint' => 1200, 'settings' => ['vertical' => true, 'verticalSwiping' => true, 'slidesToShow' => min($slidesThumbs, 4)]],
+    ['breakpoint' => 992, 'settings' => ['vertical' => false, 'verticalSwiping' => false, 'slidesToShow' => min($slidesThumbs, 4)]],
+    ['breakpoint' => 768, 'settings' => ['vertical' => false, 'verticalSwiping' => false, 'slidesToShow' => min($slidesThumbs, 3)]],
+    ['breakpoint' => 576, 'settings' => ['vertical' => false, 'verticalSwiping' => false, 'slidesToShow' => min($slidesThumbs, 2)]],
+], JSON_UNESCAPED_SLASHES);
+
+$mainOptions = json_encode([
+    'slidesToShow' => 1,
+    'arrows' => false,
+    'asNavFor' => '#' . $sliderThumbId,
+    'infinite' => false,
+    'adaptiveHeight' => true,
+], JSON_UNESCAPED_SLASHES);
 
 $stockCantidad = (int) ($producto['stock'] ?? 0);
 $tablaTallasArchivo = trim((string) ($producto['tabla_tallas'] ?? ''));
@@ -196,19 +276,29 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
                 <div class="col-md-6 product-main-image">
                     <div class="product-image">
                         <div class="product-gallery vertical-slide-nav">
-                            <?php foreach ($galeriaImagenes as $img): ?>
-                                <?php
-                                    $rutaImagen = (string) ($img['ruta'] ?? '');
-                                    $imagenUrl = $normalizarRuta($rutaImagen);
-
-                                    if ($imagenUrl === '') {
-                                        continue;
-                                    }
-                                ?>
-                                <div class="product-gallery__item">
-                                    <img src="<?= e($imagenUrl) ?>" alt="<?= e($productoNombre) ?>">
+                            <div class="product-gallery__thumb">
+                                <div id="<?= e($sliderThumbId); ?>"
+                                     class="airi-element-carousel nav-slider"
+                                     data-slick-options='<?= e($thumbOptions); ?>'
+                                     data-slick-responsive='<?= e($thumbResponsive); ?>'>
+                                    <?php foreach ($galeriaImagenes as $img): ?>
+                                        <div class="product-gallery__thumb--single">
+                                            <img src="<?= e($img['url']); ?>" alt="<?= e($productoNombre); ?>">
+                                        </div>
+                                    <?php endforeach; ?>
                                 </div>
-                            <?php endforeach; ?>
+                            </div>
+                            <div class="product-gallery__large-image">
+                                <div id="<?= e($sliderMainId); ?>"
+                                     class="airi-element-carousel product-gallery__image image-slider"
+                                     data-slick-options='<?= e($mainOptions); ?>'>
+                                    <?php foreach ($galeriaImagenes as $img): ?>
+                                        <div class="product-gallery__image--single product-gallery__item">
+                                            <img src="<?= e($img['url']); ?>" alt="<?= e($productoNombre); ?>">
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
                         </div>
                         <span class="product-badge new">New</span>
                     </div>
@@ -260,25 +350,29 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
                         <form method="POST" action="<?= base_url('carrito/agregar') ?>" class="variation-form mb--35 form-add-cart">
                             <input type="hidden" name="id" value="<?= e((string) $productoId) ?>">
 
-                            <div class="product-color-variations mb--20">
-                                <label for="color" class="swatch-label">Color:</label>
-                                <select name="color" id="color" class="form__input form__input--2" required>
-                                    <option value="">Seleccionar</option>
-                                    <?php foreach ($coloresDisponibles as $color): ?>
-                                        <option value="<?= e($color) ?>"><?= e($color) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
+                            <?php if ($coloresDisponibles !== []): ?>
+                                <div class="product-color-variations mb--20">
+                                    <label for="color" class="swatch-label">Color:</label>
+                                    <select name="color" id="color" class="form__input form__input--2" required>
+                                        <option value="">Seleccionar</option>
+                                        <?php foreach ($coloresDisponibles as $color): ?>
+                                            <option value="<?= e($color) ?>"><?= e($color) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            <?php endif; ?>
 
-                            <div class="product-size-variations">
-                                <label for="talla" class="swatch-label">Talla:</label>
-                                <select name="talla" id="talla" class="form__input form__input--2" required>
-                                    <option value="">Seleccionar</option>
-                                    <?php foreach ($tallasDisponibles as $talla): ?>
-                                        <option value="<?= e($talla) ?>"><?= e($talla) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
+                            <?php if ($tallasDisponibles !== []): ?>
+                                <div class="product-size-variations">
+                                    <label for="talla" class="swatch-label">Talla:</label>
+                                    <select name="talla" id="talla" class="form__input form__input--2" required>
+                                        <option value="">Seleccionar</option>
+                                        <?php foreach ($tallasDisponibles as $talla): ?>
+                                            <option value="<?= e($talla) ?>"><?= e($talla) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            <?php endif; ?>
 
                             <div class="form--action mb--30 mb-sm--20">
                                 <div class="product-action flex-row align-items-center">
@@ -525,44 +619,52 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Validación del formulario de agregar al carrito
     const form = document.querySelector('form[action$="carrito/agregar"]');
-    if (form) {
-        form.addEventListener('submit', function(event) {
-            const colorSelect = form.querySelector('select[name="color"]');
-            const tallaSelect = form.querySelector('select[name="talla"]');
-            let isValid = true;
-
-            // Limpiar mensajes y estilos previos
-            document.querySelectorAll('.error-message').forEach(el => el.remove());
-            [colorSelect, tallaSelect].forEach(select => {
-                select.classList.remove('input-error');
-            });
-
-            // Validar color
-            if (!colorSelect.value) {
-                showError(colorSelect, 'Por favor selecciona un color');
-                isValid = false;
-            }
-
-            // Validar talla
-            if (!tallaSelect.value) {
-                showError(tallaSelect, 'Por favor selecciona una talla');
-                isValid = false;
-            }
-
-            if (!isValid) {
-                event.preventDefault();
-                // Desplazarse al primer campo con error
-                const firstError = document.querySelector('.input-error');
-                if (firstError) {
-                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-        });
+    if (!form) {
+        return;
     }
 
-    // Función para mostrar mensajes de error
+    const colorSelect = form.querySelector('select[name="color"]');
+    const tallaSelect = form.querySelector('select[name="talla"]');
+    const selects = [];
+    const mensajes = {
+        color: 'Por favor selecciona un color',
+        talla: 'Por favor selecciona una talla',
+    };
+
+    if (colorSelect) {
+        selects.push(colorSelect);
+    }
+
+    if (tallaSelect) {
+        selects.push(tallaSelect);
+    }
+
+    if (selects.length === 0) {
+        return;
+    }
+
+    form.addEventListener('submit', function(event) {
+        let isValid = true;
+        form.querySelectorAll('.error-message').forEach(el => el.remove());
+        selects.forEach(select => select.classList.remove('input-error'));
+
+        selects.forEach((select) => {
+            if (!select.value) {
+                isValid = false;
+                showError(select, mensajes[select.name] || 'Por favor selecciona una opción');
+            }
+        });
+
+        if (!isValid) {
+            event.preventDefault();
+            const firstError = form.querySelector('.input-error');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+
     function showError(input, message) {
         input.classList.add('input-error');
         const errorDiv = document.createElement('div');
@@ -570,34 +672,6 @@ document.addEventListener('DOMContentLoaded', function() {
         errorDiv.textContent = message;
         input.parentNode.insertBefore(errorDiv, input.nextSibling);
     }
-    const form = document.querySelector('form[action*="carrito/agregar"]');
-    if (!form) return;
-
-    form.addEventListener('submit', function(event) {
-        const colorSelect = form.querySelector('select[name="color"]');
-        const tallaSelect = form.querySelector('select[name="talla"]');
-
-        let valid = true;
-        const campos = [colorSelect, tallaSelect];
-
-        // Limpiar estilos previos
-        campos.forEach(campo => campo.classList.remove('input-error'));
-
-        if (!colorSelect.value) {
-            colorSelect.classList.add('input-error');
-            valid = false;
-        }
-
-        if (!tallaSelect.value) {
-            tallaSelect.classList.add('input-error');
-            valid = false;
-        }
-
-        if (!valid) {
-            event.preventDefault();
-            alert('Por favor selecciona un color y una talla antes de agregar al carrito.');
-        }
-    });
 });
 </script>
 

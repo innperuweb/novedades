@@ -79,6 +79,18 @@ return [
         'auth' => true,
         'methods' => ['POST'],
     ],
+    'productos/eliminar_imagen/{id}' => [
+        'controller' => 'ProductosController',
+        'method' => 'eliminarImagenAjax',
+        'auth' => true,
+        'methods' => ['POST'],
+    ],
+    'productos/eliminar_tabla_tallas/{id}' => [
+        'controller' => 'ProductosController',
+        'method' => 'eliminarTablaTallas',
+        'auth' => true,
+        'methods' => ['POST'],
+    ],
     'categorias' => [
         'controller' => 'CategoriasController',
         'method' => 'index',

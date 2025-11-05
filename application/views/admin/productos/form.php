@@ -10,6 +10,19 @@
     }
     $seleccionadas = $producto['subcategorias'] ?? [];
     $seleccionadas = is_array($seleccionadas) ? array_map('intval', $seleccionadas) : [];
+    $tablaTallasArchivo = trim((string) ($producto['tabla_tallas'] ?? ''));
+    $tablaTallasUrl = '';
+
+    if ($tablaTallasArchivo !== '') {
+        $limpiaTabla = ltrim($tablaTallasArchivo, '/');
+        if (strpos($limpiaTabla, 'uploads/productos/') === 0) {
+            $tablaTallasUrl = asset_url($limpiaTabla);
+        } elseif (strpos($limpiaTabla, 'uploads/') === 0) {
+            $tablaTallasUrl = asset_url($limpiaTabla);
+        } else {
+            $tablaTallasUrl = asset_url('uploads/productos/' . $limpiaTabla);
+        }
+    }
 ?>
 <style>
 .grid-imagenes{display:flex;flex-wrap:wrap;gap:12px}
@@ -19,6 +32,10 @@
 .grid-imagenes .item .tag-principal{position:absolute;bottom:6px;left:6px;background:#111;color:#fff;padding:2px 6px;border-radius:4px;font-size:12px;display:none}
 .grid-imagenes .item .tag-principal.activo{display:inline-block}
 .grid-imagenes .item .btn-del:hover{background:#f8f8f8}
+.tabla-tallas-preview{position:relative;display:inline-block;margin-top:12px}
+.tabla-tallas-preview img{width:200px;max-width:100%;height:auto;border-radius:8px;border:1px solid #eee;object-fit:cover}
+.tabla-tallas-preview .btn-del-tabla{position:absolute;top:6px;right:6px;background:#e74c3c;color:#fff;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:16px;line-height:24px;padding:0}
+.tabla-tallas-preview .btn-del-tabla:hover{opacity:0.85}
 </style>
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h4 mb-0"><?= $esEdicion ? 'Editar producto' : 'Nuevo producto'; ?></h1>
@@ -102,15 +119,21 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label for="tabla_tallas" class="form-label">Tabla de Tallas</label>
-                        <input type="file" name="tabla_tallas" id="tabla_tallas" accept="image/*" class="form-control">
-                        <?php if (!empty($producto['tabla_tallas'])): ?>
-                            <div class="form-text">Archivo actual: <?= e($producto['tabla_tallas']); ?></div>
+                        <input type="file" name="tabla_tallas" id="tabla_tallas" accept=".jpg,.jpeg,.png,.webp,image/*" class="form-control">
+                        <small class="form-text d-block mt-1">Formatos permitidos: JPG, PNG o WEBP.</small>
+                        <?php if ($tablaTallasUrl !== ''): ?>
+                            <div class="tabla-tallas-preview" data-has-tabla="1">
+                                <img src="<?= e($tablaTallasUrl); ?>" alt="Tabla de tallas actual">
+                                <?php if ($esEdicion && !empty($producto['id'])): ?>
+                                    <button type="button" class="btn-del-tabla" data-url="<?= e(base_url('admin/productos/eliminar_tabla_tallas/' . (int) $producto['id'])); ?>" title="Eliminar tabla de tallas">&times;</button>
+                                <?php endif; ?>
+                            </div>
                         <?php endif; ?>
                     </div>
                     <div class="col-md-6">
                         <label for="imagenes" class="form-label">Imágenes del producto</label>
                         <input type="file" name="imagenes[]" id="imagenes" accept="image/*" multiple class="form-control">
-                        <small class="form-text d-block mt-1">JPG/PNG. Tamaño recomendado 1000×1000. Se generará miniatura.</small>
+                        <small class="form-text d-block mt-1">JPG/PNG/WEBP. Tamaño recomendado 1000×1000. Se generará miniatura.</small>
                         <input type="hidden" name="imagen_principal_nueva" id="imagen_principal_nueva" value="<?= e(old('imagen_principal_nueva', '')); ?>">
                         <div id="grid-imagenes" class="grid-imagenes mt-3"></div>
                         <small class="form-text text-muted">Haz clic en una imagen para marcarla como principal. Usa la ✕ para quitarla antes de guardar.</small>
@@ -133,7 +156,7 @@
                                         $esPrincipal = (int) ($imagen['es_principal'] ?? 0) === 1;
                                         $imagenId = (int) ($imagen['id'] ?? 0);
                                         $deleteUrl = ($esEdicion && !empty($producto['id']) && $imagenId > 0)
-                                            ? base_url('admin/productos/' . (int) $producto['id'] . '/imagenes/' . $imagenId . '/eliminar')
+                                            ? base_url('admin/productos/eliminar_imagen/' . $imagenId)
                                             : '';
                                     ?>
                                     <div class="item" data-imagen-id="<?= (int) $imagenId; ?>">
@@ -192,6 +215,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const gridExistentes = document.getElementById('grid-imagenes-existentes');
     const inputPrincipal = document.getElementById('imagen_principal_nueva');
     const csrfInput = document.querySelector('input[name="csrf_token"]');
+    const tablaTallasPreview = document.querySelector('.tabla-tallas-preview');
+    const csrfToken = csrfInput ? csrfInput.value : '';
 
     if (typeof DataTransfer === 'undefined') {
         return;
@@ -199,6 +224,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!input || !gridNuevas || !inputPrincipal) {
         return;
+    }
+
+    if (tablaTallasPreview) {
+        const btnTabla = tablaTallasPreview.querySelector('.btn-del-tabla');
+        if (btnTabla) {
+            btnTabla.addEventListener('click', async (event) => {
+                event.preventDefault();
+                if (!window.confirm('¿Eliminar la tabla de tallas?')) {
+                    return;
+                }
+
+                const url = btnTabla.dataset.url || '';
+                if (url === '') {
+                    return;
+                }
+
+                try {
+                    const respuesta = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            csrf_token: csrfToken,
+                        }),
+                    });
+
+                    if (!respuesta.ok) {
+                        throw new Error('No se pudo eliminar la tabla de tallas.');
+                    }
+
+                    const data = await respuesta.json();
+                    if (!data.success) {
+                        throw new Error(data.message || 'Ocurrió un error al eliminar la tabla de tallas.');
+                    }
+
+                    tablaTallasPreview.remove();
+                } catch (error) {
+                    alert(error.message || 'Ocurrió un error al eliminar la tabla de tallas.');
+                }
+            });
+        }
     }
 
     let dataTransfer = new DataTransfer();
@@ -406,7 +474,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const csrfToken = csrfInput ? csrfInput.value : '';
             const badgePrincipal = item.querySelector('.tag-principal');
             const eraPrincipal = badgePrincipal ? badgePrincipal.classList.contains('activo') : false;
 
