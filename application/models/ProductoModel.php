@@ -58,7 +58,7 @@ class ProductoModel
         if ($producto !== null) {
             $producto['colores'] = $this->limpiarOpciones($this->decodificarLista($producto['colores'] ?? null));
             $producto['tallas'] = $this->limpiarOpciones($this->decodificarLista($producto['tallas'] ?? null));
-            $producto['imagenes'] = $this->getImagenes((int) ($producto['id'] ?? 0));
+            $producto['imagenes'] = $this->obtenerImagenesPorProducto((int) ($producto['id'] ?? 0));
             $producto['stock'] = (int) ($producto['stock'] ?? 0);
             if (!empty($producto['imagen_principal'])) {
                 $producto['imagen'] = $producto['imagen_principal'];
@@ -228,7 +228,17 @@ class ProductoModel
         return array_values(array_unique($items));
     }
 
+    public function obtenerImagenesPorProducto(int $productoId): array
+    {
+        return $this->resolverImagenesPorProducto($productoId);
+    }
+
     public function getImagenes(int $productoId): array
+    {
+        return $this->resolverImagenesPorProducto($productoId);
+    }
+
+    private function resolverImagenesPorProducto(int $productoId): array
     {
         if ($productoId <= 0) {
             return [];

@@ -84,6 +84,12 @@ class ProductosController extends BaseController
             }
         }
 
+        $producto['colores'] = $this->normalizarOpciones($producto['colores'] ?? []);
+        $producto['tallas'] = $this->normalizarOpciones($producto['tallas'] ?? []);
+        if (!isset($producto['imagenes']) || !is_array($producto['imagenes'])) {
+            $producto['imagenes'] = $model->obtenerImagenesPorProducto((int) ($producto['id'] ?? 0));
+        }
+
         $imagenes = $producto['imagenes'] ?? [];
 
         $this->render('detalle_producto', compact('producto', 'imagenes'));
@@ -113,5 +119,26 @@ class ProductosController extends BaseController
         }
 
         return (float) $valor;
+    }
+
+    private function normalizarOpciones($valor): array
+    {
+        if (is_string($valor)) {
+            $decoded = json_decode($valor, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $valor = $decoded;
+            } else {
+                $valor = preg_split('/[;,]+/', $valor) ?: [];
+            }
+        }
+
+        if (!is_array($valor)) {
+            return [];
+        }
+
+        $items = array_map(static fn ($item): string => trim((string) $item), $valor);
+        $items = array_filter($items, static fn ($item): bool => $item !== '');
+
+        return array_values(array_unique($items));
     }
 }

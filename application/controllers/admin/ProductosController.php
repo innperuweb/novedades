@@ -14,6 +14,7 @@ final class ProductosController extends AdminBaseController
     private AdminCategoriaModel $categoriaModel;
     private string $directorioUploads;
     private string $directorioImagenes;
+    private string $directorioTablaTallas;
 
     public function __construct()
     {
@@ -21,6 +22,7 @@ final class ProductosController extends AdminBaseController
         $this->categoriaModel = new AdminCategoriaModel();
         $this->directorioUploads = ROOT_PATH . '/public/assets/uploads/productos';
         $this->directorioImagenes = ROOT_PATH . '/public/assets/uploads/products';
+        $this->directorioTablaTallas = ROOT_PATH . '/public/assets/uploads/tabla_tallas';
     }
 
     public function index(): void
@@ -438,8 +440,8 @@ final class ProductosController extends AdminBaseController
             'precio' => (float) $precio,
             'stock' => max(0, (int) ($_POST['stock'] ?? 0)),
             'sku' => trim((string) ($_POST['sku'] ?? '')),
-            'colores' => $_POST['colores'] ?? '',
-            'tallas' => $_POST['tallas'] ?? '',
+            'colores' => $this->obtenerOpcionesDesdePost('colores'),
+            'tallas' => $this->obtenerOpcionesDesdePost('tallas'),
             'visible' => $visibleMarcado ? 1 : 0,
             'estado' => $visibleMarcado ? 1 : 0,
         ];
@@ -509,6 +511,26 @@ final class ProductosController extends AdminBaseController
         return $indice;
     }
 
+    private function obtenerOpcionesDesdePost(string $campo): array
+    {
+        if (!isset($_POST[$campo])) {
+            return [];
+        }
+
+        $valor = $_POST[$campo];
+
+        if (is_array($valor)) {
+            $items = $valor;
+        } else {
+            $items = preg_split('/[;,]+/', (string) $valor) ?: [];
+        }
+
+        $items = array_map(static fn ($item): string => trim((string) $item), $items);
+        $items = array_filter($items, static fn ($item): bool => $item !== '');
+
+        return array_values(array_unique($items));
+    }
+
     private function manejarTablaTallas(?array $productoActual): array
     {
         if (!isset($_FILES['tabla_tallas']) || !is_array($_FILES['tabla_tallas'])) {
@@ -538,7 +560,7 @@ final class ProductosController extends AdminBaseController
 
         $extension = $this->obtenerExtensionDesdeMime($mime, (string) ($archivo['name'] ?? 'tabla-tallas'));
         $nombreArchivo = $this->generarNombreArchivo((string) ($archivo['name'] ?? 'tabla-tallas'), $extension);
-        $destino = $this->asegurarDirectorioUploads() . '/' . $nombreArchivo;
+        $destino = $this->asegurarDirectorioTablaTallas() . '/' . $nombreArchivo;
 
         if (!move_uploaded_file($archivo['tmp_name'], $destino)) {
             return ['error' => 'No se pudo guardar la tabla de tallas en el servidor.'];
@@ -548,7 +570,7 @@ final class ProductosController extends AdminBaseController
             $this->eliminarArchivoFisico((string) $productoActual['tabla_tallas']);
         }
 
-        return ['archivo' => $nombreArchivo];
+        return ['archivo' => 'uploads/tabla_tallas/' . $nombreArchivo];
     }
 
     private function prepararImagenesDesdeRequest(): array
@@ -674,6 +696,15 @@ final class ProductosController extends AdminBaseController
         return $this->directorioUploads;
     }
 
+    private function asegurarDirectorioTablaTallas(): string
+    {
+        if (!is_dir($this->directorioTablaTallas)) {
+            mkdir($this->directorioTablaTallas, 0755, true);
+        }
+
+        return $this->directorioTablaTallas;
+    }
+
     private function asegurarDirectorioImagenesProducto(int $productoId): string
     {
         if (!is_dir($this->directorioImagenes)) {
@@ -750,6 +781,12 @@ final class ProductosController extends AdminBaseController
         } elseif (strpos($rutaNormalizada, 'uploads/productos/') === 0) {
             $rutaNormalizada = substr($rutaNormalizada, strlen('uploads/productos/')) ?: '';
             $base = $this->directorioUploads;
+        } elseif (strpos($rutaNormalizada, 'uploads/tabla_tallas/') === 0) {
+            $rutaNormalizada = substr($rutaNormalizada, strlen('uploads/tabla_tallas/')) ?: '';
+            $base = $this->directorioTablaTallas;
+        } elseif (strpos($rutaNormalizada, 'tabla_tallas/') === 0) {
+            $rutaNormalizada = substr($rutaNormalizada, strlen('tabla_tallas/')) ?: '';
+            $base = $this->directorioTablaTallas;
         }
 
         if ($rutaNormalizada === '') {
