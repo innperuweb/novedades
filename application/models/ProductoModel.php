@@ -357,8 +357,9 @@ class ProductoModel
             }
 
             $stmt = $db->prepare(
-                'SELECT p.*' . $selectImagen . ' FROM productos p ' .
-                'INNER JOIN subcategorias s ON p.subcategoria_id = s.id ' .
+                'SELECT DISTINCT p.*' . $selectImagen . ' FROM productos p ' .
+                'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id ' .
+                'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id ' .
                 'WHERE s.slug = :slug AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
             );
             $stmt->execute([':slug' => $slug]);
@@ -415,8 +416,9 @@ class ProductoModel
             }
 
             $stmt = $db->prepare(
-                'SELECT p.*' . $selectImagen . ' FROM productos p ' .
-                'INNER JOIN subcategorias s ON p.subcategoria_id = s.id ' .
+                'SELECT DISTINCT p.*' . $selectImagen . ' FROM productos p ' .
+                'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id ' .
+                'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id ' .
                 'WHERE s.slug = :slug AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY ' . $ordenSQL
             );
             $stmt->execute([':slug' => $slug]);
@@ -468,8 +470,9 @@ class ProductoModel
             }
 
             $stmt = $db->prepare(
-                'SELECT p.*' . $selectImagen . ' FROM productos p ' .
-                'INNER JOIN subcategorias s ON p.subcategoria_id = s.id ' .
+                'SELECT DISTINCT p.*' . $selectImagen . ' FROM productos p ' .
+                'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id ' .
+                'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id ' .
                 'WHERE s.slug = :slug AND p.precio BETWEEN :min AND :max AND p.estado = 1 '
                 . 'AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
             );
