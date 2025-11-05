@@ -90,7 +90,7 @@ foreach ($imagenes as $indice => $itemImagen) {
 
 if ($galeriaImagenes === []) {
     $galeriaImagenes[] = [
-        'ruta' => 'default:products/producto1.jpg',
+        'ruta' => 'default:no-image.jpg',
         'es_principal' => 1,
         'orden' => 0,
     ];
@@ -148,6 +148,19 @@ $normalizarRuta = static function (string $ruta): string {
     }
 
     $rutaLimpia = ltrim($ruta, '/');
+
+    if (strpos($rutaLimpia, 'uploads/') === 0) {
+        return asset_url($rutaLimpia);
+    }
+
+    if (strpos($rutaLimpia, 'products/') === 0 || strpos($rutaLimpia, 'productos/') === 0) {
+        return asset_url('uploads/' . $rutaLimpia);
+    }
+
+    if (strpos($rutaLimpia, 'tabla_tallas/') === 0) {
+        return asset_url('uploads/' . $rutaLimpia);
+    }
+
     if (strpos($rutaLimpia, 'uploads/productos/') === 0) {
         $rutaLimpia = substr($rutaLimpia, strlen('uploads/productos/')) ?: '';
     }
@@ -161,6 +174,15 @@ foreach ($galeriaImagenes as &$imagenNormalizada) {
 unset($imagenNormalizada);
 
 $galeriaImagenes = array_values(array_filter($galeriaImagenes, static fn ($item): bool => ($item['url'] ?? '') !== ''));
+
+if ($galeriaImagenes === []) {
+    $galeriaImagenes[] = [
+        'ruta' => 'default:no-image.jpg',
+        'es_principal' => 1,
+        'orden' => 0,
+        'url' => asset_url('img/no-image.jpg'),
+    ];
+}
 
 $sliderMainId = 'product-gallery-main-' . $productoId;
 $sliderThumbId = 'product-gallery-thumb-' . $productoId;
