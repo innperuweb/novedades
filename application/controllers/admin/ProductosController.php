@@ -47,7 +47,7 @@ final class ProductosController extends AdminBaseController
             'precio' => 0,
             'stock' => 0,
             'sku' => '',
-            'tabla_tallas' => '',
+            'tabla_tallas' => null,
             'colores' => [],
             'tallas' => [],
             'subcategorias' => [],

@@ -39,6 +39,9 @@ class ProductoModel
             $producto['colores'] = $this->limpiarOpciones($this->decodificarLista($producto['colores'] ?? null));
             $producto['tallas'] = $this->limpiarOpciones($this->decodificarLista($producto['tallas'] ?? null));
             $producto['stock'] = (int) ($producto['stock'] ?? 0);
+            if (array_key_exists('tabla_tallas', $producto)) {
+                $producto['tabla_tallas'] = trim((string) ($producto['tabla_tallas'] ?? ''));
+            }
             if (!empty($producto['imagen_principal'])) {
                 $producto['imagen'] = $producto['imagen_principal'];
             }
@@ -60,6 +63,9 @@ class ProductoModel
             $producto['tallas'] = $this->limpiarOpciones($this->decodificarLista($producto['tallas'] ?? null));
             $producto['imagenes'] = $this->obtenerImagenesPorProducto((int) ($producto['id'] ?? 0));
             $producto['stock'] = (int) ($producto['stock'] ?? 0);
+            if (array_key_exists('tabla_tallas', $producto)) {
+                $producto['tabla_tallas'] = trim((string) ($producto['tabla_tallas'] ?? ''));
+            }
             if (!empty($producto['imagen_principal'])) {
                 $producto['imagen'] = $producto['imagen_principal'];
             }

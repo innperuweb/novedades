@@ -224,7 +224,8 @@ final class AdminProductoModel extends ProductoModel
         // y no debe actualizarse ni leerse desde el backend nuevo.
 
         if (array_key_exists('tabla_tallas', $data)) {
-            $mapa['tabla_tallas'] = trim((string) ($data['tabla_tallas'] ?? ''));
+            $valorTabla = $data['tabla_tallas'] ?? '';
+            $mapa['tabla_tallas'] = $valorTabla === null ? null : trim((string) $valorTabla);
         }
 
         if (array_key_exists('color', $data)) {
