@@ -30,6 +30,36 @@
     $seleccionadas = is_array($seleccionadas) ? array_map('intval', $seleccionadas) : [];
     $tablaTallasArchivo = trim((string) ($producto['tabla_tallas'] ?? ''));
     $tablaTallasUrl = '';
+    $normalizarRutaImagenProducto = static function (string $ruta): string {
+        $ruta = trim($ruta);
+        if ($ruta === '') {
+            return '';
+        }
+
+        $limpia = ltrim($ruta, '/');
+
+        if (strpos($limpia, 'public/assets/') === 0) {
+            $limpia = ltrim(substr($limpia, strlen('public/assets/')) ?: '', '/');
+        }
+
+        if (strpos($limpia, 'assets/') === 0) {
+            $limpia = ltrim(substr($limpia, strlen('assets/')) ?: '', '/');
+        }
+
+        if (strpos($limpia, 'public/uploads/productos/') === 0) {
+            return base_url($limpia);
+        }
+
+        if (strpos($limpia, 'uploads/') === 0) {
+            return asset_url($limpia);
+        }
+
+        if (strpos($limpia, 'products/') === 0 || strpos($limpia, 'productos/') === 0) {
+            return asset_url('uploads/' . $limpia);
+        }
+
+        return asset_url('uploads/productos/' . $limpia);
+    };
 
     if ($tablaTallasArchivo !== '') {
         $limpiaTabla = ltrim($tablaTallasArchivo, '/');
@@ -176,17 +206,9 @@
                                         if ($ruta === '') {
                                             continue;
                                         }
-                                        $limpia = ltrim($ruta, '/');
-                                        if (strpos($ruta, '/public/uploads/productos/') === 0 || strpos($limpia, 'public/uploads/productos/') === 0) {
-                                            $rutaPublica = base_url(ltrim($ruta, '/'));
-                                        } elseif (strpos($limpia, 'uploads/products/') === 0) {
-                                            $rutaPublica = asset_url($limpia);
-                                        } elseif (strpos($limpia, 'uploads/productos/') === 0) {
-                                            $rutaPublica = asset_url($limpia);
-                                        } elseif (strpos($limpia, 'products/') === 0 || strpos($limpia, 'productos/') === 0) {
-                                            $rutaPublica = asset_url('uploads/' . $limpia);
-                                        } else {
-                                            $rutaPublica = asset_url('uploads/productos/' . $limpia);
+                                        $rutaPublica = $normalizarRutaImagenProducto($ruta);
+                                        if ($rutaPublica === '') {
+                                            continue;
                                         }
                                         $esPrincipal = (int) ($imagen['es_principal'] ?? 0) === 1;
                                         $imagenId = (int) ($imagen['id'] ?? 0);

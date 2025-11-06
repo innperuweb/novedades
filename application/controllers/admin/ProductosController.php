@@ -17,6 +17,7 @@ final class ProductosController extends AdminBaseController
     private string $directorioUploads;
     private string $directorioUploadsLegacy;
     private string $directorioImagenes;
+    private string $rutaPublicaUploads;
     private string $directorioTablaTallas;
     private bool $debugUploads;
     private bool $registroLocalUploads; // FIX: upload imagenes
@@ -27,9 +28,10 @@ final class ProductosController extends AdminBaseController
     {
         $this->productoModel = new AdminProductoModel();
         $this->categoriaModel = new AdminCategoriaModel();
-        $this->directorioUploads = ROOT_PATH . '/public/uploads/productos';
-        $this->directorioUploadsLegacy = ROOT_PATH . '/public/assets/uploads/productos';
-        $this->directorioImagenes = $this->directorioUploadsLegacy;
+        $this->directorioUploads = ROOT_PATH . '/public/assets/uploads/productos';
+        $this->directorioUploadsLegacy = ROOT_PATH . '/public/uploads/productos';
+        $this->directorioImagenes = $this->directorioUploads;
+        $this->rutaPublicaUploads = 'uploads/productos/';
         $this->directorioTablaTallas = ROOT_PATH . '/public/assets/uploads/tabla_tallas';
         $this->debugUploads = filter_var(getenv('DEBUG_UPLOADS') ?: '0', FILTER_VALIDATE_BOOL);
         $entorno = strtolower((string) (getenv('APP_ENV') ?: 'production')); // FIX: upload imagenes
@@ -794,7 +796,7 @@ final class ProductosController extends AdminBaseController
 
             $rutasGuardadas[] = [
                 'nombre' => $nombre,
-                'ruta' => '/public/uploads/productos/' . $nombre,
+                'ruta' => $this->rutaPublicaUploads . $nombre,
             ];
         }
 
@@ -909,14 +911,14 @@ final class ProductosController extends AdminBaseController
         $ruta = $this->directorioUploads;
 
         if (!is_dir($ruta)) {
-            if (!mkdir($ruta, 0755, true) && !is_dir($ruta)) { // FIX: upload imagenes
+            if (!mkdir($ruta, 0775, true) && !is_dir($ruta)) { // FIX: upload imagenes
                 throw new \RuntimeException('No se pudo crear el directorio base de imágenes de productos.');
             }
-            @chmod($ruta, 0755);
+            @chmod($ruta, 0775);
         }
 
         if (!is_writable($ruta)) {
-            @chmod($ruta, 0755);
+            @chmod($ruta, 0775);
         }
 
         if (!is_writable($ruta)) {
@@ -953,7 +955,7 @@ final class ProductosController extends AdminBaseController
         $ruta = $this->asegurarDirectorioUploads();
 
         if (!is_writable($ruta)) {
-            @chmod($ruta, 0755);
+            @chmod($ruta, 0775);
         }
 
         if (!is_writable($ruta)) {
@@ -1016,10 +1018,10 @@ final class ProductosController extends AdminBaseController
 
         if (strpos($rutaNormalizada, 'public/uploads/productos/') === 0) {
             $rutaNormalizada = substr($rutaNormalizada, strlen('public/uploads/productos/')) ?: '';
-            $base = $this->directorioUploads;
+            $base = $this->directorioUploadsLegacy;
         } elseif (strpos($rutaNormalizada, 'uploads/productos/') === 0) {
             $rutaNormalizada = substr($rutaNormalizada, strlen('uploads/productos/')) ?: '';
-            $base = $this->directorioUploadsLegacy;
+            $base = $this->directorioUploads;
         } elseif (strpos($rutaNormalizada, 'uploads/products/') === 0) {
             $rutaNormalizada = substr($rutaNormalizada, strlen('uploads/products/')) ?: '';
             $base = $this->directorioImagenes;
@@ -1039,6 +1041,20 @@ final class ProductosController extends AdminBaseController
         }
 
         $archivo = rtrim($base, '/') . '/' . $rutaNormalizada;
+
+        if (!is_file($archivo)) {
+            if ($base === $this->directorioUploadsLegacy) {
+                $alterno = rtrim($this->directorioUploads, '/') . '/' . $rutaNormalizada;
+                if (is_file($alterno)) {
+                    $archivo = $alterno;
+                }
+            } elseif ($base === $this->directorioUploads) {
+                $alterno = rtrim($this->directorioUploadsLegacy, '/') . '/' . $rutaNormalizada;
+                if (is_file($alterno)) {
+                    $archivo = $alterno;
+                }
+            }
+        }
 
         $baseReal = realpath($base);
         $directorioArchivo = realpath(dirname($archivo));
