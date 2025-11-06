@@ -141,6 +141,164 @@ final class AdminProductoModel extends ProductoModel
         return array_map('intval', $stmt->fetchAll(\PDO::FETCH_COLUMN));
     }
 
+    public function contarImagenesPorProducto(int $productoId): int
+    {
+        if ($productoId <= 0) {
+            return 0;
+        }
+
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM producto_imagenes WHERE producto_id = :id');
+        $stmt->execute([':id' => $productoId]);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function obtenerSiguienteOrdenImagen(int $productoId): int
+    {
+        if ($productoId <= 0) {
+            return 1;
+        }
+
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT MAX(orden) FROM producto_imagenes WHERE producto_id = :id');
+        $stmt->execute([':id' => $productoId]);
+        $maximo = $stmt->fetchColumn();
+
+        $maximo = $maximo !== false ? (int) $maximo : 0;
+
+        return $maximo + 1;
+    }
+
+    public function tieneImagenPrincipal(int $productoId): bool
+    {
+        if ($productoId <= 0) {
+            return false;
+        }
+
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM producto_imagenes WHERE producto_id = :id AND es_principal = 1');
+        $stmt->execute([':id' => $productoId]);
+
+        return ((int) $stmt->fetchColumn()) > 0;
+    }
+
+    public function insertarImagenProducto(int $productoId, string $nombre, string $ruta, bool $esPrincipal, int $orden): int
+    {
+        if ($productoId <= 0 || $ruta === '') {
+            return 0;
+        }
+
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare(
+            'INSERT INTO producto_imagenes (producto_id, nombre, ruta, es_principal, orden, creado_en) '
+            . 'VALUES (:producto, :nombre, :ruta, :principal, :orden, :creado)'
+        );
+
+        $stmt->execute([
+            ':producto' => $productoId,
+            ':nombre' => $nombre,
+            ':ruta' => $ruta,
+            ':principal' => $esPrincipal ? 1 : 0,
+            ':orden' => $orden,
+            ':creado' => date('Y-m-d H:i:s'),
+        ]);
+
+        return (int) $pdo->lastInsertId();
+    }
+
+    public function obtenerImagenPorId(int $imagenId): ?array
+    {
+        if ($imagenId <= 0) {
+            return null;
+        }
+
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT * FROM producto_imagenes WHERE id = :id LIMIT 1');
+        $stmt->execute([':id' => $imagenId]);
+        $imagen = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if ($imagen === false) {
+            return null;
+        }
+
+        $imagen['id'] = (int) ($imagen['id'] ?? 0);
+        $imagen['producto_id'] = (int) ($imagen['producto_id'] ?? 0);
+        $imagen['es_principal'] = (int) ($imagen['es_principal'] ?? 0);
+        $imagen['orden'] = (int) ($imagen['orden'] ?? 0);
+        $imagen['ruta'] = trim((string) ($imagen['ruta'] ?? ''));
+        $imagen['nombre'] = trim((string) ($imagen['nombre'] ?? ''));
+
+        return $imagen;
+    }
+
+    public function eliminarImagen(int $imagenId): bool
+    {
+        if ($imagenId <= 0) {
+            return false;
+        }
+
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('DELETE FROM producto_imagenes WHERE id = :id');
+
+        return $stmt->execute([':id' => $imagenId]);
+    }
+
+    public function reordenarImagenes(int $productoId): void
+    {
+        if ($productoId <= 0) {
+            return;
+        }
+
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT id FROM producto_imagenes WHERE producto_id = :producto ORDER BY COALESCE(orden, 0) ASC, id ASC');
+        $stmt->execute([':producto' => $productoId]);
+        $ids = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+        if (!$ids) {
+            return;
+        }
+
+        $update = $pdo->prepare('UPDATE producto_imagenes SET orden = :orden WHERE id = :id');
+        $orden = 1;
+        foreach ($ids as $id) {
+            $update->execute([
+                ':orden' => $orden,
+                ':id' => (int) $id,
+            ]);
+            $orden++;
+        }
+    }
+
+    public function asegurarImagenPrincipal(int $productoId): void
+    {
+        if ($productoId <= 0) {
+            return;
+        }
+
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT id FROM producto_imagenes WHERE producto_id = :producto AND es_principal = 1 LIMIT 1');
+        $stmt->execute([':producto' => $productoId]);
+        $actual = $stmt->fetchColumn();
+
+        if ($actual !== false) {
+            return;
+        }
+
+        $stmt = $pdo->prepare('SELECT id FROM producto_imagenes WHERE producto_id = :producto ORDER BY COALESCE(orden, 0) ASC, id ASC LIMIT 1');
+        $stmt->execute([':producto' => $productoId]);
+        $nuevo = $stmt->fetchColumn();
+
+        if ($nuevo === false) {
+            return;
+        }
+
+        $pdo->prepare('UPDATE producto_imagenes SET es_principal = 0 WHERE producto_id = :producto')
+            ->execute([':producto' => $productoId]);
+        $pdo->prepare('UPDATE producto_imagenes SET es_principal = 1 WHERE id = :id')
+            ->execute([':id' => (int) $nuevo]);
+    }
+
     private function decodificarCampoJson($valor): array
     {
         if ($valor === null || $valor === '') {

@@ -10,15 +10,26 @@ final class ProductosController extends AdminBaseController
         'image/webp' => 'webp',
     ];
 
+    private const LIMITE_IMAGENES_PRODUCTO = 10;
+
+    private const IMAGENES_PRODUCTO_MIMES = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+    ];
+
     private AdminProductoModel $productoModel;
     private AdminCategoriaModel $categoriaModel;
     private string $directorioTablaTallas;
+    private string $directorioImagenesProducto;
+    private ?array $ultimaImagenGuardada = null;
 
     public function __construct()
     {
         $this->productoModel = new AdminProductoModel();
         $this->categoriaModel = new AdminCategoriaModel();
         $this->directorioTablaTallas = ROOT_PATH . '/public/assets/uploads/tabla_tallas';
+        $this->directorioImagenesProducto = ROOT_PATH . '/public/assets/uploads/productos';
     }
 
     public function index(): void
@@ -250,10 +261,156 @@ final class ProductosController extends AdminBaseController
         $this->responderJson(['success' => true]);
     }
 
+    public function subirImagen(string $id): void
+    {
+        $this->requireLogin();
+
+        if (!$this->isPost()) {
+            $this->responderJson(['success' => false, 'message' => 'Método no permitido.'], 405);
+
+            return;
+        }
+
+        $token = $_POST['csrf_token'] ?? '';
+        if (!$this->validateCsrfToken($token)) {
+            $this->responderJson(['success' => false, 'message' => 'Sesión inválida, recargue la página.'], 400);
+
+            return;
+        }
+
+        $productoId = sanitize_int($id);
+        if ($productoId === null) {
+            $this->responderJson(['success' => false, 'message' => 'Producto inválido.'], 400);
+
+            return;
+        }
+
+        $producto = $this->productoModel->obtenerProducto($productoId);
+        if ($producto === null) {
+            $this->responderJson(['success' => false, 'message' => 'Producto no encontrado.'], 404);
+
+            return;
+        }
+
+        if (!isset($_FILES['imagen_producto']) || !is_array($_FILES['imagen_producto'])) {
+            $this->responderJson(['success' => false, 'message' => 'No se recibió ninguna imagen.'], 400);
+
+            return;
+        }
+
+        try {
+            $this->guardarImagenProducto($productoId, $_FILES['imagen_producto']);
+            $imagen = $this->ultimaImagenGuardada;
+
+            if ($imagen === null) {
+                throw new \RuntimeException('No se pudo registrar la imagen.');
+            }
+
+            $imagenesActuales = $this->productoModel->obtenerImagenesPorProducto($productoId);
+
+            $this->responderJson([
+                'success' => true,
+                'imagen' => [
+                    'id' => (int) ($imagen['id'] ?? 0),
+                    'url' => $this->construirUrlImagen((string) ($imagen['ruta'] ?? '')),
+                    'nombre' => (string) ($imagen['nombre'] ?? ''),
+                    'es_principal' => (int) ($imagen['es_principal'] ?? 0),
+                    'orden' => (int) ($imagen['orden'] ?? 0),
+                ],
+                'imagenes' => array_map(function ($item): array {
+                    return [
+                        'id' => (int) ($item['id'] ?? 0),
+                        'url' => $this->construirUrlImagen((string) ($item['ruta'] ?? '')),
+                        'nombre' => (string) ($item['nombre'] ?? ''),
+                        'es_principal' => (int) ($item['es_principal'] ?? 0),
+                        'orden' => (int) ($item['orden'] ?? 0),
+                    ];
+                }, $imagenesActuales),
+            ]);
+        } catch (\RuntimeException $exception) {
+            $this->responderJson(['success' => false, 'message' => $exception->getMessage()], 400);
+        } catch (\Throwable $exception) {
+            $this->responderJson(['success' => false, 'message' => 'No se pudo subir la imagen.'], 500);
+        }
+    }
+
+    public function eliminarImagen(string $id): void
+    {
+        $this->requireLogin();
+
+        if (!$this->isPost()) {
+            $this->responderJson(['success' => false, 'message' => 'Método no permitido.'], 405);
+
+            return;
+        }
+
+        $token = $_POST['csrf_token'] ?? '';
+        if (!$this->validateCsrfToken($token)) {
+            $this->responderJson(['success' => false, 'message' => 'Sesión inválida, recargue la página.'], 400);
+
+            return;
+        }
+
+        $imagenId = sanitize_int($id);
+        if ($imagenId === null) {
+            $this->responderJson(['success' => false, 'message' => 'Imagen inválida.'], 400);
+
+            return;
+        }
+
+        $imagen = $this->productoModel->obtenerImagenPorId($imagenId);
+        if ($imagen === null) {
+            $this->responderJson(['success' => false, 'message' => 'Imagen no encontrada.'], 404);
+
+            return;
+        }
+
+        $productoId = (int) ($imagen['producto_id'] ?? 0);
+        $ruta = (string) ($imagen['ruta'] ?? '');
+
+        if (!$this->productoModel->eliminarImagen($imagenId)) {
+            $this->responderJson(['success' => false, 'message' => 'No se pudo eliminar la imagen.'], 500);
+
+            return;
+        }
+
+        if ($ruta !== '') {
+            $this->eliminarArchivoFisico($ruta);
+        }
+
+        $this->productoModel->reordenarImagenes($productoId);
+        $this->productoModel->asegurarImagenPrincipal($productoId);
+
+        $imagenesRestantes = $this->productoModel->obtenerImagenesPorProducto($productoId);
+
+        $this->responderJson([
+            'success' => true,
+            'imagenes' => array_map(function ($item): array {
+                return [
+                    'id' => (int) ($item['id'] ?? 0),
+                    'url' => $this->construirUrlImagen((string) ($item['ruta'] ?? '')),
+                    'nombre' => (string) ($item['nombre'] ?? ''),
+                    'es_principal' => (int) ($item['es_principal'] ?? 0),
+                    'orden' => (int) ($item['orden'] ?? 0),
+                ];
+            }, $imagenesRestantes),
+        ]);
+    }
+
     private function mostrarFormularioProducto(array $producto, array $errores, bool $esEdicion): void
     {
         $categorias = $this->categoriaModel->listarCategorias();
         $subcategorias = $this->categoriaModel->listarSubcategorias();
+
+        $imagenes = [];
+        $productoId = (int) ($producto['id'] ?? 0);
+        if ($productoId > 0) {
+            try {
+                $imagenes = $this->productoModel->obtenerImagenesPorProducto($productoId);
+            } catch (\Throwable $exception) {
+                $imagenes = [];
+            }
+        }
 
         $this->render('productos/form', [
             'title' => $esEdicion ? 'Editar producto' : 'Nuevo producto',
@@ -262,6 +419,7 @@ final class ProductosController extends AdminBaseController
             'subcategorias' => $subcategorias,
             'errores' => $errores,
             'esEdicion' => $esEdicion,
+            'imagenes' => $imagenes,
         ]);
     }
 
@@ -418,6 +576,37 @@ final class ProductosController extends AdminBaseController
         return rtrim($ruta, '/');
     }
 
+    private function asegurarDirectorioImagenesProducto(int $productoId): string
+    {
+        $base = rtrim($this->directorioImagenesProducto, '/');
+
+        if (!is_dir($base)) {
+            if (!mkdir($base, 0755, true) && !is_dir($base)) {
+                throw new \RuntimeException('No se pudo crear el directorio base de imágenes de productos.');
+            }
+            @chmod($base, 0755);
+        }
+
+        $ruta = $base . '/' . $productoId;
+
+        if (!is_dir($ruta)) {
+            if (!mkdir($ruta, 0755, true) && !is_dir($ruta)) {
+                throw new \RuntimeException('No se pudo crear el directorio de imágenes del producto.');
+            }
+            @chmod($ruta, 0755);
+        }
+
+        if (!is_writable($ruta)) {
+            @chmod($ruta, 0755);
+        }
+
+        if (!is_writable($ruta)) {
+            throw new \RuntimeException('El directorio de imágenes del producto no es escribible.');
+        }
+
+        return rtrim($ruta, '/');
+    }
+
     private function generarNombreTablaTallas(string $nombreOriginal, string $extension): string
     {
         $extension = ltrim($extension, '.');
@@ -435,6 +624,23 @@ final class ProductosController extends AdminBaseController
         return uniqid($base . '_', true) . '.' . $extension;
     }
 
+    private function generarNombreImagenProducto(string $nombreOriginal, string $extension): string
+    {
+        $extension = ltrim($extension, '.');
+        if ($extension === '') {
+            $extension = 'jpg';
+        }
+
+        $base = pathinfo($nombreOriginal, PATHINFO_FILENAME);
+        $base = $base !== '' ? preg_replace('/[^a-z0-9_-]+/i', '-', $base) : 'imagen';
+        $base = trim((string) $base, '-');
+        if ($base === '') {
+            $base = 'imagen';
+        }
+
+        return uniqid($base . '_', true) . '.' . $extension;
+    }
+
     private function obtenerExtensionTablaTallas(string $mime, string $nombreOriginal): string
     {
         $mime = strtolower($mime);
@@ -446,6 +652,22 @@ final class ProductosController extends AdminBaseController
 
         if ($extension === '' || !in_array($extension, self::TABLA_TALLAS_MIMES, true)) {
             $extension = self::TABLA_TALLAS_MIMES[$mime] ?? 'jpg';
+        }
+
+        return $extension;
+    }
+
+    private function obtenerExtensionImagenProducto(string $mime, string $nombreOriginal): string
+    {
+        $mime = strtolower($mime);
+        $extension = strtolower(pathinfo($nombreOriginal, PATHINFO_EXTENSION));
+
+        if ($extension === 'jpeg') {
+            $extension = 'jpg';
+        }
+
+        if ($extension === '' || !in_array($extension, self::IMAGENES_PRODUCTO_MIMES, true)) {
+            $extension = self::IMAGENES_PRODUCTO_MIMES[$mime] ?? 'jpg';
         }
 
         return $extension;
@@ -470,6 +692,9 @@ final class ProductosController extends AdminBaseController
             'uploads/tabla_tallas/' => $this->directorioTablaTallas,
             'tabla_tallas/' => $this->directorioTablaTallas,
             'public/uploads/tabla_tallas/' => ROOT_PATH . '/public/uploads/tabla_tallas',
+            'uploads/productos/' => $this->directorioImagenesProducto,
+            'productos/' => $this->directorioImagenesProducto,
+            'public/uploads/productos/' => ROOT_PATH . '/public/uploads/productos',
         ];
 
         $base = $this->directorioTablaTallas;
@@ -490,6 +715,9 @@ final class ProductosController extends AdminBaseController
             $this->directorioTablaTallas,
             ROOT_PATH . '/public/assets/uploads/tabla_tallas',
             ROOT_PATH . '/public/uploads/tabla_tallas',
+            $this->directorioImagenesProducto,
+            ROOT_PATH . '/public/assets/uploads/productos',
+            ROOT_PATH . '/public/uploads/productos',
         ]));
 
         $rutaNormalizada = ltrim($rutaNormalizada, '/');
@@ -514,6 +742,118 @@ final class ProductosController extends AdminBaseController
                 return;
             }
         }
+    }
+
+    private function guardarImagenProducto(int $productoId, array $archivo): void
+    {
+        $this->ultimaImagenGuardada = null;
+
+        $cantidadActual = $this->productoModel->contarImagenesPorProducto($productoId);
+        if ($cantidadActual >= self::LIMITE_IMAGENES_PRODUCTO) {
+            throw new \RuntimeException('Se alcanzó el límite de imágenes permitidas.');
+        }
+
+        $error = (int) ($archivo['error'] ?? UPLOAD_ERR_NO_FILE);
+        if ($error === UPLOAD_ERR_NO_FILE) {
+            throw new \RuntimeException('Seleccione una imagen para subir.');
+        }
+
+        if ($error !== UPLOAD_ERR_OK || empty($archivo['tmp_name']) || !is_uploaded_file((string) $archivo['tmp_name'])) {
+            throw new \RuntimeException('No se pudo subir la imagen seleccionada.');
+        }
+
+        $peso = (int) ($archivo['size'] ?? 0);
+        if ($peso <= 0 || $peso > 2 * 1024 * 1024) {
+            throw new \RuntimeException('La imagen debe pesar hasta 2 MB.');
+        }
+
+        $info = @getimagesize((string) $archivo['tmp_name']);
+        if ($info === false) {
+            throw new \RuntimeException('El archivo debe ser una imagen válida.');
+        }
+
+        $mime = is_array($info) ? (string) ($info['mime'] ?? '') : '';
+        if ($mime === '' || !array_key_exists($mime, self::IMAGENES_PRODUCTO_MIMES)) {
+            throw new \RuntimeException('Formato de imagen no permitido. Solo JPG, PNG o WEBP.');
+        }
+
+        $extension = $this->obtenerExtensionImagenProducto($mime, (string) ($archivo['name'] ?? 'imagen-producto'));
+        $nombreArchivo = $this->generarNombreImagenProducto((string) ($archivo['name'] ?? 'imagen-producto'), $extension);
+
+        $directorio = $this->asegurarDirectorioImagenesProducto($productoId);
+        $destino = $directorio . '/' . $nombreArchivo;
+
+        if (!move_uploaded_file((string) $archivo['tmp_name'], $destino)) {
+            throw new \RuntimeException('No se pudo guardar la imagen en el servidor.');
+        }
+
+        @chmod($destino, 0644);
+
+        $rutaRelativa = 'uploads/productos/' . $productoId . '/' . $nombreArchivo;
+        $orden = $this->productoModel->obtenerSiguienteOrdenImagen($productoId);
+        $hayPrincipal = $this->productoModel->tieneImagenPrincipal($productoId);
+        $esPrincipal = $hayPrincipal ? 0 : 1;
+
+        $nombreOriginal = (string) ($archivo['name'] ?? $nombreArchivo);
+        $nombreOriginal = trim($nombreOriginal);
+        if ($nombreOriginal === '') {
+            $nombreOriginal = $nombreArchivo;
+        }
+
+        $imagenId = $this->productoModel->insertarImagenProducto(
+            $productoId,
+            $nombreOriginal,
+            $rutaRelativa,
+            $esPrincipal === 1,
+            $orden
+        );
+
+        if ($imagenId <= 0) {
+            @unlink($destino);
+
+            throw new \RuntimeException('No se pudo registrar la imagen en la base de datos.');
+        }
+
+        $this->ultimaImagenGuardada = [
+            'id' => $imagenId,
+            'ruta' => $rutaRelativa,
+            'nombre' => $nombreOriginal,
+            'es_principal' => $esPrincipal,
+            'orden' => $orden,
+        ];
+    }
+
+    private function construirUrlImagen(string $ruta): string
+    {
+        $ruta = trim($ruta);
+
+        if ($ruta === '') {
+            return '';
+        }
+
+        if (preg_match('#^https?://#i', $ruta) === 1) {
+            return $ruta;
+        }
+
+        $rutaLimpia = ltrim($ruta, '/');
+
+        if (strpos($rutaLimpia, 'public/assets/') === 0) {
+            return base_url($rutaLimpia);
+        }
+
+        if (strpos($rutaLimpia, 'assets/') === 0) {
+            return base_url('public/' . $rutaLimpia);
+        }
+
+        if (strpos($rutaLimpia, 'uploads/') === 0) {
+            return asset_url($rutaLimpia);
+        }
+
+        if (strpos($rutaLimpia, 'productos/') === 0) {
+            return asset_url('uploads/' . $rutaLimpia);
+        }
+
+        return asset_url('uploads/productos/' . $rutaLimpia);
     }
 
     private function responderJson(array $payload, int $status = 200): void
