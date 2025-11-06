@@ -438,14 +438,14 @@ final class AdminProductoModel extends ProductoModel
             return $this->tablaImagenes;
         }
 
-        if ($this->tablaExiste('producto_imagenes')) {
-            $this->tablaImagenes = 'producto_imagenes';
+        if ($this->tablaExiste('productos_imagenes')) {
+            $this->tablaImagenes = 'productos_imagenes';
 
             return $this->tablaImagenes;
         }
 
-        if ($this->tablaExiste('productos_imagenes')) {
-            $this->tablaImagenes = 'productos_imagenes';
+        if ($this->tablaExiste('producto_imagenes')) {
+            $this->tablaImagenes = 'producto_imagenes';
 
             return $this->tablaImagenes;
         }
@@ -513,14 +513,88 @@ final class AdminProductoModel extends ProductoModel
             return $cache[$clave];
         }
 
-        $pdo = Database::connect();
-        $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = :tabla AND column_name = :columna');
-        $stmt->execute([
-            ':tabla' => $tabla,
-            ':columna' => $columna,
-        ]);
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $tabla) || !preg_match('/^[A-Za-z0-9_]+$/', $columna)) {
+            $cache[$clave] = false;
 
-        $cache[$clave] = ((int) $stmt->fetchColumn()) > 0;
+            return $cache[$clave];
+        }
+
+        try {
+            $pdo = Database::connect();
+            $driver = strtolower((string) $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME));
+
+            switch ($driver) {
+                case 'mysql':
+                    $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = :tabla AND column_name = :columna');
+                    $stmt->execute([
+                        ':tabla' => $tabla,
+                        ':columna' => $columna,
+                    ]);
+                    $cache[$clave] = ((int) $stmt->fetchColumn()) > 0;
+
+                    return $cache[$clave];
+                case 'pgsql':
+                case 'postgres':
+                    $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = :tabla AND column_name = :columna');
+                    $stmt->execute([
+                        ':tabla' => $tabla,
+                        ':columna' => $columna,
+                    ]);
+                    $cache[$clave] = ((int) $stmt->fetchColumn()) > 0;
+
+                    return $cache[$clave];
+                case 'sqlsrv':
+                case 'dblib':
+                case 'mssql':
+                    $stmt = $pdo->prepare('SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = :tabla AND COLUMN_NAME = :columna');
+                    $stmt->execute([
+                        ':tabla' => $tabla,
+                        ':columna' => $columna,
+                    ]);
+                    $cache[$clave] = ((int) $stmt->fetchColumn()) > 0;
+
+                    return $cache[$clave];
+                case 'sqlite':
+                    $existe = false;
+                    $resultado = $pdo->query("PRAGMA table_info('$tabla')");
+                    if ($resultado !== false) {
+                        $columnas = $resultado->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+                        foreach ($columnas as $info) {
+                            $nombre = isset($info['name']) ? (string) $info['name'] : '';
+                            if (strcasecmp($nombre, $columna) === 0) {
+                                $existe = true;
+                                break;
+                            }
+                        }
+                    }
+                    $cache[$clave] = $existe;
+
+                    return $cache[$clave];
+                default:
+                    $sql = sprintf('SELECT * FROM %s LIMIT 0', $tabla);
+                    $stmt = $pdo->query($sql);
+                    if ($stmt !== false) {
+                        $encontrada = false;
+                        $columnCount = $stmt->columnCount();
+                        for ($i = 0; $i < $columnCount; $i++) {
+                            $meta = $stmt->getColumnMeta($i);
+                            $nombre = isset($meta['name']) ? (string) $meta['name'] : '';
+                            if (strcasecmp($nombre, $columna) === 0) {
+                                $encontrada = true;
+                                break;
+                            }
+                        }
+                        $cache[$clave] = $encontrada;
+
+                        return $cache[$clave];
+                    }
+                    break;
+            }
+        } catch (\Throwable $exception) {
+            // Ignorar y continuar con el valor por defecto
+        }
+
+        $cache[$clave] = false;
 
         return $cache[$clave];
     }
@@ -636,7 +710,7 @@ final class AdminProductoModel extends ProductoModel
 
     private function limpiarCamposImagenProductoLegacy(int $productoId): void
     {
-        $columnasPosibles = ['imagen', 'imagen_url', 'imagen_secundaria'];
+        $columnasPosibles = ['imagen_url', 'imagen_secundaria'];
         $columnas = [];
 
         foreach ($columnasPosibles as $columna) {
@@ -726,10 +800,56 @@ final class AdminProductoModel extends ProductoModel
             return $cache[$tabla];
         }
 
-        $pdo = Database::connect();
-        $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :tabla');
-        $stmt->execute([':tabla' => $tabla]);
-        $cache[$tabla] = ((int) $stmt->fetchColumn()) > 0;
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $tabla)) {
+            $cache[$tabla] = false;
+
+            return $cache[$tabla];
+        }
+
+        try {
+            $pdo = Database::connect();
+            $driver = strtolower((string) $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME));
+
+            switch ($driver) {
+                case 'mysql':
+                    $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :tabla');
+                    $stmt->execute([':tabla' => $tabla]);
+                    $cache[$tabla] = ((int) $stmt->fetchColumn()) > 0;
+
+                    return $cache[$tabla];
+                case 'pgsql':
+                case 'postgres':
+                    $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = :tabla');
+                    $stmt->execute([':tabla' => $tabla]);
+                    $cache[$tabla] = ((int) $stmt->fetchColumn()) > 0;
+
+                    return $cache[$tabla];
+                case 'sqlsrv':
+                case 'dblib':
+                case 'mssql':
+                    $stmt = $pdo->prepare('SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = :tabla');
+                    $stmt->execute([':tabla' => $tabla]);
+                    $cache[$tabla] = ((int) $stmt->fetchColumn()) > 0;
+
+                    return $cache[$tabla];
+                case 'sqlite':
+                    $stmt = $pdo->prepare("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = :tabla");
+                    $stmt->execute([':tabla' => $tabla]);
+                    $cache[$tabla] = ((int) $stmt->fetchColumn()) > 0;
+
+                    return $cache[$tabla];
+                default:
+                    $sql = sprintf('SELECT 1 FROM %s LIMIT 1', $tabla);
+                    $stmt = $pdo->query($sql);
+                    $cache[$tabla] = $stmt !== false;
+
+                    return $cache[$tabla];
+            }
+        } catch (\Throwable $exception) {
+            // Ignorar y continuar con el valor por defecto
+        }
+
+        $cache[$tabla] = false;
 
         return $cache[$tabla];
     }
