@@ -83,6 +83,7 @@
 
         return asset_url('uploads/productos/' . $rutaLimpia);
     };
+    $descripcionValor = old('descripcion', $producto['descripcion'] ?? '');
 ?>
 <style>
 .tabla-tallas-preview{position:relative;display:inline-block;margin-top:12px}
@@ -112,8 +113,19 @@
                     <input type="text" name="marca" id="marca" class="form-control" placeholder="Ejemplo: Nike" value="<?= e($producto['marca'] ?? ''); ?>">
                 </div>
                 <div class="mb-3">
-                    <label for="descripcion" class="form-label">Descripción del producto</label>
-                    <textarea name="descripcion" id="descripcion" rows="8" class="form-control"><?= htmlspecialchars((string) (old('descripcion', $producto['descripcion'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    <label for="descripcion">Descripción del producto</label>
+                    <textarea id="descripcion" name="descripcion" rows="8" class="form-control"><?php echo htmlspecialchars((string) $descripcionValor, ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    <?php if (strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/productos/') !== false): ?>
+                    <!-- CKEditor 4 - versión estándar, sin API key -->
+                    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+                    <script>
+                      CKEDITOR.replace('descripcion', {
+                        height: 300,
+                        removePlugins: 'elementspath',
+                        resize_enabled: false
+                      });
+                    </script>
+                    <?php endif; ?>
                 </div>
                 <div class="row g-3">
                     <div class="col-md-4">
@@ -555,20 +567,3 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<?php if (strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/productos/') !== false): ?>
-
-<!-- TinyMCE - Editor de texto ligero (versión de código abierto) -->
-<script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
-
-    <script>
-    tinymce.init({
-      selector: 'textarea#descripcion',
-      menubar: false,
-      plugins: 'lists link image code',
-      toolbar: 'undo redo | bold italic underline | bullist numlist | link | code',
-      branding: false,
-      height: 300,
-      content_style: 'body { font-family: Arial, sans-serif; font-size:14px }'
-    });
-    </script>
-<?php endif; ?>
