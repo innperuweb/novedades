@@ -693,14 +693,17 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRutaTablaTallas($tabla
                                     <p class="text-center w-100">No hay productos relacionados disponibles.</p>
                                 <?php else: ?>
                                     <?php foreach ($productosRelacionados as $rel): ?>
-                                        <?php $relId = (string) ($rel['id'] ?? ''); ?>
+                                        <?php
+                                        $relId = (string) ($rel['id'] ?? '');
+                                        $imagenPrincipal = $productoModel->obtenerImagenPrincipal((int) ($rel['id'] ?? 0));
+                                        ?>
 
                                 <div class="airi-product">
                                     <div class="product-inner">
                                         <figure class="product-image">
                                             <div class="product-image--holder">
                                                 <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>">
-                                                    <img src="<?= asset_url('img/products/' . e($rel['imagen'] ?? 'producto1.jpg')) ?>"
+                                                    <img src="/uploads/productos/<?= htmlspecialchars($imagenPrincipal, ENT_QUOTES, 'UTF-8') ?>"
                                                         alt="<?= e($rel['nombre'] ?? 'Producto relacionado') ?>">
                                                 </a>
                                             </div>
