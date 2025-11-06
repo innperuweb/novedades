@@ -696,15 +696,31 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRutaTablaTallas($tabla
                                         <?php
                                         $relId = (string) ($rel['id'] ?? '');
                                         $imagenPrincipal = $productoModel->obtenerImagenPrincipal((int) ($rel['id'] ?? 0));
+                              
+                              
+                              
+$imagenPrincipalUrl = '';
+if (function_exists('normalizarRutaImagenProducto')) {
+    $imagenPrincipalUrl = normalizarRutaImagenProducto((string) $imagenPrincipal);
+}
+
+if ($imagenPrincipalUrl === '' && !empty($imagenPrincipal)) {
+    $imagenPrincipalUrl = base_url('uploads/productos/' . $imagenPrincipal);
+}
+
+if ($imagenPrincipalUrl === '' || !file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/productos/' . $imagenPrincipal)) {
+    $imagenPrincipalUrl = asset_url('img/products/prod-1-1.jpg');  
+  
                                         ?>
 
                                 <div class="airi-product">
                                     <div class="product-inner">
                                         <figure class="product-image">
                                             <div class="product-image--holder">
-                                                <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>">
-                                                    <img src="/uploads/productos/<?= htmlspecialchars($imagenPrincipal, ENT_QUOTES, 'UTF-8') ?>"
-                                                        alt="<?= e($rel['nombre'] ?? 'Producto relacionado') ?>">
+                                                <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>">                                                 
+                                                  
+<img src="<?= htmlspecialchars($imagenPrincipalUrl, ENT_QUOTES, 'UTF-8') ?>"
+     alt="<?= e($rel['nombre'] ?? 'Producto relacionado') ?>">
                                                 </a>
                                             </div>
                                             <div class="airi-product-action">
