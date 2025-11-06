@@ -342,6 +342,8 @@ final class AdminProductoModel extends ProductoModel
                 $tienePrincipalActual = true;
             }
         }
+
+        $this->limpiarCamposImagenProductoLegacy($productoId);
     }
 
     public function reemplazarImagenes(int $productoId, array $imagenes): void
@@ -628,6 +630,29 @@ final class AdminProductoModel extends ProductoModel
             ':id' => $imagenId,
             ':producto' => $productoId,
         ]);
+
+        $this->limpiarCamposImagenProductoLegacy($productoId);
+    }
+
+    private function limpiarCamposImagenProductoLegacy(int $productoId): void
+    {
+        $columnasPosibles = ['imagen', 'imagen_url', 'imagen_secundaria'];
+        $columnas = [];
+
+        foreach ($columnasPosibles as $columna) {
+            if ($this->columnaExisteEnTabla('productos', $columna)) {
+                $columnas[] = $columna . ' = NULL';
+            }
+        }
+
+        if ($columnas === []) {
+            return;
+        }
+
+        $sql = 'UPDATE productos SET ' . implode(', ', $columnas) . ' WHERE id = :producto';
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([':producto' => $productoId]);
     }
 
     private function sincronizarSubcategorias(int $productoId, array $subcategorias): void
