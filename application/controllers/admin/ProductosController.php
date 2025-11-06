@@ -15,28 +15,16 @@ final class ProductosController extends AdminBaseController
     private AdminProductoModel $productoModel;
     private AdminCategoriaModel $categoriaModel;
     private string $directorioUploads;
-    private string $directorioUploadsLegacy;
-    private string $directorioImagenes;
     private string $rutaPublicaUploads;
     private string $directorioTablaTallas;
-    private bool $debugUploads;
-    private bool $registroLocalUploads; // FIX: upload imagenes
-    private ?string $rutaLogDiagnostico; // FIX: upload imagenes
-    private bool $diagnosticoRegistrado = false; // FIX: upload imagenes
 
     public function __construct()
     {
         $this->productoModel = new AdminProductoModel();
         $this->categoriaModel = new AdminCategoriaModel();
         $this->directorioUploads = ROOT_PATH . '/public/assets/uploads/productos';
-        $this->directorioUploadsLegacy = ROOT_PATH . '/public/uploads/productos';
-        $this->directorioImagenes = $this->directorioUploads;
         $this->rutaPublicaUploads = 'uploads/productos/';
         $this->directorioTablaTallas = ROOT_PATH . '/public/assets/uploads/tabla_tallas';
-        $this->debugUploads = filter_var(getenv('DEBUG_UPLOADS') ?: '0', FILTER_VALIDATE_BOOL);
-        $entorno = strtolower((string) (getenv('APP_ENV') ?: 'production')); // FIX: upload imagenes
-        $this->registroLocalUploads = in_array($entorno, ['local', 'development'], true); // FIX: upload imagenes
-        $this->rutaLogDiagnostico = $this->registroLocalUploads ? ROOT_PATH . '/storage/logs/upload_debug.log' : null; // FIX: upload imagenes
     }
 
     public function index(): void
@@ -150,9 +138,9 @@ final class ProductosController extends AdminBaseController
 
         $nuevoId = $this->productoModel->crear($datos, $subcategorias);
 
-        $totalImagenesSubidas = 0; // FIX: upload imagenes
+        $totalImagenesSubidas = 0;
         if ($imagenesPreparadas['imagenes'] !== []) {
-            $resultadoImagenes = $this->procesarImagenesSubidas(
+            $resultadoImagenes = $this->procesarImagenesProducto(
                 $nuevoId,
                 $imagenesPreparadas['imagenes'],
                 $indicePrincipalNuevo,
@@ -166,7 +154,7 @@ final class ProductosController extends AdminBaseController
             }
         }
 
-        $mensajeExito = 'Producto creado correctamente.'; // FIX: upload imagenes
+        $mensajeExito = 'Producto creado correctamente.';
         if ($totalImagenesSubidas > 0) {
             $mensajeExito .= ' Se subieron ' . $totalImagenesSubidas . ' imágenes y se registraron en la galería.';
         }
@@ -254,9 +242,9 @@ final class ProductosController extends AdminBaseController
 
         $this->productoModel->actualizarProducto($productoId, $datos, $subcategorias);
 
-        $totalImagenesSubidas = 0; // FIX: upload imagenes
+        $totalImagenesSubidas = 0;
         if ($imagenesPreparadas['imagenes'] !== []) {
-            $resultadoImagenes = $this->procesarImagenesSubidas(
+            $resultadoImagenes = $this->procesarImagenesProducto(
                 $productoId,
                 $imagenesPreparadas['imagenes'],
                 $indicePrincipalNuevo,
@@ -270,7 +258,7 @@ final class ProductosController extends AdminBaseController
             }
         }
 
-        $mensajeExito = 'Producto actualizado correctamente.'; // FIX: upload imagenes
+        $mensajeExito = 'Producto actualizado correctamente.';
         if ($totalImagenesSubidas > 0) {
             $mensajeExito .= ' Se subieron ' . $totalImagenesSubidas . ' imágenes y se registraron en la galería.';
         }
@@ -308,7 +296,7 @@ final class ProductosController extends AdminBaseController
         $this->redirect('admin/productos');
     }
 
-    public function eliminarImagen(string $id, string $imagenId): void
+    public function eliminarImagenProducto(string $productoId, string $imagenId): void
     {
         $this->requireLogin();
 
@@ -325,16 +313,16 @@ final class ProductosController extends AdminBaseController
             return;
         }
 
-        $productoId = sanitize_int($id);
-        $imagenIdSanitizada = sanitize_int($imagenId);
+        $productoIdSanitizado = sanitize_int($productoId);
+        $imagenIdSanitizado = sanitize_int($imagenId);
 
-        if ($productoId === null || $imagenIdSanitizada === null) {
+        if ($productoIdSanitizado === null || $imagenIdSanitizado === null) {
             $this->responderJson(['success' => false, 'message' => 'Parámetros inválidos.'], 400);
 
             return;
         }
 
-        $resultado = $this->productoModel->eliminarImagen($productoId, $imagenIdSanitizada);
+        $resultado = $this->productoModel->eliminarImagenDeProducto($productoIdSanitizado, $imagenIdSanitizado);
 
         if ($resultado === null) {
             $this->responderJson(['success' => false, 'message' => 'La imagen indicada no existe.'], 404);
@@ -342,56 +330,11 @@ final class ProductosController extends AdminBaseController
             return;
         }
 
-        $this->eliminarArchivoFisico((string) ($resultado['ruta'] ?? ''));
+        $this->eliminarArchivoFisico($resultado['ruta']);
 
         $nuevoPrincipalId = null;
-        if (!empty($resultado['era_principal'])) {
-            $nuevoPrincipalId = $this->productoModel->asignarPrincipalRestante($productoId);
-        }
-
-        $this->responderJson([
-            'success' => true,
-            'nuevoPrincipalId' => $nuevoPrincipalId,
-        ]);
-    }
-
-    public function eliminarImagenAjax(string $imagenId): void
-    {
-        $this->requireLogin();
-
-        if (!$this->isPost()) {
-            $this->responderJson(['success' => false, 'message' => 'Método no permitido.'], 405);
-
-            return;
-        }
-
-        $token = $_POST['csrf_token'] ?? '';
-        if (!$this->validateCsrfToken($token)) {
-            $this->responderJson(['success' => false, 'message' => 'Sesión inválida, recargue la página.'], 400);
-
-            return;
-        }
-
-        $imagenIdSanitizada = sanitize_int($imagenId);
-        if ($imagenIdSanitizada === null) {
-            $this->responderJson(['success' => false, 'message' => 'Parámetros inválidos.'], 400);
-
-            return;
-        }
-
-        $resultado = $this->productoModel->eliminarImagenPorId($imagenIdSanitizada);
-        if ($resultado === null) {
-            $this->responderJson(['success' => false, 'message' => 'La imagen indicada no existe.'], 404);
-
-            return;
-        }
-
-        $this->eliminarArchivoFisico((string) ($resultado['ruta'] ?? ''));
-
-        $nuevoPrincipalId = null;
-        $productoId = (int) ($resultado['producto_id'] ?? 0);
-        if (!empty($resultado['era_principal']) && $productoId > 0) {
-            $nuevoPrincipalId = $this->productoModel->asignarPrincipalRestante($productoId);
+        if ($resultado['era_principal']) {
+            $nuevoPrincipalId = $this->productoModel->reordenarPrincipalPorRestantes($productoIdSanitizado);
         }
 
         $this->responderJson([
@@ -612,31 +555,15 @@ final class ProductosController extends AdminBaseController
 
     private function prepararImagenesDesdeRequest(): array
     {
-        if (!$this->diagnosticoRegistrado) { // FIX: upload imagenes
-            $this->registrarDiagnosticoUploads([ // FIX: upload imagenes
-                'post_keys' => array_keys($_POST),
-                'files_keys' => array_keys($_FILES),
-                'ini_values' => [
-                    'file_uploads' => ini_get('file_uploads'),
-                    'upload_max_filesize' => ini_get('upload_max_filesize'),
-                    'post_max_size' => ini_get('post_max_size'),
-                    'max_file_uploads' => ini_get('max_file_uploads'),
-                ],
-                'imagenes' => $this->normalizarArchivosParaDiagnostico($_FILES['imagenes'] ?? null),
-            ]);
-            $this->diagnosticoRegistrado = true;
-        }
-
         if (!isset($_FILES['imagenes']) || !is_array($_FILES['imagenes'])) {
             return ['imagenes' => [], 'errores' => []];
         }
 
-        $imagenes = $_FILES['imagenes'];
         $componentes = [
-            'name' => $imagenes['name'] ?? [],
-            'tmp_name' => $imagenes['tmp_name'] ?? [],
-            'error' => $imagenes['error'] ?? [],
-            'size' => $imagenes['size'] ?? [],
+            'name' => $_FILES['imagenes']['name'] ?? [],
+            'tmp_name' => $_FILES['imagenes']['tmp_name'] ?? [],
+            'error' => $_FILES['imagenes']['error'] ?? [],
+            'size' => $_FILES['imagenes']['size'] ?? [],
         ];
 
         foreach ($componentes as $clave => $valor) {
@@ -645,23 +572,19 @@ final class ProductosController extends AdminBaseController
             }
         }
 
+        $total = count($componentes['name']);
         $detalles = [];
-        $nombres = array_values($componentes['name']);
-        $temporal = array_values($componentes['tmp_name']);
-        $errores = array_values($componentes['error']);
-        $tamanos = array_values($componentes['size']);
-        $total = count($nombres);
 
         for ($i = 0; $i < $total; $i++) {
             $detalles[] = [
-                'name' => (string) ($nombres[$i] ?? ''),
-                'tmp_name' => (string) ($temporal[$i] ?? ''),
-                'error' => (int) ($errores[$i] ?? UPLOAD_ERR_NO_FILE),
-                'size' => (int) ($tamanos[$i] ?? 0),
+                'name' => (string) ($componentes['name'][$i] ?? ''),
+                'tmp_name' => (string) ($componentes['tmp_name'][$i] ?? ''),
+                'error' => (int) ($componentes['error'][$i] ?? UPLOAD_ERR_NO_FILE),
+                'size' => (int) ($componentes['size'][$i] ?? 0),
             ];
         }
 
-        $detallesValidos = array_filter($detalles, static function ($detalle): bool {
+        $detallesValidos = array_filter($detalles, static function (array $detalle): bool {
             return (int) ($detalle['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
         });
 
@@ -669,61 +592,59 @@ final class ProductosController extends AdminBaseController
             return ['imagenes' => [], 'errores' => ['Solo se permiten ' . self::MAX_IMAGENES . ' imágenes por guardado.']];
         }
 
-        $archivosPreparados = [];
-        $erroresEncontrados = [];
+        $errores = [];
+        $preparados = [];
         $finfo = function_exists('finfo_open') ? finfo_open(FILEINFO_MIME_TYPE) : null;
 
         foreach ($detalles as $detalle) {
-            $codigoError = $detalle['error'];
+            $codigoError = (int) ($detalle['error'] ?? UPLOAD_ERR_NO_FILE);
             if ($codigoError === UPLOAD_ERR_NO_FILE) {
                 continue;
             }
 
             if ($codigoError !== UPLOAD_ERR_OK) {
-                $erroresEncontrados[] = 'Ocurrió un error al subir una de las imágenes.';
+                $errores[] = 'Ocurrió un error al subir una de las imágenes.';
                 continue;
             }
 
             $tmp = $detalle['tmp_name'];
             if ($tmp === '' || !is_uploaded_file($tmp)) {
-                $erroresEncontrados[] = 'No se pudo procesar una de las imágenes seleccionadas.';
+                $errores[] = 'No se pudo procesar una de las imágenes seleccionadas.';
                 continue;
             }
 
             $tamano = (int) ($detalle['size'] ?? 0);
             if ($tamano > self::MAX_IMAGEN_BYTES) {
-                $erroresEncontrados[] = 'Una de las imágenes supera el tamaño máximo permitido (5 MB).';
+                $errores[] = 'Una de las imágenes supera el tamaño máximo permitido (5 MB).';
                 continue;
             }
 
             $info = @getimagesize($tmp);
             if ($info === false) {
-                $erroresEncontrados[] = 'Una de las imágenes seleccionadas no es válida.';
+                $errores[] = 'Una de las imágenes seleccionadas no es válida.';
                 continue;
             }
 
             $mime = is_array($info) ? (string) ($info['mime'] ?? '') : '';
-            $mimeReal = '';
             if (is_resource($finfo) || $finfo instanceof \finfo) {
                 $mimeReal = (string) @finfo_file($finfo, $tmp);
-            }
-
-            if ($mimeReal !== '') {
-                $mime = $mimeReal;
+                if ($mimeReal !== '') {
+                    $mime = $mimeReal;
+                }
             }
 
             if ($mime === '' || !array_key_exists($mime, self::MIMES_PERMITIDOS)) {
-                $erroresEncontrados[] = 'Una de las imágenes tiene un formato no permitido. Usa JPG, PNG o WEBP.';
+                $errores[] = 'Una de las imágenes tiene un formato no permitido. Usa JPG, PNG o WEBP.';
                 continue;
             }
 
             $nombreOriginal = $detalle['name'] !== '' ? $detalle['name'] : 'imagen-producto';
             $extension = $this->obtenerExtensionDesdeMime($mime, $nombreOriginal);
-            $nombreArchivo = $this->generarNombreArchivo($nombreOriginal, $extension);
-            $archivosPreparados[] = [
+            $nombreSeguro = $this->generarNombreArchivo($nombreOriginal, $extension);
+
+            $preparados[] = [
                 'tmp_name' => $tmp,
-                'nombre' => $nombreArchivo,
-                'mime' => $mime,
+                'nombre' => $nombreSeguro,
             ];
         }
 
@@ -731,33 +652,32 @@ final class ProductosController extends AdminBaseController
             finfo_close($finfo);
         }
 
-        if ($erroresEncontrados !== []) {
-            return ['imagenes' => [], 'errores' => $erroresEncontrados];
+        if ($errores !== []) {
+            return ['imagenes' => [], 'errores' => $errores];
         }
 
-        return ['imagenes' => $archivosPreparados, 'errores' => []];
+        return ['imagenes' => $preparados, 'errores' => []];
     }
 
-    private function procesarImagenesSubidas(int $productoId, array $imagenesPreparadas, ?int $indicePrincipal, bool $mantenerPrincipal): array
+    private function procesarImagenesProducto(int $productoId, array $imagenesPreparadas, ?int $indicePrincipal, bool $mantenerPrincipal): array
     {
         if ($imagenesPreparadas === []) {
-            return ['errores' => [], 'total' => 0]; // FIX: upload imagenes
+            return ['errores' => [], 'total' => 0];
         }
 
         try {
-            $directorio = $this->asegurarDirectorioImagenesProducto($productoId);
+            $directorio = $this->asegurarDirectorioImagenesProducto();
         } catch (\RuntimeException $exception) {
-            $this->registrarDebugUploads('Directorio no disponible para subir imágenes.', [
-                'producto' => $productoId,
-                'mensaje' => $exception->getMessage(),
-            ]);
-
-            return ['errores' => [$exception->getMessage()], 'total' => 0]; // FIX: upload imagenes
+            return ['errores' => [$exception->getMessage()], 'total' => 0];
         }
-        $rutasGuardadas = [];
+
+        $archivosMovidos = [];
+        $idsInsertados = [];
         $errores = [];
 
-        foreach ($imagenesPreparadas as $imagen) {
+        $ordenInicial = $this->productoModel->obtenerOrdenDisponible($productoId);
+
+        foreach ($imagenesPreparadas as $indice => $imagen) {
             $tmp = $imagen['tmp_name'] ?? '';
             $nombre = $imagen['nombre'] ?? '';
 
@@ -768,131 +688,50 @@ final class ProductosController extends AdminBaseController
 
             $destino = rtrim($directorio, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $nombre;
 
-            $this->registrarDebugUploads('Intentando mover imagen subida.', [
-                'tmp' => $tmp,
-                'destino' => $destino,
-            ]);
-
-            $resultadoMovimiento = @move_uploaded_file($tmp, $destino);
-
-            $this->registrarDebugUploads('Resultado de move_uploaded_file.', [
-                'tmp' => $tmp,
-                'destino' => $destino,
-                'exito' => $resultadoMovimiento,
-                'existe_tmp' => is_file($tmp),
-                'directorio_existe' => is_dir(dirname($destino)),
-                'directorio_writable' => is_writable(dirname($destino)),
-            ]);
-
-            if (!$resultadoMovimiento) {
-                $ultimoError = error_get_last();
-                $mensajeError = 'No se pudo guardar una de las imágenes en el servidor.';
-                if ($ultimoError !== null) {
-                    $mensajeError .= ' Detalle: ' . ($ultimoError['message'] ?? 'desconocido');
-                }
-                $errores[] = $mensajeError;
+            if (!@move_uploaded_file($tmp, $destino)) {
+                $errores[] = 'No se pudo guardar una de las imágenes en el servidor.';
                 break;
             }
 
-            $rutasGuardadas[] = [
-                'nombre' => $nombre,
-                'ruta' => $this->rutaPublicaUploads . $nombre,
-            ];
+            $archivosMovidos[] = $destino;
+
+            try {
+                $esPrincipal = !$mantenerPrincipal && $indicePrincipal !== null && $indicePrincipal === $indice;
+                $imagenId = $this->productoModel->registrarImagenProducto(
+                    $productoId,
+                    $nombre,
+                    $this->rutaPublicaUploads . $nombre,
+                    $ordenInicial + $indice,
+                    $esPrincipal
+                );
+                $idsInsertados[] = $imagenId;
+            } catch (\Throwable $exception) {
+                $errores[] = 'Ocurrió un error al registrar una imagen en la base de datos.';
+                break;
+            }
         }
 
         if ($errores !== []) {
-            foreach ($rutasGuardadas as $ruta) {
-                $this->eliminarArchivoFisico((string) ($ruta['ruta'] ?? ''));
+            foreach ($idsInsertados as $idInsertado) {
+                $this->productoModel->eliminarImagenRegistro($idInsertado);
+            }
+            foreach ($archivosMovidos as $archivo) {
+                if (is_file($archivo)) {
+                    @unlink($archivo);
+                }
             }
 
-            return ['errores' => $errores, 'total' => 0]; // FIX: upload imagenes
+            return ['errores' => $errores, 'total' => 0];
         }
 
-        $this->registrarDebugUploads('Rutas de imágenes guardadas antes de persistir.', [
-            'producto' => $productoId,
-            'imagenes' => $rutasGuardadas,
-            'indicePrincipal' => $indicePrincipal,
-            'mantenerPrincipal' => $mantenerPrincipal,
-        ]);
-
-        $this->productoModel->guardarImagenes($productoId, $rutasGuardadas, $indicePrincipal, $mantenerPrincipal);
-
-        $this->registrarDebugUploads('Persistencia de imágenes completada.', [
-            'producto' => $productoId,
-            'total' => count($rutasGuardadas),
-        ]);
-
-        return ['errores' => [], 'total' => count($rutasGuardadas)]; // FIX: upload imagenes
-    }
-
-    private function registrarDebugUploads(string $mensaje, array $contexto = []): void
-    {
-        if (!$this->debugUploads) {
-            return;
+        if (!$mantenerPrincipal && $idsInsertados !== []) {
+            $indicePrincipal = $indicePrincipal ?? 0;
+            $indicePrincipal = max(0, min($indicePrincipal, count($idsInsertados) - 1));
+            $principalId = $idsInsertados[$indicePrincipal];
+            $this->productoModel->marcarImagenComoPrincipal($productoId, $principalId);
         }
 
-        $payload = $contexto === [] ? '' : ' ' . json_encode($contexto, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        error_log('[ProductosController] ' . $mensaje . $payload);
-    }
-
-    private function registrarDiagnosticoUploads(array $contexto): void
-    {
-        if (!$this->registroLocalUploads || $this->rutaLogDiagnostico === null) { // FIX: upload imagenes
-            return;
-        }
-
-        $directorio = dirname($this->rutaLogDiagnostico);
-        if (!is_dir($directorio)) {
-            if (!mkdir($directorio, 0755, true) && !is_dir($directorio)) { // FIX: upload imagenes
-                return;
-            }
-        }
-
-        $entrada = sprintf(
-            "[%s] %s",
-            date('Y-m-d H:i:s'),
-            $contexto === [] ? 'Diagnóstico de subida' : 'Diagnóstico de subida ' . json_encode($contexto, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-        );
-
-        @file_put_contents($this->rutaLogDiagnostico, $entrada . PHP_EOL, FILE_APPEND);
-    }
-
-    private function normalizarArchivosParaDiagnostico($entrada): array
-    {
-        if (!is_array($entrada)) {
-            return [];
-        }
-
-        $componentes = [
-            'name' => $entrada['name'] ?? [],
-            'tmp_name' => $entrada['tmp_name'] ?? [],
-            'error' => $entrada['error'] ?? [],
-            'size' => $entrada['size'] ?? [],
-        ];
-
-        foreach ($componentes as $clave => $valor) {
-            if (!is_array($valor)) {
-                $componentes[$clave] = [$valor];
-            }
-        }
-
-        $nombres = array_values($componentes['name']);
-        $temporales = array_values($componentes['tmp_name']);
-        $errores = array_values($componentes['error']);
-        $tamanos = array_values($componentes['size']);
-        $total = max(count($nombres), count($temporales), count($errores), count($tamanos));
-
-        $resultado = [];
-        for ($i = 0; $i < $total; $i++) {
-            $resultado[] = [
-                'name' => (string) ($nombres[$i] ?? ''),
-                'tmp_name' => (string) ($temporales[$i] ?? ''),
-                'error' => (int) ($errores[$i] ?? UPLOAD_ERR_NO_FILE),
-                'size' => (int) ($tamanos[$i] ?? 0),
-            ];
-        }
-
-        return $resultado;
+        return ['errores' => [], 'total' => count($idsInsertados)];
     }
 
     private function coleccionTienePrincipal(array $imagenes): bool
@@ -906,34 +745,12 @@ final class ProductosController extends AdminBaseController
         return false;
     }
 
-    private function asegurarDirectorioUploads(): string
-    {
-        $ruta = $this->directorioUploads;
-
-        if (!is_dir($ruta)) {
-            if (!mkdir($ruta, 0775, true) && !is_dir($ruta)) { // FIX: upload imagenes
-                throw new \RuntimeException('No se pudo crear el directorio base de imágenes de productos.');
-            }
-            @chmod($ruta, 0775);
-        }
-
-        if (!is_writable($ruta)) {
-            @chmod($ruta, 0775);
-        }
-
-        if (!is_writable($ruta)) {
-            throw new \RuntimeException('El directorio base de imágenes de productos no es escribible.');
-        }
-
-        return $ruta;
-    }
-
     private function asegurarDirectorioTablaTallas(): string
     {
         $ruta = $this->directorioTablaTallas;
 
         if (!is_dir($ruta)) {
-            if (!mkdir($ruta, 0755, true) && !is_dir($ruta)) { // FIX: upload imagenes
+            if (!mkdir($ruta, 0755, true) && !is_dir($ruta)) {
                 throw new \RuntimeException('No se pudo crear el directorio para las tablas de tallas.');
             }
             @chmod($ruta, 0755);
@@ -947,22 +764,29 @@ final class ProductosController extends AdminBaseController
             throw new \RuntimeException('El directorio de tablas de tallas no es escribible.');
         }
 
-        return $ruta;
+        return rtrim($ruta, '/');
     }
 
-    private function asegurarDirectorioImagenesProducto(int $productoId): string
+    private function asegurarDirectorioImagenesProducto(): string
     {
-        $ruta = $this->asegurarDirectorioUploads();
+        $ruta = rtrim($this->directorioUploads, '/');
+
+        if (!is_dir($ruta)) {
+            if (!mkdir($ruta, 0775, true) && !is_dir($ruta)) {
+                throw new \RuntimeException('No se pudo crear el directorio de imágenes de productos.');
+            }
+            @chmod($ruta, 0775);
+        }
 
         if (!is_writable($ruta)) {
             @chmod($ruta, 0775);
         }
 
         if (!is_writable($ruta)) {
-            throw new \RuntimeException('El directorio para las imágenes del producto no es escribible.');
+            throw new \RuntimeException('El directorio de imágenes de productos no es escribible.');
         }
 
-        return rtrim($ruta, '/');
+        return $ruta;
     }
 
     private function generarNombreArchivo(string $nombreOriginal, ?string $extensionForzada = null): string
@@ -994,19 +818,6 @@ final class ProductosController extends AdminBaseController
         return '.' . $extension;
     }
 
-    private function eliminarArchivosFisicos(array $imagenes): void
-    {
-        foreach ($imagenes as $imagen) {
-            if (is_array($imagen)) {
-                $ruta = (string) ($imagen['ruta'] ?? '');
-            } else {
-                $ruta = (string) $imagen;
-            }
-
-            $this->eliminarArchivoFisico($ruta);
-        }
-    }
-
     private function eliminarArchivoFisico(string $ruta): void
     {
         if ($ruta === '') {
@@ -1014,57 +825,66 @@ final class ProductosController extends AdminBaseController
         }
 
         $rutaNormalizada = ltrim($ruta, '/');
-        $base = $this->directorioUploads;
+        if ($rutaNormalizada === '') {
+            return;
+        }
 
-        if (strpos($rutaNormalizada, 'public/uploads/productos/') === 0) {
-            $rutaNormalizada = substr($rutaNormalizada, strlen('public/uploads/productos/')) ?: '';
-            $base = $this->directorioUploadsLegacy;
-        } elseif (strpos($rutaNormalizada, 'uploads/productos/') === 0) {
-            $rutaNormalizada = substr($rutaNormalizada, strlen('uploads/productos/')) ?: '';
-            $base = $this->directorioUploads;
-        } elseif (strpos($rutaNormalizada, 'uploads/products/') === 0) {
-            $rutaNormalizada = substr($rutaNormalizada, strlen('uploads/products/')) ?: '';
-            $base = $this->directorioImagenes;
-        } elseif (strpos($rutaNormalizada, 'products/') === 0) {
-            $rutaNormalizada = substr($rutaNormalizada, strlen('products/')) ?: '';
-            $base = $this->directorioImagenes;
-        } elseif (strpos($rutaNormalizada, 'uploads/tabla_tallas/') === 0) {
-            $rutaNormalizada = substr($rutaNormalizada, strlen('uploads/tabla_tallas/')) ?: '';
-            $base = $this->directorioTablaTallas;
-        } elseif (strpos($rutaNormalizada, 'tabla_tallas/') === 0) {
-            $rutaNormalizada = substr($rutaNormalizada, strlen('tabla_tallas/')) ?: '';
-            $base = $this->directorioTablaTallas;
+        if (strpos($rutaNormalizada, 'public/assets/') === 0) {
+            $rutaNormalizada = ltrim(substr($rutaNormalizada, strlen('public/assets/')) ?: '', '/');
+        }
+
+        $mapas = [
+            'uploads/tabla_tallas/' => $this->directorioTablaTallas,
+            'tabla_tallas/' => $this->directorioTablaTallas,
+            'uploads/productos/' => $this->directorioUploads,
+            'productos/' => $this->directorioUploads,
+            'uploads/products/' => ROOT_PATH . '/public/assets/uploads/products',
+            'products/' => ROOT_PATH . '/public/assets/uploads/products',
+            'public/uploads/productos/' => ROOT_PATH . '/public/uploads/productos',
+        ];
+
+        $base = $this->directorioUploads;
+        foreach ($mapas as $prefijo => $directorio) {
+            if (strpos($rutaNormalizada, $prefijo) === 0) {
+                $rutaNormalizada = substr($rutaNormalizada, strlen($prefijo)) ?: '';
+                $base = $directorio;
+                break;
+            }
         }
 
         if ($rutaNormalizada === '') {
             return;
         }
 
-        $archivo = rtrim($base, '/') . '/' . $rutaNormalizada;
+        $candidatos = [
+            $base,
+            $this->directorioUploads,
+            ROOT_PATH . '/public/uploads/productos',
+            ROOT_PATH . '/public/assets/uploads/products',
+            ROOT_PATH . '/public/uploads/products',
+        ];
 
-        if (!is_file($archivo)) {
-            if ($base === $this->directorioUploadsLegacy) {
-                $alterno = rtrim($this->directorioUploads, '/') . '/' . $rutaNormalizada;
-                if (is_file($alterno)) {
-                    $archivo = $alterno;
-                }
-            } elseif ($base === $this->directorioUploads) {
-                $alterno = rtrim($this->directorioUploadsLegacy, '/') . '/' . $rutaNormalizada;
-                if (is_file($alterno)) {
-                    $archivo = $alterno;
-                }
+        $rutaNormalizada = ltrim($rutaNormalizada, '/');
+
+        foreach (array_unique(array_filter($candidatos)) as $directorioBase) {
+            $directorioBase = rtrim($directorioBase, '/');
+            if ($directorioBase === '') {
+                continue;
             }
-        }
 
-        $baseReal = realpath($base);
-        $directorioArchivo = realpath(dirname($archivo));
+            $archivo = $directorioBase . '/' . $rutaNormalizada;
+            $baseReal = realpath($directorioBase);
+            $directorioArchivo = realpath(dirname($archivo));
 
-        if ($baseReal !== false && $directorioArchivo !== false && strpos($directorioArchivo, $baseReal) !== 0) {
-            return;
-        }
+            if ($baseReal !== false && $directorioArchivo !== false && strpos($directorioArchivo, $baseReal) !== 0) {
+                continue;
+            }
 
-        if (is_file($archivo)) {
-            @unlink($archivo);
+            if (is_file($archivo)) {
+                @unlink($archivo);
+
+                return;
+            }
         }
     }
 

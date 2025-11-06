@@ -79,9 +79,9 @@ return [
         'auth' => true,
         'methods' => ['POST'],
     ],
-    'productos/eliminar_imagen/{id}' => [
+    'productos/{productoId}/imagenes/{imagenId}/eliminar' => [
         'controller' => 'ProductosController',
-        'method' => 'eliminarImagenAjax',
+        'method' => 'eliminarImagenProducto',
         'auth' => true,
         'methods' => ['POST'],
     ],
