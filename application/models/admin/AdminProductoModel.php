@@ -275,6 +275,9 @@ final class AdminProductoModel extends ProductoModel
     {
         $tabla = $this->obtenerTablaImagenes();
         if ($tabla === null || $imagenes === []) {
+            if ($this->depuracionUploadsActiva()) {
+                error_log('[AdminProductoModel] Tabla de imágenes no disponible o sin elementos para guardar.');
+            }
             return;
         }
 
@@ -284,6 +287,17 @@ final class AdminProductoModel extends ProductoModel
 
         $indicePrincipal = $indicePrincipal !== null ? max(0, $indicePrincipal) : null;
         $tienePrincipalActual = $tienePrincipal ? $this->tienePrincipalAsignado($productoId, $tabla) : false;
+
+        if ($this->depuracionUploadsActiva()) {
+            error_log('[AdminProductoModel] Preparando guardado de imágenes. ' . json_encode([
+                'tabla' => $tabla,
+                'producto_id' => $productoId,
+                'total_imagenes' => count($imagenes),
+                'indice_principal' => $indicePrincipal,
+                'mantener_principal' => $mantenerPrincipal,
+                'tiene_principal_actual' => $tienePrincipalActual,
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        }
 
         if ($tienePrincipal) {
             if ($indicePrincipal !== null) {
@@ -336,6 +350,15 @@ final class AdminProductoModel extends ProductoModel
 
             $stmt->execute($parametros);
 
+            if ($this->depuracionUploadsActiva()) {
+                error_log('[AdminProductoModel] Imagen registrada en base de datos. ' . json_encode([
+                    'producto_id' => $productoId,
+                    'ruta' => $ruta,
+                    'es_principal' => $parametros[':es_principal'] ?? null,
+                    'orden' => $parametros[':orden'] ?? null,
+                ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+            }
+
             if ($tienePrincipal && ($parametros[':es_principal'] ?? 0) === 1) {
                 $ultimoId = (int) $pdo->lastInsertId();
                 $this->actualizarPrincipal($productoId, $ultimoId, $tabla);
@@ -344,6 +367,17 @@ final class AdminProductoModel extends ProductoModel
         }
 
         $this->limpiarCamposImagenProductoLegacy($productoId);
+    }
+
+    private function depuracionUploadsActiva(): bool
+    {
+        static $debug = null;
+
+        if ($debug === null) {
+            $debug = filter_var(getenv('DEBUG_UPLOADS') ?: '0', FILTER_VALIDATE_BOOL);
+        }
+
+        return $debug;
     }
 
     public function reemplazarImagenes(int $productoId, array $imagenes): void
