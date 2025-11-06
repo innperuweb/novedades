@@ -39,8 +39,8 @@ $normalizarOpciones = static function ($valor): array {
         }
     }
 
-    $items = array_map(static fn ($item): string => trim((string) $item), $valor);
-    $items = array_filter($items, static fn ($item): bool => $item !== '');
+    $items = array_map(static fn($item): string => trim((string) $item), $valor);
+    $items = array_filter($items, static fn($item): bool => $item !== '');
 
     return array_values(array_unique($items));
 };
@@ -192,7 +192,7 @@ foreach ($galeriaImagenes as &$imagenNormalizada) {
 }
 unset($imagenNormalizada);
 
-$galeriaImagenes = array_values(array_filter($galeriaImagenes, static fn ($item): bool => ($item['url'] ?? '') !== ''));
+$galeriaImagenes = array_values(array_filter($galeriaImagenes, static fn($item): bool => ($item['url'] ?? '') !== ''));
 
 if ($galeriaImagenes === []) {
     $galeriaImagenes[] = [
@@ -238,63 +238,63 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
 ?>
 
 <style>
-.input-error {
-    border: 2px solid #ff4d4d !important;
-    background-color: #fff0f0;
-}
+    .input-error {
+        border: 2px solid #ff4d4d !important;
+        background-color: #fff0f0;
+    }
 
-/* Estilo para los mensajes de error */
-.error-message {
-    color: #ff4d4d;
-    font-size: 0.9em;
-    margin-top: 5px;
-    display: none;
-}
+    /* Estilo para los mensajes de error */
+    .error-message {
+        color: #ff4d4d;
+        font-size: 0.9em;
+        margin-top: 5px;
+        display: none;
+    }
 
-/* Mejora la visibilidad de los selectores */
-.form__input--2 {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 100%;
-    margin-bottom: 10px;
-}
+    /* Mejora la visibilidad de los selectores */
+    .form__input--2 {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 100%;
+        margin-bottom: 10px;
+    }
 
-/* Estilo para el formulario */
-.form-add-cart {
-    margin-bottom: 20px;
-}
+    /* Estilo para el formulario */
+    .form-add-cart {
+        margin-bottom: 20px;
+    }
 
-.product-card a {
-    text-decoration: none;
-    color: inherit;
-}
+    .product-card a {
+        text-decoration: none;
+        color: inherit;
+    }
 
-.product-card img {
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
+    .product-card img {
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
 
-.product-card img:hover {
-    transform: scale(1.05);
-}
+    .product-card img:hover {
+        transform: scale(1.05);
+    }
 
-.stock.disponible {
-    color: #2ecc71;
-    font-weight: bold;
-}
+    .stock.disponible {
+        color: #2ecc71;
+        font-weight: bold;
+    }
 
-.stock.agotado {
-    color: #e74c3c;
-    font-weight: bold;
-}
+    .stock.agotado {
+        color: #e74c3c;
+        font-weight: bold;
+    }
 
-.product-size-chart img,
-.tabla-tallas img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-}
+    .product-size-chart img,
+    .tabla-tallas img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+    }
 </style>
 
 <div class="breadcrumb-area pt--70 pt-md--25">
@@ -320,9 +320,9 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
                         <div class="product-gallery vertical-slide-nav">
                             <div class="product-gallery__thumb">
                                 <div id="<?= e($sliderThumbId); ?>"
-                                     class="airi-element-carousel nav-slider"
-                                     data-slick-options='<?= e($thumbOptions); ?>'
-                                     data-slick-responsive='<?= e($thumbResponsive); ?>'>
+                                    class="airi-element-carousel nav-slider"
+                                    data-slick-options='<?= e($thumbOptions); ?>'
+                                    data-slick-responsive='<?= e($thumbResponsive); ?>'>
                                     <?php foreach ($galeriaImagenes as $img): ?>
                                         <div class="product-gallery__thumb--single">
                                             <img src="<?= e($img['url']); ?>" alt="<?= e($productoNombre); ?>">
@@ -332,8 +332,8 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
                             </div>
                             <div class="product-gallery__large-image">
                                 <div id="<?= e($sliderMainId); ?>"
-                                     class="airi-element-carousel product-gallery__image image-slider"
-                                     data-slick-options='<?= e($mainOptions); ?>'>
+                                    class="airi-element-carousel product-gallery__image image-slider"
+                                    data-slick-options='<?= e($mainOptions); ?>'>
                                     <?php foreach ($galeriaImagenes as $img): ?>
                                         <div class="product-gallery__image--single product-gallery__item">
                                             <img src="<?= e($img['url']); ?>" alt="<?= e($productoNombre); ?>">
@@ -373,13 +373,117 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
                         <p class="product-short-description mb--45 mb-sm--20">Donec accumsan auctor iaculis. Sed suscipit arcu ligula, at egestas magna molestie a. Proin ac ex maximus, ultrices justo eget, sodales orci. Aliquam egestas libero ac turpis pharetra, in vehicula lacus scelerisque. Vestibulum
                             ut sem laoreet, feugiat tellus at, hendrerit.</p>
 
-                        <?php if ($tablaTallasUrl !== ''): ?>
-                            <div class="product-size-chart mt--20">
-                                <h6>Tabla de tallas</h6>
-                                <a href="<?= e($tablaTallasUrl) ?>" target="_blank" rel="noopener">
-                                    <img src="<?= e($tablaTallasUrl) ?>" alt="Tabla de tallas" width="400">
-                                </a>
+                        <?php if (!empty($producto['tabla_tallas'])): ?>
+                            <div class="tabla-tallas-container mt--20">
+                                <p style="text-align:left; margin-top:20px;">
+                                    <strong>
+                                        <a href="#" id="abrirTablaTallas" class="tabla-tallas-link"> <i class="fa-solid fa-ruler"></i> TABLA DE TALLAS</a>
+                                    </strong>
+                                </p>
                             </div>
+
+                            <!-- Modal (Popup) -->
+                            <div id="tablaTallasModal" class="tabla-tallas-modal">
+                                <div class="tabla-tallas-modal-content">
+                                    <span class="tabla-tallas-cerrar">&times;</span>
+                                    <img src="<?= asset_url($producto['tabla_tallas']) ?>" alt="Tabla de tallas" class="tabla-tallas-img">
+                                </div>
+                            </div>
+
+                            <style>
+                                /* ===== POPUP TABLA DE TALLAS ===== */
+                                .tabla-tallas-link {
+                                    color: #00aeed;
+                                    text-decoration: none;
+                                    font-size: 14px;
+                                    transition: color 0.3s;
+                                }
+
+                                .tabla-tallas-link:hover {
+                                    color: #c0392b;
+                                }
+
+                                .tabla-tallas-modal {
+                                    display: none;
+                                    position: fixed;
+                                    z-index: 9999;
+                                    left: 0;
+                                    top: 0;
+                                    width: 100%;
+                                    height: 100%;
+                                    overflow: hidden;
+                                    background-color: rgba(0, 0, 0, 0.7);
+                                }
+
+                                .tabla-tallas-modal-content {
+                                    position: relative;
+                                    margin: 20px auto;
+                                    padding: 20px;
+                                    width: 95%;
+                                    max-width: 800px;
+                                    background: #fff;
+                                    border-radius: 8px;
+                                    text-align: center;
+                                    top: 50%;
+                                    transform: translateY(-50%);
+                                    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+                                }
+
+                                .tabla-tallas-img {
+                                    max-width: 100%;
+                                    height: auto;
+                                    border-radius: 6px;
+                                    display: block;
+                                    margin: 20px auto;
+                                }
+
+                                .tabla-tallas-cerrar {
+                                    position: absolute;
+                                    top: 10px;
+                                    right: 15px;
+                                    color: #333;
+                                    font-size: 28px;
+                                    font-weight: bold;
+                                    cursor: pointer;
+                                }
+
+                                .tabla-tallas-cerrar:hover {
+                                    color: #c0392b;
+                                }
+
+                                @media (max-width: 768px) {
+                                    .tabla-tallas-modal-content {
+                                        width: 90%;
+                                        max-width: 90%;
+                                        padding: 10px;
+                                    }
+
+                                    .tabla-tallas-img {
+                                        margin-top: 10px;
+                                    }
+                                }
+                            </style>
+
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const modal = document.getElementById('tablaTallasModal');
+                                    const abrir = document.getElementById('abrirTablaTallas');
+                                    const cerrar = document.querySelector('.tabla-tallas-cerrar');
+
+                                    abrir.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        modal.style.display = 'block';
+                                    });
+
+                                    cerrar.addEventListener('click', function() {
+                                        modal.style.display = 'none';
+                                    });
+
+                                    window.addEventListener('click', function(e) {
+                                        if (e.target === modal) modal.style.display = 'none';
+                                    });
+                                });
+                            </script>
                         <?php endif; ?>
 
                         <br>
@@ -497,6 +601,8 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
                     </div>
                 </div>
             </div>
+
+            <!--------
             <div class="row justify-content-center pt--45 pt-lg--50 pt-md--55 pt-sm--35">
                 <div class="col-12">
                     <div class="product-data-tab tab-style-1">
@@ -582,6 +688,7 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
                     </div>
                 </div>
             </div>
+            -------->
 
             <div class="row pt--35 pt-md--25 pt-sm--15 pb--75 pb-md--55 pb-sm--35">
                 <div class="col-12">
@@ -608,37 +715,37 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
                                 <?php if (empty($productosRelacionados)): ?>
                                     <p class="text-center w-100">No hay productos relacionados disponibles.</p>
                                 <?php else: ?>
-                                <?php foreach ($productosRelacionados as $rel): ?>
-                                    <?php $relId = (string) ($rel['id'] ?? ''); ?>
-                                    <div class="product-card">
-                                        <div class="product-img">
-                                            <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>">
-                                                <img src="<?= asset_url('img/products/' . e($rel['imagen'] ?? 'producto1.jpg')) ?>"
-                                                     alt="<?= e($rel['nombre'] ?? 'Producto relacionado') ?>">
-                                            </a>
-                                        </div>
-
-                                        <div class="product-content">
-                                            <h4 class="product-name">
+                                    <?php foreach ($productosRelacionados as $rel): ?>
+                                        <?php $relId = (string) ($rel['id'] ?? ''); ?>
+                                        <div class="product-card">
+                                            <div class="product-img">
                                                 <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>">
-                                                    <?= e($rel['nombre'] ?? 'Producto relacionado') ?>
-                                                </a>
-                                            </h4>
-                                            <span class="price">S/ <?= number_format((float) ($rel['precio'] ?? 0), 2) ?></span>
-
-                                            <div class="product-actions">
-                                                <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>"
-                                                   class="action-icon view">
-                                                    <i class="dl-icon-view"></i>
-                                                </a>
-                                                <a href="<?= base_url('carrito/agregar?id=' . urlencode($relId)) ?>"
-                                                   class="action-icon add-cart">
-                                                    <i class="dl-icon-cart29"></i>
+                                                    <img src="<?= asset_url('img/products/' . e($rel['imagen'] ?? 'producto1.jpg')) ?>"
+                                                        alt="<?= e($rel['nombre'] ?? 'Producto relacionado') ?>">
                                                 </a>
                                             </div>
+
+                                            <div class="product-content">
+                                                <h4 class="product-name">
+                                                    <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>">
+                                                        <?= e($rel['nombre'] ?? 'Producto relacionado') ?>
+                                                    </a>
+                                                </h4>
+                                                <span class="price">S/ <?= number_format((float) ($rel['precio'] ?? 0), 2) ?></span>
+
+                                                <div class="product-actions">
+                                                    <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>"
+                                                        class="action-icon view">
+                                                        <i class="dl-icon-view"></i>
+                                                    </a>
+                                                    <a href="<?= base_url('carrito/agregar?id=' . urlencode($relId)) ?>"
+                                                        class="action-icon add-cart">
+                                                        <i class="dl-icon-cart29"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                <?php endforeach; ?>
+                                    <?php endforeach; ?>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -655,60 +762,62 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form[action$="carrito/agregar"]');
-    if (!form) {
-        return;
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form[action$="carrito/agregar"]');
+        if (!form) {
+            return;
+        }
 
-    const colorSelect = form.querySelector('select[name="color"]');
-    const tallaSelect = form.querySelector('select[name="talla"]');
-    const selects = [];
-    const mensajes = {
-        color: 'Por favor selecciona un color',
-        talla: 'Por favor selecciona una talla',
-    };
+        const colorSelect = form.querySelector('select[name="color"]');
+        const tallaSelect = form.querySelector('select[name="talla"]');
+        const selects = [];
+        const mensajes = {
+            color: 'Por favor selecciona un color',
+            talla: 'Por favor selecciona una talla',
+        };
 
-    if (colorSelect) {
-        selects.push(colorSelect);
-    }
+        if (colorSelect) {
+            selects.push(colorSelect);
+        }
 
-    if (tallaSelect) {
-        selects.push(tallaSelect);
-    }
+        if (tallaSelect) {
+            selects.push(tallaSelect);
+        }
 
-    if (selects.length === 0) {
-        return;
-    }
+        if (selects.length === 0) {
+            return;
+        }
 
-    form.addEventListener('submit', function(event) {
-        let isValid = true;
-        form.querySelectorAll('.error-message').forEach(el => el.remove());
-        selects.forEach(select => select.classList.remove('input-error'));
+        form.addEventListener('submit', function(event) {
+            let isValid = true;
+            form.querySelectorAll('.error-message').forEach(el => el.remove());
+            selects.forEach(select => select.classList.remove('input-error'));
 
-        selects.forEach((select) => {
-            if (!select.value) {
-                isValid = false;
-                showError(select, mensajes[select.name] || 'Por favor selecciona una opción');
+            selects.forEach((select) => {
+                if (!select.value) {
+                    isValid = false;
+                    showError(select, mensajes[select.name] || 'Por favor selecciona una opción');
+                }
+            });
+
+            if (!isValid) {
+                event.preventDefault();
+                const firstError = form.querySelector('.input-error');
+                if (firstError) {
+                    firstError.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
             }
         });
 
-        if (!isValid) {
-            event.preventDefault();
-            const firstError = form.querySelector('.input-error');
-            if (firstError) {
-                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+        function showError(input, message) {
+            input.classList.add('input-error');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            input.parentNode.insertBefore(errorDiv, input.nextSibling);
         }
     });
-
-    function showError(input, message) {
-        input.classList.add('input-error');
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.textContent = message;
-        input.parentNode.insertBefore(errorDiv, input.nextSibling);
-    }
-});
 </script>
-
