@@ -279,20 +279,38 @@ final class AdminProductoModel extends ProductoModel
         }
 
         $pdo = Database::connect();
-        $sql = 'SELECT id, nombre, ruta, es_principal, orden FROM ' . $tabla
-            . ' WHERE producto_id = :producto ORDER BY es_principal DESC, orden ASC, id ASC';
+
+        $tieneNombre = $this->columnaExisteEnTabla($tabla, 'nombre');
+        $tienePrincipal = $this->columnaExisteEnTabla($tabla, 'es_principal');
+        $tieneOrden = $this->columnaExisteEnTabla($tabla, 'orden');
+
+        $columnas = ['id', 'ruta'];
+        if ($tieneNombre) {
+            $columnas[] = 'nombre';
+        }
+        if ($tienePrincipal) {
+            $columnas[] = 'es_principal';
+        }
+        if ($tieneOrden) {
+            $columnas[] = 'orden';
+        }
+
+        $ordenSql = $this->construirOrdenImagenes('');
+
+        $sql = 'SELECT ' . implode(', ', $columnas) . ' FROM ' . $tabla
+            . ' WHERE producto_id = :producto ORDER BY ' . $ordenSql;
         $stmt = $pdo->prepare($sql);
         $stmt->execute([':producto' => $productoId]);
 
         $imagenes = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
-        $resultado = array_map(static function (array $fila): array {
+        $resultado = array_map(static function (array $fila) use ($tieneNombre, $tienePrincipal, $tieneOrden): array {
             return [
                 'id' => (int) ($fila['id'] ?? 0),
                 'ruta' => trim((string) ($fila['ruta'] ?? '')),
-                'nombre' => trim((string) ($fila['nombre'] ?? '')),
-                'es_principal' => (int) ($fila['es_principal'] ?? 0),
-                'orden' => (int) ($fila['orden'] ?? 0),
+                'nombre' => $tieneNombre ? trim((string) ($fila['nombre'] ?? '')) : '',
+                'es_principal' => $tienePrincipal ? (int) ($fila['es_principal'] ?? 0) : 0,
+                'orden' => $tieneOrden ? (int) ($fila['orden'] ?? 0) : 0,
             ];
         }, $imagenes);
 
@@ -319,6 +337,10 @@ final class AdminProductoModel extends ProductoModel
             return 0;
         }
 
+        if (!$this->columnaExisteEnTabla($tabla, 'orden')) {
+            return 0;
+        }
+
         $pdo = Database::connect();
         $stmt = $pdo->prepare('SELECT MAX(orden) FROM ' . $tabla . ' WHERE producto_id = :producto');
         $stmt->execute([':producto' => $productoId]);
@@ -341,18 +363,42 @@ final class AdminProductoModel extends ProductoModel
         }
 
         $pdo = Database::connect();
+
+        $columnas = ['producto_id'];
+        $placeholders = [':producto_id'];
+        $params = [':producto_id' => $productoId];
+
+        $tieneNombre = $this->columnaExisteEnTabla($tabla, 'nombre');
+        $tieneOrden = $this->columnaExisteEnTabla($tabla, 'orden');
+        $tienePrincipal = $this->columnaExisteEnTabla($tabla, 'es_principal');
+
+        if ($tieneNombre) {
+            $columnas[] = 'nombre';
+            $placeholders[] = ':nombre';
+            $params[':nombre'] = $nombreArchivo;
+        }
+
+        $columnas[] = 'ruta';
+        $placeholders[] = ':ruta';
+        $params[':ruta'] = $rutaPublica;
+
+        if ($tieneOrden) {
+            $columnas[] = 'orden';
+            $placeholders[] = ':orden';
+            $params[':orden'] = $orden;
+        }
+
+        if ($tienePrincipal) {
+            $columnas[] = 'es_principal';
+            $placeholders[] = ':es_principal';
+            $params[':es_principal'] = $esPrincipal ? 1 : 0;
+        }
+
         $sql = 'INSERT INTO ' . $tabla
-            . ' (producto_id, nombre, ruta, orden, es_principal)'
-            . ' VALUES (:producto_id, :nombre, :ruta, :orden, :es_principal)';
+            . ' (' . implode(', ', $columnas) . ') VALUES (' . implode(', ', $placeholders) . ')';
 
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ':producto_id' => $productoId,
-            ':nombre' => $nombreArchivo,
-            ':ruta' => $rutaPublica,
-            ':orden' => $orden,
-            ':es_principal' => $esPrincipal ? 1 : 0,
-        ]);
+        $stmt->execute($params);
 
         return (int) $pdo->lastInsertId();
     }
@@ -368,20 +414,38 @@ final class AdminProductoModel extends ProductoModel
 
         $pdo = Database::connect();
 
-        $pdo->prepare('UPDATE ' . $tabla . ' SET es_principal = 0 WHERE producto_id = :producto')
-            ->execute([':producto' => $productoId]);
+        $tienePrincipal = $this->columnaExisteEnTabla($tabla, 'es_principal');
+        $tieneOrden = $this->columnaExisteEnTabla($tabla, 'orden');
 
-        $pdo->prepare('UPDATE ' . $tabla . ' SET es_principal = 1, orden = 0 WHERE producto_id = :producto AND id = :id LIMIT 1')
-            ->execute([
+        if ($tienePrincipal) {
+            $pdo->prepare('UPDATE ' . $tabla . ' SET es_principal = 0 WHERE producto_id = :producto')
+                ->execute([':producto' => $productoId]);
+        }
+
+        $setPartes = [];
+        if ($tienePrincipal) {
+            $setPartes[] = 'es_principal = 1';
+        }
+        if ($tieneOrden) {
+            $setPartes[] = 'orden = 0';
+        }
+
+        if ($setPartes !== []) {
+            $sqlPrincipal = 'UPDATE ' . $tabla . ' SET ' . implode(', ', $setPartes)
+                . ' WHERE producto_id = :producto AND id = :id LIMIT 1';
+            $pdo->prepare($sqlPrincipal)->execute([
                 ':producto' => $productoId,
                 ':id' => $imagenId,
             ]);
+        }
 
-        $pdo->prepare('UPDATE ' . $tabla . ' SET orden = orden + 1 WHERE producto_id = :producto AND id <> :id')
-            ->execute([
-                ':producto' => $productoId,
-                ':id' => $imagenId,
-            ]);
+        if ($tieneOrden) {
+            $pdo->prepare('UPDATE ' . $tabla . ' SET orden = orden + 1 WHERE producto_id = :producto AND id <> :id')
+                ->execute([
+                    ':producto' => $productoId,
+                    ':id' => $imagenId,
+                ]);
+        }
     }
 
     public function eliminarImagenRegistro(int $imagenId): void
@@ -420,7 +484,17 @@ final class AdminProductoModel extends ProductoModel
 
         $pdo = Database::connect();
 
-        $stmt = $pdo->prepare('SELECT id FROM ' . $tabla . ' WHERE producto_id = :producto ORDER BY es_principal DESC, orden ASC, id ASC LIMIT 1');
+        $componentes = [];
+        if ($this->columnaExisteEnTabla($tabla, 'es_principal')) {
+            $componentes[] = 'es_principal DESC';
+        }
+        if ($this->columnaExisteEnTabla($tabla, 'orden')) {
+            $componentes[] = 'orden ASC';
+        }
+        $componentes[] = 'id ASC';
+        $ordenSql = implode(', ', $componentes);
+
+        $stmt = $pdo->prepare('SELECT id FROM ' . $tabla . ' WHERE producto_id = :producto ORDER BY ' . $ordenSql . ' LIMIT 1');
         $stmt->execute([':producto' => $productoId]);
 
         $nuevoId = $stmt->fetchColumn();
@@ -483,7 +557,22 @@ final class AdminProductoModel extends ProductoModel
         }
 
         $pdo = Database::connect();
-        $stmt = $pdo->prepare('SELECT id, producto_id, nombre, ruta, es_principal, orden FROM ' . $tabla . ' WHERE id = :id LIMIT 1');
+        $columnas = ['id', 'producto_id', 'ruta'];
+        $tieneNombre = $this->columnaExisteEnTabla($tabla, 'nombre');
+        $tienePrincipal = $this->columnaExisteEnTabla($tabla, 'es_principal');
+        $tieneOrden = $this->columnaExisteEnTabla($tabla, 'orden');
+
+        if ($tieneNombre) {
+            $columnas[] = 'nombre';
+        }
+        if ($tienePrincipal) {
+            $columnas[] = 'es_principal';
+        }
+        if ($tieneOrden) {
+            $columnas[] = 'orden';
+        }
+
+        $stmt = $pdo->prepare('SELECT ' . implode(', ', $columnas) . ' FROM ' . $tabla . ' WHERE id = :id LIMIT 1');
         $stmt->execute([':id' => $imagenId]);
 
         $imagen = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -496,10 +585,10 @@ final class AdminProductoModel extends ProductoModel
         return [
             'id' => (int) ($imagen['id'] ?? 0),
             'producto_id' => (int) ($imagen['producto_id'] ?? 0),
-            'nombre' => trim((string) ($imagen['nombre'] ?? '')),
+            'nombre' => $tieneNombre ? trim((string) ($imagen['nombre'] ?? '')) : '',
             'ruta' => $ruta,
-            'es_principal' => (int) ($imagen['es_principal'] ?? 0),
-            'orden' => (int) ($imagen['orden'] ?? 0),
+            'es_principal' => $tienePrincipal ? (int) ($imagen['es_principal'] ?? 0) : 0,
+            'orden' => $tieneOrden ? (int) ($imagen['orden'] ?? 0) : 0,
         ];
     }
 

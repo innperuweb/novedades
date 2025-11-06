@@ -231,18 +231,34 @@ class ProductoModel
             }
 
             $ordenSql = $this->construirOrdenImagenes('');
-            $stmt = $pdo->prepare('SELECT id, ruta, nombre, es_principal, orden FROM ' . $tablaImagenes . ' WHERE producto_id = :id ORDER BY ' . $ordenSql);
+
+            $columnas = ['id', 'ruta'];
+            $tieneNombre = $this->columnaExisteEnTabla($tablaImagenes, 'nombre');
+            $tienePrincipal = $this->columnaExisteEnTabla($tablaImagenes, 'es_principal');
+            $tieneOrden = $this->columnaExisteEnTabla($tablaImagenes, 'orden');
+
+            if ($tieneNombre) {
+                $columnas[] = 'nombre';
+            }
+            if ($tienePrincipal) {
+                $columnas[] = 'es_principal';
+            }
+            if ($tieneOrden) {
+                $columnas[] = 'orden';
+            }
+
+            $stmt = $pdo->prepare('SELECT ' . implode(', ', $columnas) . ' FROM ' . $tablaImagenes . ' WHERE producto_id = :id ORDER BY ' . $ordenSql);
             $stmt->execute([':id' => $productoId]);
 
             $imagenes = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
-            return array_map(static function (array $item): array {
+            return array_map(static function (array $item) use ($tieneNombre, $tienePrincipal, $tieneOrden): array {
                 return [
                     'id' => (int) ($item['id'] ?? 0),
                     'ruta' => trim((string) ($item['ruta'] ?? '')),
-                    'nombre' => trim((string) ($item['nombre'] ?? '')),
-                    'es_principal' => (int) ($item['es_principal'] ?? 0),
-                    'orden' => (int) ($item['orden'] ?? 0),
+                    'nombre' => $tieneNombre ? trim((string) ($item['nombre'] ?? '')) : '',
+                    'es_principal' => $tienePrincipal ? (int) ($item['es_principal'] ?? 0) : 0,
+                    'orden' => $tieneOrden ? (int) ($item['orden'] ?? 0) : 0,
                 ];
             }, $imagenes);
         } catch (\Throwable $exception) {
@@ -347,12 +363,26 @@ class ProductoModel
 
     protected function construirOrdenImagenes(string $alias = 'pi'): string
     {
+        $tabla = $this->obtenerTablaImagenes();
+
         $alias = trim($alias);
         if ($alias !== '') {
             $alias = rtrim($alias, '.') . '.';
         }
 
-        return $alias . 'es_principal DESC, ' . $alias . 'orden ASC, ' . $alias . 'id ASC';
+        $componentes = [];
+
+        if ($tabla !== null && $this->columnaExisteEnTabla($tabla, 'es_principal')) {
+            $componentes[] = $alias . 'es_principal DESC';
+        }
+
+        if ($tabla !== null && $this->columnaExisteEnTabla($tabla, 'orden')) {
+            $componentes[] = $alias . 'orden ASC';
+        }
+
+        $componentes[] = $alias . 'id ASC';
+
+        return implode(', ', $componentes);
     }
 
     protected function obtenerTablaImagenes(): ?string
@@ -364,17 +394,36 @@ class ProductoModel
 
     protected function asegurarTablaImagenes(): void
     {
-        if ($this->tablaImagenes === static::TABLA_IMAGENES && $this->tablaExiste(static::TABLA_IMAGENES)) {
+        if ($this->tablaImagenes !== null && $this->tablaExiste($this->tablaImagenes)) {
+            $this->asegurarColumnasTablaImagenes($this->tablaImagenes);
+
             return;
         }
 
-        if (!$this->tablaExiste(static::TABLA_IMAGENES)) {
-            $this->crearTablaImagenes();
+        $tablaPrincipal = static::TABLA_IMAGENES;
+        $tablasAlternativas = ['productos_imagenes', 'producto_imagen', 'productos_imagen'];
+
+        if ($this->tablaExiste($tablaPrincipal)) {
+            $this->tablaImagenes = $tablaPrincipal;
+            $this->asegurarColumnasTablaImagenes($tablaPrincipal);
+
+            return;
         }
 
-        if ($this->tablaExiste(static::TABLA_IMAGENES)) {
-            $this->tablaImagenes = static::TABLA_IMAGENES;
-            $this->asegurarColumnasTablaImagenes();
+        foreach ($tablasAlternativas as $tablaAlternativa) {
+            if ($this->tablaExiste($tablaAlternativa)) {
+                $this->tablaImagenes = $tablaAlternativa;
+                $this->asegurarColumnasTablaImagenes($tablaAlternativa);
+
+                return;
+            }
+        }
+
+        $this->crearTablaImagenes($tablaPrincipal);
+
+        if ($this->tablaExiste($tablaPrincipal)) {
+            $this->tablaImagenes = $tablaPrincipal;
+            $this->asegurarColumnasTablaImagenes($tablaPrincipal);
 
             return;
         }
@@ -382,12 +431,11 @@ class ProductoModel
         $this->tablaImagenes = null;
     }
 
-    protected function crearTablaImagenes(): void
+    protected function crearTablaImagenes(string $tabla): void
     {
         try {
             $pdo = Database::connect();
-            $nombreTabla = static::TABLA_IMAGENES;
-            $sql = 'CREATE TABLE IF NOT EXISTS ' . $nombreTabla . ' ('
+            $sql = 'CREATE TABLE IF NOT EXISTS ' . $tabla . ' ('
                 . 'id INT AUTO_INCREMENT PRIMARY KEY,'
                 . ' producto_id INT NOT NULL,'
                 . ' nombre VARCHAR(255) NOT NULL,'
@@ -395,8 +443,8 @@ class ProductoModel
                 . ' es_principal TINYINT(1) NOT NULL DEFAULT 0,'
                 . ' orden INT NOT NULL DEFAULT 0,'
                 . ' creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,'
-                . ' CONSTRAINT fk_' . $nombreTabla . '_producto FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,'
-                . ' INDEX idx_' . $nombreTabla . '_producto (producto_id)'
+                . ' CONSTRAINT fk_' . $tabla . '_producto FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,'
+                . ' INDEX idx_' . $tabla . '_producto (producto_id)'
                 . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
             $pdo->exec($sql);
         } catch (\Throwable $exception) {
@@ -404,25 +452,23 @@ class ProductoModel
         }
     }
 
-    protected function asegurarColumnasTablaImagenes(): void
+    protected function asegurarColumnasTablaImagenes(string $tabla): void
     {
-        $tabla = static::TABLA_IMAGENES;
-
         try {
             $pdo = Database::connect();
 
-            $columnas = [
-                'nombre' => "ALTER TABLE $tabla ADD COLUMN nombre VARCHAR(255) NOT NULL AFTER producto_id",
-                'ruta' => "ALTER TABLE $tabla ADD COLUMN ruta VARCHAR(255) NOT NULL AFTER nombre",
-                'es_principal' => "ALTER TABLE $tabla ADD COLUMN es_principal TINYINT(1) NOT NULL DEFAULT 0 AFTER ruta",
-                'orden' => "ALTER TABLE $tabla ADD COLUMN orden INT NOT NULL DEFAULT 0 AFTER es_principal",
+            $alteraciones = [
+                "ALTER TABLE $tabla ADD COLUMN nombre VARCHAR(255) NOT NULL AFTER producto_id",
+                "ALTER TABLE $tabla ADD COLUMN ruta VARCHAR(255) NOT NULL AFTER producto_id",
+                "ALTER TABLE $tabla ADD COLUMN es_principal TINYINT(1) NOT NULL DEFAULT 0 AFTER ruta",
+                "ALTER TABLE $tabla ADD COLUMN orden INT NOT NULL DEFAULT 0 AFTER es_principal",
             ];
 
-            foreach ($columnas as $sql) {
+            foreach ($alteraciones as $sql) {
                 try {
                     $pdo->exec($sql);
                 } catch (\Throwable $ignored) {
-                    // Ignorar errores por columnas existentes o incompatibles
+                    // La columna ya existe o el cambio no es necesario
                 }
             }
 
