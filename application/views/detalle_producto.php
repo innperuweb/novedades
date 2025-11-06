@@ -339,9 +339,9 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRutaTablaTallas($tabla
                         </div>
                         <div class="clearfix"></div>
                         <?php if (!empty($producto['descripcion'])): ?>
-                            <p class="product-short-description mb--45 mb-sm--20">
-                                <?= nl2br(e($producto['descripcion'])) ?>
-                            </p>
+                            <div class="product-short-description mb--45 mb-sm--20">
+                                <?= $producto['descripcion']; ?>
+                            </div>
                         <?php else: ?>
                             <p class="product-short-description mb--45 mb-sm--20 text-muted">
                                 Sin descripción disponible.
