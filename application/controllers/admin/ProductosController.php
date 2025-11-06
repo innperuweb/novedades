@@ -433,7 +433,7 @@ final class ProductosController extends AdminBaseController
         return [
             'nombre' => trim((string) ($_POST['nombre'] ?? '')),
             'marca' => trim((string) ($_POST['marca'] ?? '')),
-            'descripcion' => trim((string) ($_POST['descripcion'] ?? '')),
+            'descripcion' => (string) ($_POST['descripcion'] ?? ''),
             'precio' => (float) $precio,
             'stock' => max(0, (int) ($_POST['stock'] ?? 0)),
             'sku' => trim((string) ($_POST['sku'] ?? '')),
