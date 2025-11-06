@@ -370,8 +370,15 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
                             <span class="money">S/ <?= number_format($productoPrecio, 2) ?></span>
                         </div>
                         <div class="clearfix"></div>
-                        <p class="product-short-description mb--45 mb-sm--20">Donec accumsan auctor iaculis. Sed suscipit arcu ligula, at egestas magna molestie a. Proin ac ex maximus, ultrices justo eget, sodales orci. Aliquam egestas libero ac turpis pharetra, in vehicula lacus scelerisque. Vestibulum
-                            ut sem laoreet, feugiat tellus at, hendrerit.</p>
+                        <?php if (!empty($producto['descripcion'])): ?>
+                            <p class="product-short-description mb--45 mb-sm--20">
+                                <?= nl2br(e($producto['descripcion'])) ?>
+                            </p>
+                        <?php else: ?>
+                            <p class="product-short-description mb--45 mb-sm--20 text-muted">
+                                Sin descripción disponible.
+                            </p>
+                        <?php endif; ?>
 
                         <?php if (!empty($producto['tabla_tallas'])): ?>
                             <div class="tabla-tallas-container mt--20">
