@@ -21,7 +21,7 @@ final class ProductosController extends AdminBaseController
         $this->productoModel = new AdminProductoModel();
         $this->categoriaModel = new AdminCategoriaModel();
         $this->directorioUploads = ROOT_PATH . '/public/assets/uploads/productos';
-        $this->directorioImagenes = ROOT_PATH . '/public/assets/uploads/products';
+        $this->directorioImagenes = ROOT_PATH . '/public/assets/uploads/productos';
         $this->directorioTablaTallas = ROOT_PATH . '/public/assets/uploads/tabla_tallas';
     }
 
@@ -659,7 +659,7 @@ final class ProductosController extends AdminBaseController
             }
 
             $rutasGuardadas[] = [
-                'ruta' => 'products/' . $productoId . '/' . $nombre,
+                'ruta' => 'uploads/productos/' . $productoId . '/' . $nombre,
             ];
         }
 
