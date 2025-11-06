@@ -663,7 +663,7 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRutaTablaTallas($tabla
                     </div>
                 </div>
             </div>
-            -------->        
+            -------->
 
             <div class="row pt--35 pt-md--25 pt-sm--15 pb--75 pb-md--55 pb-sm--35">
                 <div class="col-12">
@@ -689,63 +689,52 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRutaTablaTallas($tabla
                                         {"breakpoint":450, "settings": {"slidesToShow": 1} }
                                     ]'>
 
-                                    <?php if (empty($productosRelacionados)): ?>
+                                <?php if (empty($productosRelacionados)): ?>
                                     <p class="text-center w-100">No hay productos relacionados disponibles.</p>
                                 <?php else: ?>
                                     <?php foreach ($productosRelacionados as $rel): ?>
                                         <?php
                                         $relId = (string) ($rel['id'] ?? '');
                                         $imagenPrincipal = $productoModel->obtenerImagenPrincipal((int) ($rel['id'] ?? 0));
-                              
-                              
-                              
-$imagenPrincipalUrl = '';
-if (function_exists('normalizarRutaImagenProducto')) {
-    $imagenPrincipalUrl = normalizarRutaImagenProducto((string) $imagenPrincipal);
-}
+                                        $imagenPrincipalUrl = $normalizarRutaImagenProducto((string) $imagenPrincipal);
 
-if ($imagenPrincipalUrl === '' && !empty($imagenPrincipal)) {
-    $imagenPrincipalUrl = base_url('uploads/productos/' . $imagenPrincipal);
-}
-
-if ($imagenPrincipalUrl === '' || !file_exists($_SERVER['DOCUMENT_ROOT'] . '/uploads/productos/' . $imagenPrincipal)) {
-    $imagenPrincipalUrl = asset_url('img/products/prod-1-1.jpg');  
-  
+                                        if ($imagenPrincipalUrl === '') {
+                                            $imagenPrincipalUrl = asset_url('img/products/prod-1-1.jpg');
+                                        }
                                         ?>
 
-                                <div class="airi-product">
-                                    <div class="product-inner">
-                                        <figure class="product-image">
-                                            <div class="product-image--holder">
-                                                <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>">                                                 
-                                                  
-<img src="<?= htmlspecialchars($imagenPrincipalUrl, ENT_QUOTES, 'UTF-8') ?>"
-     alt="<?= e($rel['nombre'] ?? 'Producto relacionado') ?>">
-                                                </a>
-                                            </div>
-                                            <div class="airi-product-action">
-                                                <div class="product-action">
-                                                    <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>"
-                                                        class="quickview-btn action-btn" data-bs-toggle="tooltip"
-                                                        data-bs-placement="left" title="Ver Producto">
-                                                        <i class="dl-icon-view"></i>
-                                                    </a>
+                                        <div class="airi-product">
+                                            <div class="product-inner">
+                                                <figure class="product-image">
+                                                    <div class="product-image--holder">
+                                                        <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>">
+                                                            <img src="<?= htmlspecialchars($imagenPrincipalUrl, ENT_QUOTES, 'UTF-8') ?>"
+                                                                alt="<?= e($rel['nombre'] ?? 'Producto relacionado') ?>">
+                                                        </a>
+                                                    </div>
+                                                    <div class="airi-product-action">
+                                                        <div class="product-action">
+                                                            <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>"
+                                                                class="quickview-btn action-btn" data-bs-toggle="tooltip"
+                                                                data-bs-placement="left" title="Ver Producto">
+                                                                <i class="dl-icon-view"></i>
+                                                            </a>
+                                                        </div>
+                                                </figure>
+                                                <div class="product-info text-center">
+                                                    <h3 class="product-title">
+                                                        <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>">
+                                                            <?= e($rel['nombre'] ?? 'Producto relacionado') ?>
+                                                        </a>
+                                                    </h3>
+                                                    <span class="product-price-wrapper">
+                                                        <span class="money">S/ <?= number_format((float) ($rel['precio'] ?? 0), 2) ?></span>
+                                                    </span>
                                                 </div>
-                                        </figure>
-                                        <div class="product-info text-center">
-                                            <h3 class="product-title">
-                                                <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>">
-                                                    <?= e($rel['nombre'] ?? 'Producto relacionado') ?>
-                                                </a>
-                                            </h3>
-                                            <span class="product-price-wrapper">
-                                                <span class="money">S/ <?= number_format((float) ($rel['precio'] ?? 0), 2) ?></span>
-                                            </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
 
-                                <?php endforeach; ?>
+                                    <?php endforeach; ?>
                                 <?php endif; ?>
 
                             </div>
