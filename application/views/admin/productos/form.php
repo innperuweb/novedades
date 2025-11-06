@@ -242,6 +242,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('imagenes');
+    const formulario = input ? input.closest('form') : null; // FIX: upload imagenes
     const gridNuevas = document.getElementById('grid-imagenes');
     const gridExistentes = document.getElementById('grid-imagenes-existentes');
     const inputPrincipal = document.getElementById('imagen_principal_nueva');
@@ -450,7 +451,14 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPreviews();
         actualizarPrincipalHidden();
         input.value = '';
+        sincronizarInput(); // FIX: upload imagenes
     });
+
+    if (formulario) {
+        formulario.addEventListener('submit', () => {
+            sincronizarInput(); // FIX: upload imagenes
+        });
+    }
 
     const marcarPrincipalExistente = (nuevoId) => {
         if (!gridExistentes) {

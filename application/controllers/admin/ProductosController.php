@@ -16,6 +16,9 @@ final class ProductosController extends AdminBaseController
     private string $directorioImagenes;
     private string $directorioTablaTallas;
     private bool $debugUploads;
+    private bool $registroLocalUploads; // FIX: upload imagenes
+    private ?string $rutaLogDiagnostico; // FIX: upload imagenes
+    private bool $diagnosticoRegistrado = false; // FIX: upload imagenes
 
     public function __construct()
     {
@@ -25,6 +28,9 @@ final class ProductosController extends AdminBaseController
         $this->directorioImagenes = ROOT_PATH . '/public/assets/uploads/productos';
         $this->directorioTablaTallas = ROOT_PATH . '/public/assets/uploads/tabla_tallas';
         $this->debugUploads = filter_var(getenv('DEBUG_UPLOADS') ?: '0', FILTER_VALIDATE_BOOL);
+        $entorno = strtolower((string) (getenv('APP_ENV') ?: 'production')); // FIX: upload imagenes
+        $this->registroLocalUploads = in_array($entorno, ['local', 'development'], true); // FIX: upload imagenes
+        $this->rutaLogDiagnostico = $this->registroLocalUploads ? ROOT_PATH . '/storage/logs/upload_debug.log' : null; // FIX: upload imagenes
     }
 
     public function index(): void
@@ -138,6 +144,7 @@ final class ProductosController extends AdminBaseController
 
         $nuevoId = $this->productoModel->crear($datos, $subcategorias);
 
+        $totalImagenesSubidas = 0; // FIX: upload imagenes
         if ($imagenesPreparadas['imagenes'] !== []) {
             $resultadoImagenes = $this->procesarImagenesSubidas(
                 $nuevoId,
@@ -148,9 +155,16 @@ final class ProductosController extends AdminBaseController
 
             if (!empty($resultadoImagenes['errores'])) {
                 admin_set_flash('warning', implode(' ', $resultadoImagenes['errores']));
+            } else {
+                $totalImagenesSubidas = (int) ($resultadoImagenes['total'] ?? 0);
             }
         }
-        admin_set_flash('success', 'Producto creado correctamente.');
+
+        $mensajeExito = 'Producto creado correctamente.'; // FIX: upload imagenes
+        if ($totalImagenesSubidas > 0) {
+            $mensajeExito .= ' Se subieron ' . $totalImagenesSubidas . ' imágenes y se registraron en la galería.';
+        }
+        admin_set_flash('success', $mensajeExito);
         $this->redirect('admin/productos/editar/' . $nuevoId);
     }
 
@@ -234,6 +248,7 @@ final class ProductosController extends AdminBaseController
 
         $this->productoModel->actualizarProducto($productoId, $datos, $subcategorias);
 
+        $totalImagenesSubidas = 0; // FIX: upload imagenes
         if ($imagenesPreparadas['imagenes'] !== []) {
             $resultadoImagenes = $this->procesarImagenesSubidas(
                 $productoId,
@@ -244,9 +259,16 @@ final class ProductosController extends AdminBaseController
 
             if (!empty($resultadoImagenes['errores'])) {
                 admin_set_flash('warning', implode(' ', $resultadoImagenes['errores']));
+            } else {
+                $totalImagenesSubidas = (int) ($resultadoImagenes['total'] ?? 0);
             }
         }
-        admin_set_flash('success', 'Producto actualizado correctamente.');
+
+        $mensajeExito = 'Producto actualizado correctamente.'; // FIX: upload imagenes
+        if ($totalImagenesSubidas > 0) {
+            $mensajeExito .= ' Se subieron ' . $totalImagenesSubidas . ' imágenes y se registraron en la galería.';
+        }
+        admin_set_flash('success', $mensajeExito);
         $this->redirect('admin/productos/editar/' . $productoId);
     }
 
@@ -584,21 +606,60 @@ final class ProductosController extends AdminBaseController
 
     private function prepararImagenesDesdeRequest(): array
     {
+        if (!$this->diagnosticoRegistrado) { // FIX: upload imagenes
+            $this->registrarDiagnosticoUploads([ // FIX: upload imagenes
+                'post_keys' => array_keys($_POST),
+                'files_keys' => array_keys($_FILES),
+                'ini_values' => [
+                    'file_uploads' => ini_get('file_uploads'),
+                    'upload_max_filesize' => ini_get('upload_max_filesize'),
+                    'post_max_size' => ini_get('post_max_size'),
+                    'max_file_uploads' => ini_get('max_file_uploads'),
+                ],
+                'imagenes' => $this->normalizarArchivosParaDiagnostico($_FILES['imagenes'] ?? null),
+            ]);
+            $this->diagnosticoRegistrado = true;
+        }
+
         if (!isset($_FILES['imagenes']) || !is_array($_FILES['imagenes'])) {
             return ['imagenes' => [], 'errores' => []];
         }
 
         $imagenes = $_FILES['imagenes'];
-        $nombres = $imagenes['name'] ?? [];
-        $temporal = $imagenes['tmp_name'] ?? [];
-        $errores = $imagenes['error'] ?? [];
-        $cantidad = is_array($nombres) ? count($nombres) : 0;
+        $componentes = [
+            'name' => $imagenes['name'] ?? [],
+            'tmp_name' => $imagenes['tmp_name'] ?? [],
+            'error' => $imagenes['error'] ?? [],
+            'size' => $imagenes['size'] ?? [],
+        ];
+
+        foreach ($componentes as $clave => $valor) {
+            if (!is_array($valor)) {
+                $componentes[$clave] = [$valor];
+            }
+        }
+
+        $detalles = [];
+        $nombres = array_values($componentes['name']);
+        $temporal = array_values($componentes['tmp_name']);
+        $errores = array_values($componentes['error']);
+        $tamanos = array_values($componentes['size']);
+        $total = count($nombres);
+
+        for ($i = 0; $i < $total; $i++) {
+            $detalles[] = [
+                'name' => (string) ($nombres[$i] ?? ''),
+                'tmp_name' => (string) ($temporal[$i] ?? ''),
+                'error' => (int) ($errores[$i] ?? UPLOAD_ERR_NO_FILE),
+                'size' => (int) ($tamanos[$i] ?? 0),
+            ];
+        }
 
         $archivosPreparados = [];
         $erroresEncontrados = [];
 
-        for ($i = 0; $i < $cantidad; $i++) {
-            $codigoError = (int) ($errores[$i] ?? UPLOAD_ERR_NO_FILE);
+        foreach ($detalles as $detalle) {
+            $codigoError = $detalle['error'];
             if ($codigoError === UPLOAD_ERR_NO_FILE) {
                 continue;
             }
@@ -608,7 +669,7 @@ final class ProductosController extends AdminBaseController
                 continue;
             }
 
-            $tmp = $temporal[$i] ?? '';
+            $tmp = $detalle['tmp_name'];
             if ($tmp === '' || !is_uploaded_file($tmp)) {
                 $erroresEncontrados[] = 'No se pudo procesar una de las imágenes seleccionadas.';
                 continue;
@@ -626,8 +687,9 @@ final class ProductosController extends AdminBaseController
                 continue;
             }
 
-            $extension = $this->obtenerExtensionDesdeMime($mime, (string) ($nombres[$i] ?? 'imagen-producto'));
-            $nombreArchivo = $this->generarNombreArchivo((string) ($nombres[$i] ?? 'imagen-producto'), $extension);
+            $nombreOriginal = $detalle['name'] !== '' ? $detalle['name'] : 'imagen-producto';
+            $extension = $this->obtenerExtensionDesdeMime($mime, $nombreOriginal);
+            $nombreArchivo = $this->generarNombreArchivo($nombreOriginal, $extension);
             $archivosPreparados[] = [
                 'tmp_name' => $tmp,
                 'nombre' => $nombreArchivo,
@@ -644,7 +706,7 @@ final class ProductosController extends AdminBaseController
     private function procesarImagenesSubidas(int $productoId, array $imagenesPreparadas, ?int $indicePrincipal, bool $mantenerPrincipal): array
     {
         if ($imagenesPreparadas === []) {
-            return ['errores' => []];
+            return ['errores' => [], 'total' => 0]; // FIX: upload imagenes
         }
 
         try {
@@ -655,7 +717,7 @@ final class ProductosController extends AdminBaseController
                 'mensaje' => $exception->getMessage(),
             ]);
 
-            return ['errores' => [$exception->getMessage()]];
+            return ['errores' => [$exception->getMessage()], 'total' => 0]; // FIX: upload imagenes
         }
         $rutasGuardadas = [];
         $errores = [];
@@ -707,7 +769,7 @@ final class ProductosController extends AdminBaseController
                 $this->eliminarArchivoFisico((string) ($ruta['ruta'] ?? ''));
             }
 
-            return ['errores' => $errores];
+            return ['errores' => $errores, 'total' => 0]; // FIX: upload imagenes
         }
 
         $this->registrarDebugUploads('Rutas de imágenes guardadas antes de persistir.', [
@@ -724,7 +786,7 @@ final class ProductosController extends AdminBaseController
             'total' => count($rutasGuardadas),
         ]);
 
-        return ['errores' => []];
+        return ['errores' => [], 'total' => count($rutasGuardadas)]; // FIX: upload imagenes
     }
 
     private function registrarDebugUploads(string $mensaje, array $contexto = []): void
@@ -735,6 +797,66 @@ final class ProductosController extends AdminBaseController
 
         $payload = $contexto === [] ? '' : ' ' . json_encode($contexto, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         error_log('[ProductosController] ' . $mensaje . $payload);
+    }
+
+    private function registrarDiagnosticoUploads(array $contexto): void
+    {
+        if (!$this->registroLocalUploads || $this->rutaLogDiagnostico === null) { // FIX: upload imagenes
+            return;
+        }
+
+        $directorio = dirname($this->rutaLogDiagnostico);
+        if (!is_dir($directorio)) {
+            if (!mkdir($directorio, 0755, true) && !is_dir($directorio)) { // FIX: upload imagenes
+                return;
+            }
+        }
+
+        $entrada = sprintf(
+            "[%s] %s",
+            date('Y-m-d H:i:s'),
+            $contexto === [] ? 'Diagnóstico de subida' : 'Diagnóstico de subida ' . json_encode($contexto, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+        );
+
+        @file_put_contents($this->rutaLogDiagnostico, $entrada . PHP_EOL, FILE_APPEND);
+    }
+
+    private function normalizarArchivosParaDiagnostico($entrada): array
+    {
+        if (!is_array($entrada)) {
+            return [];
+        }
+
+        $componentes = [
+            'name' => $entrada['name'] ?? [],
+            'tmp_name' => $entrada['tmp_name'] ?? [],
+            'error' => $entrada['error'] ?? [],
+            'size' => $entrada['size'] ?? [],
+        ];
+
+        foreach ($componentes as $clave => $valor) {
+            if (!is_array($valor)) {
+                $componentes[$clave] = [$valor];
+            }
+        }
+
+        $nombres = array_values($componentes['name']);
+        $temporales = array_values($componentes['tmp_name']);
+        $errores = array_values($componentes['error']);
+        $tamanos = array_values($componentes['size']);
+        $total = max(count($nombres), count($temporales), count($errores), count($tamanos));
+
+        $resultado = [];
+        for ($i = 0; $i < $total; $i++) {
+            $resultado[] = [
+                'name' => (string) ($nombres[$i] ?? ''),
+                'tmp_name' => (string) ($temporales[$i] ?? ''),
+                'error' => (int) ($errores[$i] ?? UPLOAD_ERR_NO_FILE),
+                'size' => (int) ($tamanos[$i] ?? 0),
+            ];
+        }
+
+        return $resultado;
     }
 
     private function coleccionTienePrincipal(array $imagenes): bool
@@ -753,14 +875,14 @@ final class ProductosController extends AdminBaseController
         $ruta = $this->directorioUploads;
 
         if (!is_dir($ruta)) {
-            if (!mkdir($ruta, 0775, true) && !is_dir($ruta)) {
+            if (!mkdir($ruta, 0755, true) && !is_dir($ruta)) { // FIX: upload imagenes
                 throw new \RuntimeException('No se pudo crear el directorio base de imágenes de productos.');
             }
-            @chmod($ruta, 0775);
+            @chmod($ruta, 0755);
         }
 
         if (!is_writable($ruta)) {
-            @chmod($ruta, 0775);
+            @chmod($ruta, 0755);
         }
 
         if (!is_writable($ruta)) {
@@ -775,14 +897,14 @@ final class ProductosController extends AdminBaseController
         $ruta = $this->directorioTablaTallas;
 
         if (!is_dir($ruta)) {
-            if (!mkdir($ruta, 0775, true) && !is_dir($ruta)) {
+            if (!mkdir($ruta, 0755, true) && !is_dir($ruta)) { // FIX: upload imagenes
                 throw new \RuntimeException('No se pudo crear el directorio para las tablas de tallas.');
             }
-            @chmod($ruta, 0775);
+            @chmod($ruta, 0755);
         }
 
         if (!is_writable($ruta)) {
-            @chmod($ruta, 0775);
+            @chmod($ruta, 0755);
         }
 
         if (!is_writable($ruta)) {
@@ -800,14 +922,14 @@ final class ProductosController extends AdminBaseController
         $ruta = rtrim($base, '/') . '/' . $productoId;
 
         if (!is_dir($ruta)) {
-            if (!mkdir($ruta, 0775, true) && !is_dir($ruta)) {
+            if (!mkdir($ruta, 0755, true) && !is_dir($ruta)) { // FIX: upload imagenes
                 throw new \RuntimeException('No se pudo crear el directorio para las imágenes del producto.');
             }
-            @chmod($ruta, 0775);
+            @chmod($ruta, 0755);
         }
 
         if (!is_writable($ruta)) {
-            @chmod($ruta, 0775);
+            @chmod($ruta, 0755);
         }
 
         if (!is_writable($ruta)) {
