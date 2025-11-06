@@ -72,6 +72,38 @@ class ProductoModel
         return $producto;
     }
 
+    public function obtenerImagenesPorProducto(int $productoId): array
+    {
+        if ($productoId <= 0) {
+            return [];
+        }
+
+        try {
+            $pdo = Database::connect();
+            $stmt = $pdo->prepare(
+                'SELECT id, producto_id, nombre, ruta, es_principal, orden, creado_en '
+                . 'FROM producto_imagenes WHERE producto_id = :producto '
+                . 'ORDER BY COALESCE(orden, 0) ASC, id ASC'
+            );
+            $stmt->execute([':producto' => $productoId]);
+            $imagenes = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+        } catch (\Throwable $exception) {
+            return [];
+        }
+
+        foreach ($imagenes as &$imagen) {
+            $imagen['id'] = (int) ($imagen['id'] ?? 0);
+            $imagen['producto_id'] = (int) ($imagen['producto_id'] ?? 0);
+            $imagen['es_principal'] = (int) ($imagen['es_principal'] ?? 0);
+            $imagen['orden'] = (int) ($imagen['orden'] ?? 0);
+            $imagen['ruta'] = trim((string) ($imagen['ruta'] ?? ''));
+            $imagen['nombre'] = trim((string) ($imagen['nombre'] ?? ''));
+        }
+        unset($imagen);
+
+        return $imagenes;
+    }
+
     public function buscarProductos($term): array
     {
         $pdo = Database::connect();

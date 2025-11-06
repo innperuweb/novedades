@@ -85,6 +85,18 @@ return [
         'auth' => true,
         'methods' => ['POST'],
     ],
+    'productos/subir_imagen/{id}' => [
+        'controller' => 'ProductosController',
+        'method' => 'subirImagen',
+        'auth' => true,
+        'methods' => ['POST'],
+    ],
+    'productos/eliminar_imagen/{id}' => [
+        'controller' => 'ProductosController',
+        'method' => 'eliminarImagen',
+        'auth' => true,
+        'methods' => ['POST'],
+    ],
     'categorias' => [
         'controller' => 'CategoriasController',
         'method' => 'index',
