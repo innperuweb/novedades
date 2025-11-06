@@ -104,6 +104,22 @@ class ProductoModel
         return $imagenes;
     }
 
+    public function obtenerImagenPrincipal($producto_id): ?string
+    {
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT ruta FROM producto_imagenes WHERE producto_id = ? AND es_principal = 1 LIMIT 1');
+        $stmt->execute([$producto_id]);
+        $imagen = $stmt->fetchColumn();
+
+        if (!$imagen) {
+            $stmt = $pdo->prepare('SELECT ruta FROM producto_imagenes WHERE producto_id = ? ORDER BY id ASC LIMIT 1');
+            $stmt->execute([$producto_id]);
+            $imagen = $stmt->fetchColumn();
+        }
+
+        return $imagen ?: 'no-image.jpg';
+    }
+
     public function buscarProductos($term): array
     {
         $pdo = Database::connect();
