@@ -556,8 +556,10 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <?php if (strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/productos/') !== false): ?>
-    <!-- TinyMCE - Editor de texto ligero (versión de código abierto) -->
-    <script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
+
+<!-- TinyMCE - Editor de texto ligero (versión de código abierto) -->
+<script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
+
     <script>
     tinymce.init({
       selector: 'textarea#descripcion',
