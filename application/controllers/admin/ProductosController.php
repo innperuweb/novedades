@@ -15,6 +15,7 @@ final class ProductosController extends AdminBaseController
     private string $directorioUploads;
     private string $directorioImagenes;
     private string $directorioTablaTallas;
+    private bool $debugUploads;
 
     public function __construct()
     {
@@ -23,6 +24,7 @@ final class ProductosController extends AdminBaseController
         $this->directorioUploads = ROOT_PATH . '/public/assets/uploads/productos';
         $this->directorioImagenes = ROOT_PATH . '/public/assets/uploads/productos';
         $this->directorioTablaTallas = ROOT_PATH . '/public/assets/uploads/tabla_tallas';
+        $this->debugUploads = filter_var(getenv('DEBUG_UPLOADS') ?: '0', FILTER_VALIDATE_BOOL);
     }
 
     public function index(): void
@@ -560,7 +562,14 @@ final class ProductosController extends AdminBaseController
 
         $extension = $this->obtenerExtensionDesdeMime($mime, (string) ($archivo['name'] ?? 'tabla-tallas'));
         $nombreArchivo = $this->generarNombreArchivo((string) ($archivo['name'] ?? 'tabla-tallas'), $extension);
-        $destino = $this->asegurarDirectorioTablaTallas() . '/' . $nombreArchivo;
+
+        try {
+            $directorio = $this->asegurarDirectorioTablaTallas();
+        } catch (\RuntimeException $exception) {
+            return ['error' => $exception->getMessage()];
+        }
+
+        $destino = $directorio . '/' . $nombreArchivo;
 
         if (!move_uploaded_file($archivo['tmp_name'], $destino)) {
             return ['error' => 'No se pudo guardar la tabla de tallas en el servidor.'];
@@ -638,7 +647,16 @@ final class ProductosController extends AdminBaseController
             return ['errores' => []];
         }
 
-        $directorio = $this->asegurarDirectorioImagenesProducto($productoId);
+        try {
+            $directorio = $this->asegurarDirectorioImagenesProducto($productoId);
+        } catch (\RuntimeException $exception) {
+            $this->registrarDebugUploads('Directorio no disponible para subir imágenes.', [
+                'producto' => $productoId,
+                'mensaje' => $exception->getMessage(),
+            ]);
+
+            return ['errores' => [$exception->getMessage()]];
+        }
         $rutasGuardadas = [];
         $errores = [];
 
@@ -653,8 +671,29 @@ final class ProductosController extends AdminBaseController
 
             $destino = $directorio . '/' . $nombre;
 
-            if (!move_uploaded_file($tmp, $destino)) {
-                $errores[] = 'No se pudo guardar una de las imágenes en el servidor.';
+            $this->registrarDebugUploads('Intentando mover imagen subida.', [
+                'tmp' => $tmp,
+                'destino' => $destino,
+            ]);
+
+            $resultadoMovimiento = @move_uploaded_file($tmp, $destino);
+
+            $this->registrarDebugUploads('Resultado de move_uploaded_file.', [
+                'tmp' => $tmp,
+                'destino' => $destino,
+                'exito' => $resultadoMovimiento,
+                'existe_tmp' => is_file($tmp),
+                'directorio_existe' => is_dir(dirname($destino)),
+                'directorio_writable' => is_writable(dirname($destino)),
+            ]);
+
+            if (!$resultadoMovimiento) {
+                $ultimoError = error_get_last();
+                $mensajeError = 'No se pudo guardar una de las imágenes en el servidor.';
+                if ($ultimoError !== null) {
+                    $mensajeError .= ' Detalle: ' . ($ultimoError['message'] ?? 'desconocido');
+                }
+                $errores[] = $mensajeError;
                 break;
             }
 
@@ -671,9 +710,31 @@ final class ProductosController extends AdminBaseController
             return ['errores' => $errores];
         }
 
+        $this->registrarDebugUploads('Rutas de imágenes guardadas antes de persistir.', [
+            'producto' => $productoId,
+            'imagenes' => $rutasGuardadas,
+            'indicePrincipal' => $indicePrincipal,
+            'mantenerPrincipal' => $mantenerPrincipal,
+        ]);
+
         $this->productoModel->guardarImagenes($productoId, $rutasGuardadas, $indicePrincipal, $mantenerPrincipal);
 
+        $this->registrarDebugUploads('Persistencia de imágenes completada.', [
+            'producto' => $productoId,
+            'total' => count($rutasGuardadas),
+        ]);
+
         return ['errores' => []];
+    }
+
+    private function registrarDebugUploads(string $mensaje, array $contexto = []): void
+    {
+        if (!$this->debugUploads) {
+            return;
+        }
+
+        $payload = $contexto === [] ? '' : ' ' . json_encode($contexto, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        error_log('[ProductosController] ' . $mensaje . $payload);
     }
 
     private function coleccionTienePrincipal(array $imagenes): bool
@@ -689,33 +750,68 @@ final class ProductosController extends AdminBaseController
 
     private function asegurarDirectorioUploads(): string
     {
-        if (!is_dir($this->directorioUploads)) {
-            mkdir($this->directorioUploads, 0755, true);
+        $ruta = $this->directorioUploads;
+
+        if (!is_dir($ruta)) {
+            if (!mkdir($ruta, 0775, true) && !is_dir($ruta)) {
+                throw new \RuntimeException('No se pudo crear el directorio base de imágenes de productos.');
+            }
+            @chmod($ruta, 0775);
         }
 
-        return $this->directorioUploads;
+        if (!is_writable($ruta)) {
+            @chmod($ruta, 0775);
+        }
+
+        if (!is_writable($ruta)) {
+            throw new \RuntimeException('El directorio base de imágenes de productos no es escribible.');
+        }
+
+        return $ruta;
     }
 
     private function asegurarDirectorioTablaTallas(): string
     {
-        if (!is_dir($this->directorioTablaTallas)) {
-            mkdir($this->directorioTablaTallas, 0755, true);
+        $ruta = $this->directorioTablaTallas;
+
+        if (!is_dir($ruta)) {
+            if (!mkdir($ruta, 0775, true) && !is_dir($ruta)) {
+                throw new \RuntimeException('No se pudo crear el directorio para las tablas de tallas.');
+            }
+            @chmod($ruta, 0775);
         }
 
-        return $this->directorioTablaTallas;
+        if (!is_writable($ruta)) {
+            @chmod($ruta, 0775);
+        }
+
+        if (!is_writable($ruta)) {
+            throw new \RuntimeException('El directorio de tablas de tallas no es escribible.');
+        }
+
+        return $ruta;
     }
 
     private function asegurarDirectorioImagenesProducto(int $productoId): string
     {
-        if (!is_dir($this->directorioImagenes)) {
-            mkdir($this->directorioImagenes, 0755, true);
-        }
+        $base = $this->asegurarDirectorioUploads();
 
         $productoId = max(1, $productoId);
-        $ruta = rtrim($this->directorioImagenes, '/') . '/' . $productoId;
+        $ruta = rtrim($base, '/') . '/' . $productoId;
 
         if (!is_dir($ruta)) {
-            mkdir($ruta, 0755, true);
+            if (!mkdir($ruta, 0775, true) && !is_dir($ruta)) {
+                throw new \RuntimeException('No se pudo crear el directorio para las imágenes del producto.');
+            }
+            @chmod($ruta, 0775);
+        }
+
+        if (!is_writable($ruta)) {
+            @chmod($ruta, 0775);
+        }
+
+        if (!is_writable($ruta)) {
+            throw new \RuntimeException('El directorio para las imágenes del producto no es escribible.');
         }
 
         return $ruta;
