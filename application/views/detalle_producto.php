@@ -358,36 +358,6 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchi
                             <p><strong>SKU:</strong> <?= e($producto['sku']) ?></p>
                         <?php endif; ?>
 
-                        <?php if (!empty($producto['color'])): ?>
-                            <p><strong>Color:</strong> <?= e($producto['color']) ?></p>
-                        <?php endif; ?>
-
-                        <?php if (!empty($producto['talla'])): ?>
-                            <p><strong>Talla:</strong> <?= e($producto['talla']) ?></p>
-                        <?php endif; ?>
-
-                        <?php if (!empty($coloresDisponibles)): ?>
-                            <div class="product-color">
-                                <h6>Colores:</h6>
-                                <ul class="color-options">
-                                    <?php foreach ($coloresDisponibles as $color): ?>
-                                        <li><?= e($color) ?></li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            </div>
-                        <?php endif; ?>
-
-                        <?php if (!empty($tallasDisponibles)): ?>
-                            <div class="product-size">
-                                <h6>Tallas:</h6>
-                                <ul class="size-options">
-                                    <?php foreach ($tallasDisponibles as $talla): ?>
-                                        <li><?= e($talla) ?></li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            </div>
-                        <?php endif; ?>
-
                         <div class="stock-row">
                             <?php if ($stockCantidad > 0): ?>
                                 <span class="stock disponible">Con Stock</span>
