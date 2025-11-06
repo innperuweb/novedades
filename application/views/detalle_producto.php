@@ -663,7 +663,7 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRutaTablaTallas($tabla
                     </div>
                 </div>
             </div>
-            -------->
+            -------->        
 
             <div class="row pt--35 pt-md--25 pt-sm--15 pb--75 pb-md--55 pb-sm--35">
                 <div class="col-12">
@@ -675,58 +675,71 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRutaTablaTallas($tabla
                     </div>
                     <div class="row">
                         <div class="col-12">
-                            <div class="airi-element-carousel product-carousel nav-vertical-center" data-slick-options='{
+                            <div class="airi-element-carousel product-carousel nav-vertical-center"
+                                data-slick-options='{
                                     "spaceBetween": 30,
-                                    "slidesToShow": 5,
+                                    "slidesToShow": 4,
                                     "slidesToScroll": 1,
-                                    "arrows": true,
-                                    "prevArrow": "dl-icon-left",
-                                    "nextArrow": "dl-icon-right"
+                                    "arrows": true, 
+                                    "prevArrow": "dl-icon-left", 
+                                    "nextArrow": "dl-icon-right" 
                                     }' data-slick-responsive='[
                                         {"breakpoint":1200, "settings": {"slidesToShow": 3} },
                                         {"breakpoint":991, "settings": {"slidesToShow": 2} },
                                         {"breakpoint":450, "settings": {"slidesToShow": 1} }
                                     ]'>
-                                <?php if (empty($productosRelacionados)): ?>
+
+                                    <?php if (empty($productosRelacionados)): ?>
                                     <p class="text-center w-100">No hay productos relacionados disponibles.</p>
                                 <?php else: ?>
                                     <?php foreach ($productosRelacionados as $rel): ?>
                                         <?php $relId = (string) ($rel['id'] ?? ''); ?>
-                                        <div class="product-card">
-                                            <div class="product-img">
+
+                                <div class="airi-product">
+                                    <div class="product-inner">
+                                        <figure class="product-image">
+                                            <div class="product-image--holder">
                                                 <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>">
                                                     <img src="<?= asset_url('img/products/' . e($rel['imagen'] ?? 'producto1.jpg')) ?>"
                                                         alt="<?= e($rel['nombre'] ?? 'Producto relacionado') ?>">
                                                 </a>
                                             </div>
-
-                                            <div class="product-content">
-                                                <h4 class="product-name">
-                                                    <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>">
-                                                        <?= e($rel['nombre'] ?? 'Producto relacionado') ?>
-                                                    </a>
-                                                </h4>
-                                                <span class="price">S/ <?= number_format((float) ($rel['precio'] ?? 0), 2) ?></span>
-
-                                                <div class="product-actions">
+                                            <div class="airi-product-action">
+                                                <div class="product-action">
                                                     <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>"
-                                                        class="action-icon view">
+                                                        class="quickview-btn action-btn" data-bs-toggle="tooltip"
+                                                        data-bs-placement="left" title="Ver Producto">
                                                         <i class="dl-icon-view"></i>
                                                     </a>
-                                                    <a href="<?= base_url('carrito/agregar?id=' . urlencode($relId)) ?>"
-                                                        class="action-icon add-cart">
-                                                        <i class="dl-icon-cart29"></i>
-                                                    </a>
                                                 </div>
-                                            </div>
+                                        </figure>
+                                        <div class="product-info text-center">
+                                            <h3 class="product-title">
+                                                <a href="<?= base_url('detalle_producto.php?id=' . urlencode($relId)) ?>">
+                                                    <?= e($rel['nombre'] ?? 'Producto relacionado') ?>
+                                                </a>
+                                            </h3>
+                                            <span class="product-price-wrapper">
+                                                <span class="money">S/ <?= number_format((float) ($rel['precio'] ?? 0), 2) ?></span>
+                                            </span>
                                         </div>
-                                    <?php endforeach; ?>
+                                    </div>
+                                </div>
+
+                                <?php endforeach; ?>
                                 <?php endif; ?>
+
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+
+
+
+
+
 
         </div>
 
