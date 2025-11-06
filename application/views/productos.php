@@ -72,6 +72,9 @@ $normalizarImagen = static function (?string $ruta) {
     }
 
     $rutaLimpia = ltrim($ruta, '/');
+    if (strpos($rutaLimpia, 'public/uploads/productos/') === 0) {
+        return base_url($rutaLimpia);
+    }
     if (strpos($rutaLimpia, 'uploads/productos/') === 0) {
         $rutaLimpia = substr($rutaLimpia, strlen('uploads/productos/')) ?: '';
     }

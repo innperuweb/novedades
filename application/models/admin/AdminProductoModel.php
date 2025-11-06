@@ -284,6 +284,7 @@ final class AdminProductoModel extends ProductoModel
         $pdo = Database::connect();
         $tienePrincipal = $this->columnaExisteEnTabla($tabla, 'es_principal');
         $tieneOrden = $this->columnaExisteEnTabla($tabla, 'orden');
+        $tieneNombre = $this->columnaExisteEnTabla($tabla, 'nombre');
 
         $indicePrincipal = $indicePrincipal !== null ? max(0, $indicePrincipal) : null;
         $tienePrincipalActual = $tienePrincipal ? $this->tienePrincipalAsignado($productoId, $tabla) : false;
@@ -311,6 +312,9 @@ final class AdminProductoModel extends ProductoModel
         $ordenActual = $tieneOrden ? $this->obtenerSiguienteOrden($productoId, $tabla) : 0;
 
         $campos = ['producto_id = :producto_id', 'ruta = :ruta'];
+        if ($tieneNombre) {
+            $campos[] = 'nombre = :nombre';
+        }
         if ($tienePrincipal) {
             $campos[] = 'es_principal = :es_principal';
         }
@@ -331,6 +335,17 @@ final class AdminProductoModel extends ProductoModel
                 ':producto_id' => $productoId,
                 ':ruta' => $ruta,
             ];
+
+            if ($tieneNombre) {
+                $nombre = '';
+                if (is_array($datosImagen)) {
+                    $nombre = (string) ($datosImagen['nombre'] ?? '');
+                }
+                if ($nombre === '') {
+                    $nombre = basename($ruta);
+                }
+                $parametros[':nombre'] = $nombre;
+            }
 
             if ($tienePrincipal) {
                 $esPrincipal = 0;
@@ -354,6 +369,7 @@ final class AdminProductoModel extends ProductoModel
                 error_log('[AdminProductoModel] Imagen registrada en base de datos. ' . json_encode([
                     'producto_id' => $productoId,
                     'ruta' => $ruta,
+                    'nombre' => $parametros[':nombre'] ?? null,
                     'es_principal' => $parametros[':es_principal'] ?? null,
                     'orden' => $parametros[':orden'] ?? null,
                 ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
@@ -404,8 +420,12 @@ final class AdminProductoModel extends ProductoModel
         $pdo = Database::connect();
         $tienePrincipal = $this->columnaExisteEnTabla($tabla, 'es_principal');
         $tieneOrden = $this->columnaExisteEnTabla($tabla, 'orden');
+        $tieneNombre = $this->columnaExisteEnTabla($tabla, 'nombre');
 
         $columnas = 'id, ruta';
+        if ($tieneNombre) {
+            $columnas .= ', nombre';
+        }
         if ($tienePrincipal) {
             $columnas .= ', es_principal';
         }
@@ -428,10 +448,11 @@ final class AdminProductoModel extends ProductoModel
 
         $imagenes = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
-        return array_map(static function ($item) use ($tienePrincipal, $tieneOrden): array {
+        return array_map(static function ($item) use ($tienePrincipal, $tieneOrden, $tieneNombre): array {
             return [
                 'id' => (int) ($item['id'] ?? 0),
                 'ruta' => trim((string) ($item['ruta'] ?? '')),
+                'nombre' => $tieneNombre ? trim((string) ($item['nombre'] ?? '')) : '',
                 'es_principal' => $tienePrincipal ? (int) ($item['es_principal'] ?? 0) : 0,
                 'orden' => $tieneOrden ? (int) ($item['orden'] ?? 0) : 0,
             ];
@@ -472,14 +493,14 @@ final class AdminProductoModel extends ProductoModel
             return $this->tablaImagenes;
         }
 
-        if ($this->tablaExiste('productos_imagenes')) {
-            $this->tablaImagenes = 'productos_imagenes';
+        if ($this->tablaExiste('producto_imagenes')) {
+            $this->tablaImagenes = 'producto_imagenes';
 
             return $this->tablaImagenes;
         }
 
-        if ($this->tablaExiste('producto_imagenes')) {
-            $this->tablaImagenes = 'producto_imagenes';
+        if ($this->tablaExiste('productos_imagenes')) {
+            $this->tablaImagenes = 'productos_imagenes';
 
             return $this->tablaImagenes;
         }
@@ -706,6 +727,9 @@ final class AdminProductoModel extends ProductoModel
 
         $pdo = Database::connect();
         $columnas = 'id, producto_id, ruta';
+        if ($this->columnaExisteEnTabla($tabla, 'nombre')) {
+            $columnas .= ', nombre';
+        }
         if ($this->columnaExisteEnTabla($tabla, 'es_principal')) {
             $columnas .= ', es_principal';
         }

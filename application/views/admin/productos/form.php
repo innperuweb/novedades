@@ -177,7 +177,11 @@
                                             continue;
                                         }
                                         $limpia = ltrim($ruta, '/');
-                                        if (strpos($limpia, 'uploads/products/') === 0 || strpos($limpia, 'uploads/productos/') === 0) {
+                                        if (strpos($ruta, '/public/uploads/productos/') === 0 || strpos($limpia, 'public/uploads/productos/') === 0) {
+                                            $rutaPublica = base_url(ltrim($ruta, '/'));
+                                        } elseif (strpos($limpia, 'uploads/products/') === 0) {
+                                            $rutaPublica = asset_url($limpia);
+                                        } elseif (strpos($limpia, 'uploads/productos/') === 0) {
                                             $rutaPublica = asset_url($limpia);
                                         } elseif (strpos($limpia, 'products/') === 0 || strpos($limpia, 'productos/') === 0) {
                                             $rutaPublica = asset_url('uploads/' . $limpia);

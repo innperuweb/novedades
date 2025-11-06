@@ -257,7 +257,12 @@ class ProductoModel
             $tienePrincipal = $this->columnaExisteEnTabla($tablaImagenes, 'es_principal');
             $tieneOrden = $this->columnaExisteEnTabla($tablaImagenes, 'orden');
 
-            $columnas = 'ruta';
+            $tieneNombre = $this->columnaExisteEnTabla($tablaImagenes, 'nombre');
+
+            $columnas = 'id, ruta';
+            if ($tieneNombre) {
+                $columnas .= ', nombre';
+            }
             if ($tienePrincipal) {
                 $columnas .= ', es_principal';
             }
@@ -280,9 +285,11 @@ class ProductoModel
 
             $imagenes = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
-            return array_map(static function ($item) use ($tienePrincipal, $tieneOrden): array {
+            return array_map(static function ($item) use ($tienePrincipal, $tieneOrden, $tieneNombre): array {
                 return [
+                    'id' => (int) ($item['id'] ?? 0),
                     'ruta' => trim((string) ($item['ruta'] ?? '')),
+                    'nombre' => $tieneNombre ? trim((string) ($item['nombre'] ?? '')) : '',
                     'es_principal' => $tienePrincipal ? (int) ($item['es_principal'] ?? 0) : 0,
                     'orden' => $tieneOrden ? (int) ($item['orden'] ?? 0) : 0,
                 ];
@@ -393,14 +400,14 @@ class ProductoModel
             return $this->tablaImagenes;
         }
 
-        if ($this->tablaExiste('productos_imagenes')) {
-            $this->tablaImagenes = 'productos_imagenes';
+        if ($this->tablaExiste('producto_imagenes')) {
+            $this->tablaImagenes = 'producto_imagenes';
 
             return $this->tablaImagenes;
         }
 
-        if ($this->tablaExiste('producto_imagenes')) {
-            $this->tablaImagenes = 'producto_imagenes';
+        if ($this->tablaExiste('productos_imagenes')) {
+            $this->tablaImagenes = 'productos_imagenes';
 
             return $this->tablaImagenes;
         }
