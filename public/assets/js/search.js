@@ -34,15 +34,50 @@ document.addEventListener('DOMContentLoaded', () => {
                         resultados.innerHTML = '';
 
                         if (Array.isArray(data) && data.length > 0) {
+                            const buildImageUrl = (ruta) => {
+                                if (!ruta) {
+                                    return `${baseUrl}public/assets/img/products/m02-mockup.png`;
+                                }
+
+                                let normalizada = String(ruta).trim();
+                                if (normalizada === '') {
+                                    return `${baseUrl}public/assets/img/products/m02-mockup.png`;
+                                }
+
+                                if (/^https?:\/\//i.test(normalizada)) {
+                                    return normalizada;
+                                }
+
+                                normalizada = normalizada.replace(/^\/+/, '');
+
+                                if (normalizada.startsWith('public/assets/')) {
+                                    return `${baseUrl}${normalizada}`;
+                                }
+
+                                if (normalizada.startsWith('assets/')) {
+                                    return `${baseUrl}${normalizada}`;
+                                }
+
+                                if (normalizada.startsWith('uploads/')) {
+                                    return `${baseUrl}public/assets/${normalizada}`;
+                                }
+
+                                if (normalizada.startsWith('productos/') || normalizada.startsWith('products/')) {
+                                    return `${baseUrl}public/assets/uploads/${normalizada}`;
+                                }
+
+                                return `${baseUrl}public/assets/img/products/${encodeURIComponent(normalizada)}`;
+                            };
+
                             data.forEach((p) => {
                                 const precio = parseFloat(p.precio || 0).toFixed(2);
                                 const nombre = escapeHtml(p.nombre || '');
-                                const imagen = encodeURIComponent(p.imagen || '');
+                                const imagenUrl = buildImageUrl(p.imagen || '');
                                 const enlace = `${baseUrl}producto/detalle/${encodeURIComponent(p.id)}`;
 
                                 resultados.innerHTML += `
                   <div class="producto">
-                    <img src="${baseUrl}public/assets/img/productos/${imagen}" alt="${nombre}">
+                    <img src="${escapeHtml(imagenUrl)}" alt="${nombre}">
                     <h4>${nombre}</h4>
                     <p>S/ ${precio}</p>
                     <a href="${enlace}" class="btn-ver">Ver detalle</a>
