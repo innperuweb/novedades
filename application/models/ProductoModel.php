@@ -438,8 +438,8 @@ class ProductoModel
             $sql = 'CREATE TABLE IF NOT EXISTS ' . $tabla . ' ('
                 . 'id INT AUTO_INCREMENT PRIMARY KEY,'
                 . ' producto_id INT NOT NULL,'
-                . ' nombre VARCHAR(255) NOT NULL,'
-                . ' ruta VARCHAR(255) NOT NULL,'
+                . " nombre VARCHAR(255) NOT NULL DEFAULT '',"
+                . " ruta VARCHAR(255) NOT NULL DEFAULT '',"
                 . ' es_principal TINYINT(1) NOT NULL DEFAULT 0,'
                 . ' orden INT NOT NULL DEFAULT 0,'
                 . ' creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,'
@@ -456,15 +456,37 @@ class ProductoModel
     {
         try {
             $pdo = Database::connect();
+            $driver = strtolower((string) $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME));
 
-            $alteraciones = [
-                "ALTER TABLE $tabla ADD COLUMN nombre VARCHAR(255) NOT NULL AFTER producto_id",
-                "ALTER TABLE $tabla ADD COLUMN ruta VARCHAR(255) NOT NULL AFTER producto_id",
-                "ALTER TABLE $tabla ADD COLUMN es_principal TINYINT(1) NOT NULL DEFAULT 0 AFTER ruta",
-                "ALTER TABLE $tabla ADD COLUMN orden INT NOT NULL DEFAULT 0 AFTER es_principal",
+            $columnas = [
+                'nombre' => [
+                    'sql' => "ALTER TABLE $tabla ADD COLUMN nombre VARCHAR(255) NOT NULL DEFAULT ''",
+                    'sqlite' => "ALTER TABLE $tabla ADD COLUMN nombre TEXT NOT NULL DEFAULT ''",
+                ],
+                'ruta' => [
+                    'sql' => "ALTER TABLE $tabla ADD COLUMN ruta VARCHAR(255) NOT NULL DEFAULT ''",
+                    'sqlite' => "ALTER TABLE $tabla ADD COLUMN ruta TEXT NOT NULL DEFAULT ''",
+                ],
+                'es_principal' => [
+                    'sql' => "ALTER TABLE $tabla ADD COLUMN es_principal TINYINT(1) NOT NULL DEFAULT 0",
+                    'sqlite' => "ALTER TABLE $tabla ADD COLUMN es_principal INTEGER NOT NULL DEFAULT 0",
+                ],
+                'orden' => [
+                    'sql' => "ALTER TABLE $tabla ADD COLUMN orden INT NOT NULL DEFAULT 0",
+                    'sqlite' => "ALTER TABLE $tabla ADD COLUMN orden INTEGER NOT NULL DEFAULT 0",
+                ],
             ];
 
-            foreach ($alteraciones as $sql) {
+            foreach ($columnas as $columna => $sentencias) {
+                if ($this->columnaExisteEnTabla($tabla, $columna)) {
+                    continue;
+                }
+
+                $sql = $sentencias['sql'];
+                if ($driver === 'sqlite' && isset($sentencias['sqlite'])) {
+                    $sql = $sentencias['sqlite'];
+                }
+
                 try {
                     $pdo->exec($sql);
                 } catch (\Throwable $ignored) {
@@ -475,7 +497,7 @@ class ProductoModel
             try {
                 $pdo->exec('ALTER TABLE ' . $tabla . ' ADD INDEX idx_' . $tabla . '_producto (producto_id)');
             } catch (\Throwable $ignored) {
-                // índice ya existe
+                // índice ya existe o base de datos no soporta la instrucción
             }
         } catch (\Throwable $exception) {
             // Ignorar
