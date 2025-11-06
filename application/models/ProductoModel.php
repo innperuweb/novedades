@@ -6,6 +6,7 @@
 
 class ProductoModel
 {
+    protected const TABLA_IMAGENES = 'producto_imagenes';
     protected ?string $tablaImagenes = null;
 
     public function getAll(): array
@@ -15,21 +16,12 @@ class ProductoModel
         $selectImagen = '';
 
         if ($tablaImagenes !== null) {
-            $ordenPartes = [];
-            if ($this->columnaExisteEnTabla($tablaImagenes, 'es_principal')) {
-                $ordenPartes[] = 'pi.es_principal DESC';
-            }
-            if ($this->columnaExisteEnTabla($tablaImagenes, 'orden')) {
-                $ordenPartes[] = 'pi.orden ASC';
-            }
-            $ordenPartes[] = 'pi.id ASC';
-            $ordenSql = implode(', ', $ordenPartes);
-
+            $ordenSql = $this->construirOrdenImagenes();
             $selectImagen = ', (SELECT pi.ruta FROM ' . $tablaImagenes . ' pi WHERE pi.producto_id = p.id ORDER BY ' . $ordenSql . ' LIMIT 1) AS imagen_principal';
         }
 
-        $sql = 'SELECT p.*' . $selectImagen . ' FROM productos p '
-            . 'WHERE p.visible = 1 AND p.estado = 1 AND p.stock >= 0 ORDER BY p.id DESC';
+        $sql = 'SELECT p.*' . $selectImagen . ' FROM productos p ' .
+            'WHERE p.visible = 1 AND p.estado = 1 AND p.stock >= 0 ORDER BY p.id DESC';
 
         $stmt = $pdo->query($sql);
 
@@ -38,6 +30,8 @@ class ProductoModel
         foreach ($productos as &$producto) {
             $producto['colores'] = $this->limpiarOpciones($this->decodificarLista($producto['colores'] ?? null));
             $producto['tallas'] = $this->limpiarOpciones($this->decodificarLista($producto['tallas'] ?? null));
+            $producto['subcategorias'] = [];
+            $producto['subcategorias_nombres'] = [];
             $producto['stock'] = (int) ($producto['stock'] ?? 0);
             if (array_key_exists('tabla_tallas', $producto)) {
                 $producto['tabla_tallas'] = trim((string) ($producto['tabla_tallas'] ?? ''));
@@ -103,16 +97,7 @@ class ProductoModel
         $selectImagen = '';
 
         if ($tablaImagenes !== null) {
-            $ordenPartes = [];
-            if ($this->columnaExisteEnTabla($tablaImagenes, 'es_principal')) {
-                $ordenPartes[] = 'pi.es_principal DESC';
-            }
-            if ($this->columnaExisteEnTabla($tablaImagenes, 'orden')) {
-                $ordenPartes[] = 'pi.orden ASC';
-            }
-            $ordenPartes[] = 'pi.id ASC';
-            $ordenSql = implode(', ', $ordenPartes);
-
+            $ordenSql = $this->construirOrdenImagenes();
             $selectImagen = ', (SELECT pi.ruta FROM ' . $tablaImagenes . ' pi WHERE pi.producto_id = p.id ORDER BY ' . $ordenSql . ' LIMIT 1) AS imagen_principal';
         }
 
@@ -146,16 +131,7 @@ class ProductoModel
             $selectImagen = '';
 
             if ($tablaImagenes !== null) {
-                $ordenPartes = [];
-                if ($this->columnaExisteEnTabla($tablaImagenes, 'es_principal')) {
-                    $ordenPartes[] = 'pi.es_principal DESC';
-                }
-                if ($this->columnaExisteEnTabla($tablaImagenes, 'orden')) {
-                    $ordenPartes[] = 'pi.orden ASC';
-                }
-                $ordenPartes[] = 'pi.id ASC';
-                $ordenSql = implode(', ', $ordenPartes);
-
+                $ordenSql = $this->construirOrdenImagenes();
                 $selectImagen = ', (SELECT pi.ruta FROM ' . $tablaImagenes . ' pi WHERE pi.producto_id = p.id ORDER BY ' . $ordenSql . ' LIMIT 1) AS imagen_principal';
             }
 
@@ -254,44 +230,19 @@ class ProductoModel
                 return [];
             }
 
-            $tienePrincipal = $this->columnaExisteEnTabla($tablaImagenes, 'es_principal');
-            $tieneOrden = $this->columnaExisteEnTabla($tablaImagenes, 'orden');
-
-            $tieneNombre = $this->columnaExisteEnTabla($tablaImagenes, 'nombre');
-
-            $columnas = 'id, ruta';
-            if ($tieneNombre) {
-                $columnas .= ', nombre';
-            }
-            if ($tienePrincipal) {
-                $columnas .= ', es_principal';
-            }
-            if ($tieneOrden) {
-                $columnas .= ', orden';
-            }
-
-            $ordenPartes = [];
-            if ($tienePrincipal) {
-                $ordenPartes[] = 'es_principal DESC';
-            }
-            if ($tieneOrden) {
-                $ordenPartes[] = 'orden ASC';
-            }
-            $ordenPartes[] = 'id ASC';
-            $ordenSql = implode(', ', $ordenPartes);
-
-            $stmt = $pdo->prepare('SELECT ' . $columnas . ' FROM ' . $tablaImagenes . ' WHERE producto_id = :id ORDER BY ' . $ordenSql);
+            $ordenSql = $this->construirOrdenImagenes('');
+            $stmt = $pdo->prepare('SELECT id, ruta, nombre, es_principal, orden FROM ' . $tablaImagenes . ' WHERE producto_id = :id ORDER BY ' . $ordenSql);
             $stmt->execute([':id' => $productoId]);
 
             $imagenes = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
-            return array_map(static function ($item) use ($tienePrincipal, $tieneOrden, $tieneNombre): array {
+            return array_map(static function (array $item): array {
                 return [
                     'id' => (int) ($item['id'] ?? 0),
                     'ruta' => trim((string) ($item['ruta'] ?? '')),
-                    'nombre' => $tieneNombre ? trim((string) ($item['nombre'] ?? '')) : '',
-                    'es_principal' => $tienePrincipal ? (int) ($item['es_principal'] ?? 0) : 0,
-                    'orden' => $tieneOrden ? (int) ($item['orden'] ?? 0) : 0,
+                    'nombre' => trim((string) ($item['nombre'] ?? '')),
+                    'es_principal' => (int) ($item['es_principal'] ?? 0),
+                    'orden' => (int) ($item['orden'] ?? 0),
                 ];
             }, $imagenes);
         } catch (\Throwable $exception) {
@@ -394,27 +345,95 @@ class ProductoModel
         return $cache[$clave];
     }
 
+    protected function construirOrdenImagenes(string $alias = 'pi'): string
+    {
+        $alias = trim($alias);
+        if ($alias !== '') {
+            $alias = rtrim($alias, '.') . '.';
+        }
+
+        return $alias . 'es_principal DESC, ' . $alias . 'orden ASC, ' . $alias . 'id ASC';
+    }
+
     protected function obtenerTablaImagenes(): ?string
     {
-        if ($this->tablaImagenes !== null) {
-            return $this->tablaImagenes;
+        $this->asegurarTablaImagenes();
+
+        return $this->tablaImagenes;
+    }
+
+    protected function asegurarTablaImagenes(): void
+    {
+        if ($this->tablaImagenes === static::TABLA_IMAGENES && $this->tablaExiste(static::TABLA_IMAGENES)) {
+            return;
         }
 
-        if ($this->tablaExiste('producto_imagenes')) {
-            $this->tablaImagenes = 'producto_imagenes';
-
-            return $this->tablaImagenes;
+        if (!$this->tablaExiste(static::TABLA_IMAGENES)) {
+            $this->crearTablaImagenes();
         }
 
-        if ($this->tablaExiste('productos_imagenes')) {
-            $this->tablaImagenes = 'productos_imagenes';
+        if ($this->tablaExiste(static::TABLA_IMAGENES)) {
+            $this->tablaImagenes = static::TABLA_IMAGENES;
+            $this->asegurarColumnasTablaImagenes();
 
-            return $this->tablaImagenes;
+            return;
         }
 
         $this->tablaImagenes = null;
+    }
 
-        return null;
+    protected function crearTablaImagenes(): void
+    {
+        try {
+            $pdo = Database::connect();
+            $nombreTabla = static::TABLA_IMAGENES;
+            $sql = 'CREATE TABLE IF NOT EXISTS ' . $nombreTabla . ' ('
+                . 'id INT AUTO_INCREMENT PRIMARY KEY,'
+                . ' producto_id INT NOT NULL,'
+                . ' nombre VARCHAR(255) NOT NULL,'
+                . ' ruta VARCHAR(255) NOT NULL,'
+                . ' es_principal TINYINT(1) NOT NULL DEFAULT 0,'
+                . ' orden INT NOT NULL DEFAULT 0,'
+                . ' creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,'
+                . ' CONSTRAINT fk_' . $nombreTabla . '_producto FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,'
+                . ' INDEX idx_' . $nombreTabla . '_producto (producto_id)'
+                . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
+            $pdo->exec($sql);
+        } catch (\Throwable $exception) {
+            // Ignorar errores de creación
+        }
+    }
+
+    protected function asegurarColumnasTablaImagenes(): void
+    {
+        $tabla = static::TABLA_IMAGENES;
+
+        try {
+            $pdo = Database::connect();
+
+            $columnas = [
+                'nombre' => "ALTER TABLE $tabla ADD COLUMN nombre VARCHAR(255) NOT NULL AFTER producto_id",
+                'ruta' => "ALTER TABLE $tabla ADD COLUMN ruta VARCHAR(255) NOT NULL AFTER nombre",
+                'es_principal' => "ALTER TABLE $tabla ADD COLUMN es_principal TINYINT(1) NOT NULL DEFAULT 0 AFTER ruta",
+                'orden' => "ALTER TABLE $tabla ADD COLUMN orden INT NOT NULL DEFAULT 0 AFTER es_principal",
+            ];
+
+            foreach ($columnas as $sql) {
+                try {
+                    $pdo->exec($sql);
+                } catch (\Throwable $ignored) {
+                    // Ignorar errores por columnas existentes o incompatibles
+                }
+            }
+
+            try {
+                $pdo->exec('ALTER TABLE ' . $tabla . ' ADD INDEX idx_' . $tabla . '_producto (producto_id)');
+            } catch (\Throwable $ignored) {
+                // índice ya existe
+            }
+        } catch (\Throwable $exception) {
+            // Ignorar
+        }
     }
 
     protected function tablaExiste(string $tabla): bool
@@ -494,16 +513,7 @@ class ProductoModel
             $selectImagen = '';
 
             if ($tablaImagenes !== null) {
-                $ordenPartes = [];
-                if ($model->columnaExisteEnTabla($tablaImagenes, 'es_principal')) {
-                    $ordenPartes[] = 'pi.es_principal DESC';
-                }
-                if ($model->columnaExisteEnTabla($tablaImagenes, 'orden')) {
-                    $ordenPartes[] = 'pi.orden ASC';
-                }
-                $ordenPartes[] = 'pi.id ASC';
-                $ordenSql = implode(', ', $ordenPartes);
-
+                $ordenSql = $model->construirOrdenImagenes();
                 $selectImagen = ', (SELECT pi.ruta FROM ' . $tablaImagenes . ' pi WHERE pi.producto_id = p.id ORDER BY ' . $ordenSql . ' LIMIT 1) AS imagen_principal';
             }
 
@@ -553,16 +563,7 @@ class ProductoModel
             $selectImagen = '';
 
             if ($tablaImagenes !== null) {
-                $ordenPartes = [];
-                if ($model->columnaExisteEnTabla($tablaImagenes, 'es_principal')) {
-                    $ordenPartes[] = 'pi.es_principal DESC';
-                }
-                if ($model->columnaExisteEnTabla($tablaImagenes, 'orden')) {
-                    $ordenPartes[] = 'pi.orden ASC';
-                }
-                $ordenPartes[] = 'pi.id ASC';
-                $ordenSqlImagen = implode(', ', $ordenPartes);
-
+                $ordenSqlImagen = $model->construirOrdenImagenes();
                 $selectImagen = ', (SELECT pi.ruta FROM ' . $tablaImagenes . ' pi WHERE pi.producto_id = p.id ORDER BY ' . $ordenSqlImagen . ' LIMIT 1) AS imagen_principal';
             }
 
@@ -607,16 +608,7 @@ class ProductoModel
             $selectImagen = '';
 
             if ($tablaImagenes !== null) {
-                $ordenPartes = [];
-                if ($model->columnaExisteEnTabla($tablaImagenes, 'es_principal')) {
-                    $ordenPartes[] = 'pi.es_principal DESC';
-                }
-                if ($model->columnaExisteEnTabla($tablaImagenes, 'orden')) {
-                    $ordenPartes[] = 'pi.orden ASC';
-                }
-                $ordenPartes[] = 'pi.id ASC';
-                $ordenSql = implode(', ', $ordenPartes);
-
+                $ordenSql = $model->construirOrdenImagenes();
                 $selectImagen = ', (SELECT pi.ruta FROM ' . $tablaImagenes . ' pi WHERE pi.producto_id = p.id ORDER BY ' . $ordenSql . ' LIMIT 1) AS imagen_principal';
             }
 
@@ -663,16 +655,7 @@ class ProductoModel
             $selectImagen = '';
 
             if ($tablaImagenes !== null) {
-                $ordenPartes = [];
-                if ($model->columnaExisteEnTabla($tablaImagenes, 'es_principal')) {
-                    $ordenPartes[] = 'pi.es_principal DESC';
-                }
-                if ($model->columnaExisteEnTabla($tablaImagenes, 'orden')) {
-                    $ordenPartes[] = 'pi.orden ASC';
-                }
-                $ordenPartes[] = 'pi.id ASC';
-                $ordenSql = implode(', ', $ordenPartes);
-
+                $ordenSql = $model->construirOrdenImagenes();
                 $selectImagen = ', (SELECT pi.ruta FROM ' . $tablaImagenes . ' pi WHERE pi.producto_id = p.id ORDER BY ' . $ordenSql . ' LIMIT 1) AS imagen_principal';
             }
 
