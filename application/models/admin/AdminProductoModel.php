@@ -271,149 +271,15 @@ final class AdminProductoModel extends ProductoModel
         return $resultado;
     }
 
-    public function guardarImagenes(int $productoId, array $imagenes, ?int $indicePrincipal, bool $mantenerPrincipal): void
-    {
-        $tabla = $this->obtenerTablaImagenes();
-        if ($tabla === null || $imagenes === []) {
-            if ($this->depuracionUploadsActiva()) {
-                error_log('[AdminProductoModel] Tabla de imágenes no disponible o sin elementos para guardar.');
-            }
-            return;
-        }
-
-        $pdo = Database::connect();
-        $tienePrincipal = $this->columnaExisteEnTabla($tabla, 'es_principal');
-        $tieneOrden = $this->columnaExisteEnTabla($tabla, 'orden');
-        $tieneNombre = $this->columnaExisteEnTabla($tabla, 'nombre');
-
-        $indicePrincipal = $indicePrincipal !== null ? max(0, $indicePrincipal) : null;
-        $tienePrincipalActual = $tienePrincipal ? $this->tienePrincipalAsignado($productoId, $tabla) : false;
-
-        if ($this->depuracionUploadsActiva()) {
-            error_log('[AdminProductoModel] Preparando guardado de imágenes. ' . json_encode([
-                'tabla' => $tabla,
-                'producto_id' => $productoId,
-                'total_imagenes' => count($imagenes),
-                'indice_principal' => $indicePrincipal,
-                'mantener_principal' => $mantenerPrincipal,
-                'tiene_principal_actual' => $tienePrincipalActual,
-            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-        }
-
-        if ($tienePrincipal) {
-            if ($indicePrincipal !== null) {
-                $this->actualizarPrincipal($productoId, null, $tabla);
-            } elseif (!$mantenerPrincipal && !$tienePrincipalActual) {
-                $indicePrincipal = 0;
-                $this->actualizarPrincipal($productoId, null, $tabla);
-            }
-        }
-
-        $ordenActual = $tieneOrden ? $this->obtenerSiguienteOrden($productoId, $tabla) : 0;
-
-        $campos = ['producto_id = :producto_id', 'ruta = :ruta'];
-        if ($tieneNombre) {
-            $campos[] = 'nombre = :nombre';
-        }
-        if ($tienePrincipal) {
-            $campos[] = 'es_principal = :es_principal';
-        }
-        if ($tieneOrden) {
-            $campos[] = 'orden = :orden';
-        }
-
-        $sql = 'INSERT INTO ' . $tabla . ' SET ' . implode(', ', $campos);
-        $stmt = $pdo->prepare($sql);
-
-        foreach ($imagenes as $indice => $datosImagen) {
-            $ruta = is_array($datosImagen) ? (string) ($datosImagen['ruta'] ?? '') : (string) $datosImagen;
-            if ($ruta === '') {
-                continue;
-            }
-
-            $parametros = [
-                ':producto_id' => $productoId,
-                ':ruta' => $ruta,
-            ];
-
-            if ($tieneNombre) {
-                $nombre = '';
-                if (is_array($datosImagen)) {
-                    $nombre = (string) ($datosImagen['nombre'] ?? '');
-                }
-                if ($nombre === '') {
-                    $nombre = basename($ruta);
-                }
-                $parametros[':nombre'] = $nombre;
-            }
-
-            if ($tienePrincipal) {
-                $esPrincipal = 0;
-                if (!$mantenerPrincipal) {
-                    if ($indicePrincipal !== null && $indice === $indicePrincipal) {
-                        $esPrincipal = 1;
-                    } elseif ($indicePrincipal === null && !$tienePrincipalActual && $indice === 0) {
-                        $esPrincipal = 1;
-                    }
-                }
-                $parametros[':es_principal'] = $esPrincipal;
-            }
-
-            if ($tieneOrden) {
-                $parametros[':orden'] = $ordenActual++;
-            }
-
-            $stmt->execute($parametros);
-
-            if ($this->depuracionUploadsActiva()) {
-                error_log('[AdminProductoModel] Imagen registrada en base de datos. ' . json_encode([
-                    'producto_id' => $productoId,
-                    'ruta' => $ruta,
-                    'nombre' => $parametros[':nombre'] ?? null,
-                    'es_principal' => $parametros[':es_principal'] ?? null,
-                    'orden' => $parametros[':orden'] ?? null,
-                ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-            }
-
-            if ($tienePrincipal && ($parametros[':es_principal'] ?? 0) === 1) {
-                $ultimoId = (int) $pdo->lastInsertId();
-                $this->actualizarPrincipal($productoId, $ultimoId, $tabla);
-                $tienePrincipalActual = true;
-            }
-        }
-
-        $this->limpiarCamposImagenProductoLegacy($productoId);
-    }
-
-    private function depuracionUploadsActiva(): bool
-    {
-        static $debug = null;
-
-        if ($debug === null) {
-            $debug = filter_var(getenv('DEBUG_UPLOADS') ?: '0', FILTER_VALIDATE_BOOL);
-        }
-
-        return $debug;
-    }
-
-    public function reemplazarImagenes(int $productoId, array $imagenes): void
-    {
-        $tabla = $this->obtenerTablaImagenes();
-        if ($tabla === null) {
-            return;
-        }
-
-        $pdo = Database::connect();
-        $pdo->prepare('DELETE FROM ' . $tabla . ' WHERE producto_id = :producto')
-            ->execute([':producto' => $productoId]);
-
-        $this->guardarImagenes($productoId, $imagenes, 0, false);
-    }
-
     public function obtenerImagenes(int $productoId): array
     {
         $tabla = $this->obtenerTablaImagenes();
         if ($tabla === null) {
+            return [];
+        }
+
+        $columnaRuta = $this->detectarColumnaRutaImagenes($tabla);
+        if ($columnaRuta === null) {
             return [];
         }
 
@@ -422,59 +288,198 @@ final class AdminProductoModel extends ProductoModel
         $tieneOrden = $this->columnaExisteEnTabla($tabla, 'orden');
         $tieneNombre = $this->columnaExisteEnTabla($tabla, 'nombre');
 
-        $columnas = 'id, ruta';
+        $columnas = ['id', $columnaRuta . ' AS ruta_imagen'];
         if ($tieneNombre) {
-            $columnas .= ', nombre';
+            $columnas[] = 'nombre';
         }
         if ($tienePrincipal) {
-            $columnas .= ', es_principal';
+            $columnas[] = 'es_principal';
         }
         if ($tieneOrden) {
-            $columnas .= ', orden';
+            $columnas[] = 'orden';
         }
 
-        $ordenPartes = [];
+        $orden = [];
         if ($tienePrincipal) {
-            $ordenPartes[] = 'es_principal DESC';
+            $orden[] = 'es_principal DESC';
         }
         if ($tieneOrden) {
-            $ordenPartes[] = 'orden ASC';
+            $orden[] = 'orden ASC';
         }
-        $ordenPartes[] = 'id ASC';
-        $ordenSql = implode(', ', $ordenPartes);
+        $orden[] = 'id ASC';
 
-        $stmt = $pdo->prepare('SELECT ' . $columnas . ' FROM ' . $tabla . ' WHERE producto_id = :producto ORDER BY ' . $ordenSql);
+        $sql = sprintf(
+            'SELECT %s FROM %s WHERE producto_id = :producto ORDER BY %s',
+            implode(', ', $columnas),
+            $tabla,
+            implode(', ', $orden)
+        );
+
+        $stmt = $pdo->prepare($sql);
         $stmt->execute([':producto' => $productoId]);
 
         $imagenes = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
-        return array_map(static function ($item) use ($tienePrincipal, $tieneOrden, $tieneNombre): array {
+        $resultado = array_map(static function (array $fila) use ($tienePrincipal, $tieneOrden, $tieneNombre): array {
             return [
-                'id' => (int) ($item['id'] ?? 0),
-                'ruta' => trim((string) ($item['ruta'] ?? '')),
-                'nombre' => $tieneNombre ? trim((string) ($item['nombre'] ?? '')) : '',
-                'es_principal' => $tienePrincipal ? (int) ($item['es_principal'] ?? 0) : 0,
-                'orden' => $tieneOrden ? (int) ($item['orden'] ?? 0) : 0,
+                'id' => (int) ($fila['id'] ?? 0),
+                'ruta' => trim((string) ($fila['ruta_imagen'] ?? '')),
+                'nombre' => $tieneNombre ? trim((string) ($fila['nombre'] ?? '')) : '',
+                'es_principal' => $tienePrincipal ? (int) ($fila['es_principal'] ?? 0) : 0,
+                'orden' => $tieneOrden ? (int) ($fila['orden'] ?? 0) : 0,
             ];
         }, $imagenes);
+
+        if (!$tienePrincipal && $resultado !== []) {
+            $resultado[0]['es_principal'] = 1;
+        }
+
+        return $resultado;
     }
 
-    public function asignarPrincipalRestante(int $productoId): ?int
+    public function obtenerOrdenDisponible(int $productoId): int
     {
         $tabla = $this->obtenerTablaImagenes();
-        if ($tabla === null || !$this->columnaExisteEnTabla($tabla, 'es_principal')) {
+        if ($tabla === null || !$this->columnaExisteEnTabla($tabla, 'orden')) {
+            return 0;
+        }
+
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT MAX(orden) FROM ' . $tabla . ' WHERE producto_id = :producto');
+        $stmt->execute([':producto' => $productoId]);
+
+        $maximo = $stmt->fetchColumn();
+
+        return ((int) $maximo) + 1;
+    }
+
+    public function registrarImagenProducto(int $productoId, string $nombreArchivo, string $rutaPublica, int $orden, bool $esPrincipal): int
+    {
+        $tabla = $this->obtenerTablaImagenes();
+        if ($tabla === null) {
+            throw new \RuntimeException('La tabla de imágenes de productos no está disponible.');
+        }
+
+        $columnaRuta = $this->detectarColumnaRutaImagenes($tabla);
+        if ($columnaRuta === null) {
+            throw new \RuntimeException('No se encontró una columna compatible para guardar la ruta de la imagen.');
+        }
+
+        $pdo = Database::connect();
+        $tieneNombre = $this->columnaExisteEnTabla($tabla, 'nombre');
+        $tienePrincipal = $this->columnaExisteEnTabla($tabla, 'es_principal');
+        $tieneOrden = $this->columnaExisteEnTabla($tabla, 'orden');
+
+        $columnas = ['producto_id'];
+        $placeholders = [':producto_id'];
+        $valores = [
+            ':producto_id' => $productoId,
+        ];
+
+        $columnas[] = $columnaRuta;
+        $placeholders[] = ':ruta_imagen';
+        $valores[':ruta_imagen'] = $rutaPublica;
+
+        if ($tieneNombre) {
+            $columnas[] = 'nombre';
+            $placeholders[] = ':nombre';
+            $valores[':nombre'] = $nombreArchivo;
+        }
+
+        if ($tienePrincipal) {
+            $columnas[] = 'es_principal';
+            $placeholders[] = ':es_principal';
+            $valores[':es_principal'] = $esPrincipal ? 1 : 0;
+        }
+
+        if ($tieneOrden) {
+            $columnas[] = 'orden';
+            $placeholders[] = ':orden';
+            $valores[':orden'] = $orden;
+        }
+
+        $sql = 'INSERT INTO ' . $tabla . ' (' . implode(', ', $columnas) . ') VALUES (' . implode(', ', $placeholders) . ')';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($valores);
+
+        return (int) $pdo->lastInsertId();
+    }
+
+    public function marcarImagenComoPrincipal(int $productoId, int $imagenId): void
+    {
+        $tabla = $this->obtenerTablaImagenes();
+        if ($tabla === null) {
+            return;
+        }
+
+        $pdo = Database::connect();
+
+        if ($this->columnaExisteEnTabla($tabla, 'es_principal')) {
+            $pdo->prepare('UPDATE ' . $tabla . ' SET es_principal = 0 WHERE producto_id = :producto')
+                ->execute([':producto' => $productoId]);
+
+            $pdo->prepare('UPDATE ' . $tabla . ' SET es_principal = 1 WHERE producto_id = :producto AND id = :id LIMIT 1')
+                ->execute([
+                    ':producto' => $productoId,
+                    ':id' => $imagenId,
+                ]);
+        }
+
+        if ($this->columnaExisteEnTabla($tabla, 'orden')) {
+            $pdo->prepare('UPDATE ' . $tabla . ' SET orden = orden + 1 WHERE producto_id = :producto AND id <> :id')
+                ->execute([
+                    ':producto' => $productoId,
+                    ':id' => $imagenId,
+                ]);
+
+            $pdo->prepare('UPDATE ' . $tabla . ' SET orden = 0 WHERE id = :id LIMIT 1')
+                ->execute([':id' => $imagenId]);
+        }
+    }
+
+    public function eliminarImagenRegistro(int $imagenId): void
+    {
+        $tabla = $this->obtenerTablaImagenes();
+        if ($tabla === null) {
+            return;
+        }
+
+        $pdo = Database::connect();
+        $pdo->prepare('DELETE FROM ' . $tabla . ' WHERE id = :id LIMIT 1')
+            ->execute([':id' => $imagenId]);
+    }
+
+    public function eliminarImagenDeProducto(int $productoId, int $imagenId): ?array
+    {
+        $datos = $this->obtenerDatosImagen($imagenId);
+        if ($datos === null || (int) ($datos['producto_id'] ?? 0) !== $productoId) {
+            return null;
+        }
+
+        $this->eliminarImagenRegistro($imagenId);
+
+        return [
+            'ruta' => (string) ($datos['ruta'] ?? ''),
+            'era_principal' => (int) ($datos['es_principal'] ?? 0) === 1,
+        ];
+    }
+
+    public function reordenarPrincipalPorRestantes(int $productoId): ?int
+    {
+        $tabla = $this->obtenerTablaImagenes();
+        if ($tabla === null) {
             return null;
         }
 
         $pdo = Database::connect();
-        $ordenPartes = [];
-        if ($this->columnaExisteEnTabla($tabla, 'orden')) {
-            $ordenPartes[] = 'orden ASC';
-        }
-        $ordenPartes[] = 'id ASC';
-        $ordenSql = implode(', ', $ordenPartes);
 
-        $stmt = $pdo->prepare('SELECT id FROM ' . $tabla . ' WHERE producto_id = :producto ORDER BY ' . $ordenSql . ' LIMIT 1');
+        $orden = [];
+        if ($this->columnaExisteEnTabla($tabla, 'orden')) {
+            $orden[] = 'orden ASC';
+        }
+        $orden[] = 'id ASC';
+
+        $stmt = $pdo->prepare('SELECT id FROM ' . $tabla . ' WHERE producto_id = :producto ORDER BY ' . implode(', ', $orden) . ' LIMIT 1');
         $stmt->execute([':producto' => $productoId]);
 
         $nuevoId = $stmt->fetchColumn();
@@ -482,7 +487,7 @@ final class AdminProductoModel extends ProductoModel
             return null;
         }
 
-        $this->actualizarPrincipal($productoId, (int) $nuevoId, $tabla);
+        $this->marcarImagenComoPrincipal($productoId, (int) $nuevoId);
 
         return (int) $nuevoId;
     }
@@ -508,55 +513,6 @@ final class AdminProductoModel extends ProductoModel
         $this->tablaImagenes = null;
 
         return null;
-    }
-
-    private function actualizarPrincipal(int $productoId, ?int $imagenId, ?string $tabla = null): void
-    {
-        $tabla = $tabla ?? $this->obtenerTablaImagenes();
-        if ($tabla === null || !$this->columnaExisteEnTabla($tabla, 'es_principal')) {
-            return;
-        }
-
-        $pdo = Database::connect();
-        $pdo->prepare('UPDATE ' . $tabla . ' SET es_principal = 0 WHERE producto_id = :producto')
-            ->execute([':producto' => $productoId]);
-
-        if ($imagenId !== null) {
-            $pdo->prepare('UPDATE ' . $tabla . ' SET es_principal = 1 WHERE producto_id = :producto AND id = :id LIMIT 1')
-                ->execute([
-                    ':producto' => $productoId,
-                    ':id' => $imagenId,
-                ]);
-        }
-    }
-
-    private function tienePrincipalAsignado(int $productoId, ?string $tabla = null): bool
-    {
-        $tabla = $tabla ?? $this->obtenerTablaImagenes();
-        if ($tabla === null || !$this->columnaExisteEnTabla($tabla, 'es_principal')) {
-            return false;
-        }
-
-        $pdo = Database::connect();
-        $stmt = $pdo->prepare('SELECT COUNT(*) FROM ' . $tabla . ' WHERE producto_id = :producto AND es_principal = 1');
-        $stmt->execute([':producto' => $productoId]);
-
-        return ((int) $stmt->fetchColumn()) > 0;
-    }
-
-    private function obtenerSiguienteOrden(int $productoId, string $tabla): int
-    {
-        if (!$this->columnaExisteEnTabla($tabla, 'orden')) {
-            return 0;
-        }
-
-        $pdo = Database::connect();
-        $stmt = $pdo->prepare('SELECT MAX(orden) FROM ' . $tabla . ' WHERE producto_id = :producto');
-        $stmt->execute([':producto' => $productoId]);
-
-        $maximo = $stmt->fetchColumn();
-
-        return ((int) $maximo) + 1;
     }
 
     protected function columnaExisteEnTabla(string $tabla, string $columna): bool
@@ -678,38 +634,6 @@ final class AdminProductoModel extends ProductoModel
         return array_values(array_unique($items));
     }
 
-    public function eliminarImagen(int $productoId, int $imagenId): ?array
-    {
-        $datosImagen = $this->obtenerDatosImagen($imagenId);
-        if ($datosImagen === null || (int) ($datosImagen['producto_id'] ?? 0) !== $productoId) {
-            return null;
-        }
-
-        $this->borrarImagen((int) $datosImagen['id'], $productoId);
-
-        return [
-            'ruta' => (string) ($datosImagen['ruta'] ?? ''),
-            'era_principal' => (int) ($datosImagen['es_principal'] ?? 0),
-        ];
-    }
-
-    public function eliminarImagenPorId(int $imagenId): ?array
-    {
-        $datosImagen = $this->obtenerDatosImagen($imagenId);
-        if ($datosImagen === null) {
-            return null;
-        }
-
-        $productoId = (int) ($datosImagen['producto_id'] ?? 0);
-        $this->borrarImagen((int) $datosImagen['id'], $productoId);
-
-        return [
-            'ruta' => (string) ($datosImagen['ruta'] ?? ''),
-            'era_principal' => (int) ($datosImagen['es_principal'] ?? 0),
-            'producto_id' => $productoId,
-        ];
-    }
-
     public function limpiarTablaTallas(int $productoId): bool
     {
         $pdo = Database::connect();
@@ -725,13 +649,21 @@ final class AdminProductoModel extends ProductoModel
             return null;
         }
 
+        $columnaRuta = $this->detectarColumnaRutaImagenes($tabla);
+        if ($columnaRuta === null) {
+            return null;
+        }
+
         $pdo = Database::connect();
-        $columnas = 'id, producto_id, ruta';
+        $columnas = 'id, producto_id, ' . $columnaRuta . ' AS ruta_imagen';
         if ($this->columnaExisteEnTabla($tabla, 'nombre')) {
             $columnas .= ', nombre';
         }
         if ($this->columnaExisteEnTabla($tabla, 'es_principal')) {
             $columnas .= ', es_principal';
+        }
+        if ($this->columnaExisteEnTabla($tabla, 'orden')) {
+            $columnas .= ', orden';
         }
 
         $stmt = $pdo->prepare('SELECT ' . $columnas . ' FROM ' . $tabla . ' WHERE id = :id LIMIT 1');
@@ -743,48 +675,26 @@ final class AdminProductoModel extends ProductoModel
         }
 
         if (!$this->columnaExisteEnTabla($tabla, 'es_principal')) {
-            $imagen['es_principal'] = 0;
+            $orden = isset($imagen['orden']) ? (int) $imagen['orden'] : null;
+            $imagen['es_principal'] = $orden !== null && $orden === 0 ? 1 : 0;
         }
+
+        $imagen['ruta'] = trim((string) ($imagen['ruta_imagen'] ?? ''));
+        unset($imagen['ruta_imagen']);
 
         return $imagen;
     }
 
-    private function borrarImagen(int $imagenId, int $productoId): void
+    private function detectarColumnaRutaImagenes(string $tabla): ?string
     {
-        $tabla = $this->obtenerTablaImagenes();
-        if ($tabla === null) {
-            return;
-        }
-
-        $pdo = Database::connect();
-        $stmt = $pdo->prepare('DELETE FROM ' . $tabla . ' WHERE id = :id AND producto_id = :producto LIMIT 1');
-        $stmt->execute([
-            ':id' => $imagenId,
-            ':producto' => $productoId,
-        ]);
-
-        $this->limpiarCamposImagenProductoLegacy($productoId);
-    }
-
-    private function limpiarCamposImagenProductoLegacy(int $productoId): void
-    {
-        $columnasPosibles = ['imagen_url', 'imagen_secundaria'];
-        $columnas = [];
-
-        foreach ($columnasPosibles as $columna) {
-            if ($this->columnaExisteEnTabla('productos', $columna)) {
-                $columnas[] = $columna . ' = NULL';
+        $candidatos = ['ruta', 'imagen', 'imagen_url', 'path', 'archivo'];
+        foreach ($candidatos as $columna) {
+            if ($this->columnaExisteEnTabla($tabla, $columna)) {
+                return $columna;
             }
         }
 
-        if ($columnas === []) {
-            return;
-        }
-
-        $sql = 'UPDATE productos SET ' . implode(', ', $columnas) . ' WHERE id = :producto';
-        $pdo = Database::connect();
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([':producto' => $productoId]);
+        return null;
     }
 
     private function sincronizarSubcategorias(int $productoId, array $subcategorias): void

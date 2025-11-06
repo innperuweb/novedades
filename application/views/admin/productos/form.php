@@ -1,5 +1,6 @@
 <?php
     $formAction = $esEdicion ? base_url('admin/productos/actualizar/' . (int) ($producto['id'] ?? 0)) : base_url('admin/productos/guardar');
+    $productoId = (int) ($producto['id'] ?? 0);
     $coloresTexto = '';
     $coloresOld = old('colores', null);
     if ($coloresOld !== null) {
@@ -196,7 +197,7 @@
                         <input type="file" name="imagenes[]" id="imagenes" accept="image/*" multiple class="form-control">
                         <small class="form-text d-block mt-1">JPG/PNG/WEBP. Tamaño recomendado 1000×1000. Se generará miniatura.</small>
                         <input type="hidden" name="imagen_principal_nueva" id="imagen_principal_nueva" value="<?= e(old('imagen_principal_nueva', '')); ?>">
-                        <div id="grid-imagenes" class="grid-imagenes mt-3"></div>
+                        <div id="grid-imagenes-nuevas" class="grid-imagenes mt-3"></div>
                         <small class="form-text text-muted">Haz clic en una imagen para marcarla como principal. Usa la ✕ para quitarla antes de guardar.</small>
                         <?php if (!empty($producto['imagenes']) && is_array($producto['imagenes'])): ?>
                             <div id="grid-imagenes-existentes" class="grid-imagenes mt-3">
@@ -211,9 +212,12 @@
                                             continue;
                                         }
                                         $esPrincipal = (int) ($imagen['es_principal'] ?? 0) === 1;
+                                        if (!$esPrincipal && isset($imagen['orden'])) {
+                                            $esPrincipal = (int) $imagen['orden'] === 0;
+                                        }
                                         $imagenId = (int) ($imagen['id'] ?? 0);
-                                        $deleteUrl = ($esEdicion && !empty($producto['id']) && $imagenId > 0)
-                                            ? base_url('admin/productos/eliminar_imagen/' . $imagenId)
+                                        $deleteUrl = ($esEdicion && $productoId > 0 && $imagenId > 0)
+                                            ? base_url('admin/productos/' . $productoId . '/imagenes/' . $imagenId . '/eliminar')
                                             : '';
                                     ?>
                                     <div class="item" data-imagen-id="<?= (int) $imagenId; ?>">
@@ -267,16 +271,15 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('imagenes');
-    const formulario = input ? input.closest('form') : null; // FIX: upload imagenes
-    const gridNuevas = document.getElementById('grid-imagenes');
-    const gridExistentes = document.getElementById('grid-imagenes-existentes');
+    const csrfTokenInput = document.querySelector('input[name="csrf_token"]');
+    const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
+
+    const inputImagenes = document.getElementById('imagenes');
     const inputPrincipal = document.getElementById('imagen_principal_nueva');
-    const csrfInput = document.querySelector('input[name="csrf_token"]');
-    const csrfToken = csrfInput ? csrfInput.value : '';
+    const gridNuevas = document.getElementById('grid-imagenes-nuevas');
+    const gridExistentes = document.getElementById('grid-imagenes-existentes');
 
     const tablaTallasButtons = document.querySelectorAll('.btn-delete-tabla-tallas');
-
     tablaTallasButtons.forEach((button) => {
         button.addEventListener('click', async (event) => {
             event.preventDefault();
@@ -297,9 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         'X-Requested-With': 'XMLHttpRequest',
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: new URLSearchParams({
-                        csrf_token: csrfToken,
-                    }),
+                    body: new URLSearchParams({ csrf_token: csrfToken }),
                 });
 
                 if (!respuesta.ok) {
@@ -311,38 +312,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(data.message || 'Ocurrió un error al eliminar la tabla de tallas.');
                 }
 
-                const preview = button.closest('.tabla-tallas-preview');
-                if (preview) {
-                    preview.remove();
+                const contenedor = button.closest('.tabla-tallas-preview');
+                if (contenedor) {
+                    contenedor.remove();
                 }
             } catch (error) {
-                alert(error && error.message ? error.message : 'Ocurrió un error al eliminar la tabla de tallas.');
+                const mensaje = error instanceof Error ? error.message : 'Ocurrió un error al eliminar la tabla de tallas.';
+                alert(mensaje);
             }
         });
     });
 
-    if (typeof DataTransfer === 'undefined') {
-        return;
-    }
-
-    if (!input || !gridNuevas || !inputPrincipal) {
+    if (typeof DataTransfer === 'undefined' || !inputImagenes || !inputPrincipal || !gridNuevas) {
         return;
     }
 
     let dataTransfer = new DataTransfer();
     let principalIndex = null;
-    let tienePrincipalExistente = gridExistentes ? gridExistentes.querySelector('.tag-principal.activo') !== null : false;
-
-    const valorInicialPrincipal = inputPrincipal.value.trim();
-    if (valorInicialPrincipal !== '') {
-        const indice = parseInt(valorInicialPrincipal, 10);
-        if (!Number.isNaN(indice)) {
-            principalIndex = indice;
-        }
-    }
+    let existePrincipal = gridExistentes ? gridExistentes.querySelector('.tag-principal.activo') !== null : false;
 
     const sincronizarInput = () => {
-        input.files = dataTransfer.files;
+        inputImagenes.files = dataTransfer.files;
     };
 
     const actualizarPrincipalHidden = () => {
@@ -355,67 +345,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderPreviews = () => {
         const archivos = Array.from(dataTransfer.files);
+        gridNuevas.innerHTML = '';
 
         if (archivos.length === 0) {
-            gridNuevas.innerHTML = '';
             principalIndex = null;
             actualizarPrincipalHidden();
             return;
         }
 
-        if (principalIndex === null) {
-            if (!tienePrincipalExistente) {
-                principalIndex = 0;
-            }
-        } else if (principalIndex >= archivos.length) {
-            principalIndex = archivos.length - 1;
-        }
-
-        if (principalIndex !== null && principalIndex < 0) {
+        if (principalIndex === null && !existePrincipal) {
             principalIndex = 0;
         }
 
-        gridNuevas.innerHTML = '';
+        if (principalIndex !== null && principalIndex >= archivos.length) {
+            principalIndex = archivos.length - 1;
+        }
 
         archivos.forEach((file, index) => {
             const item = document.createElement('div');
             item.className = 'item';
             item.dataset.index = String(index);
 
-            const img = document.createElement('img');
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                if (event && event.target && event.target.result) {
-                    img.src = event.target.result;
+            const imagen = document.createElement('img');
+            const lector = new FileReader();
+            lector.onload = (evento) => {
+                if (evento && evento.target && evento.target.result) {
+                    imagen.src = evento.target.result;
                 }
             };
-            reader.readAsDataURL(file);
-            item.appendChild(img);
+            lector.readAsDataURL(file);
+            item.appendChild(imagen);
 
-            const btnDel = document.createElement('button');
-            btnDel.type = 'button';
-            btnDel.className = 'btn-del';
-            btnDel.innerHTML = '&times;';
-            btnDel.addEventListener('click', (event) => {
+            const etiquetaPrincipal = document.createElement('span');
+            etiquetaPrincipal.className = 'tag-principal';
+            etiquetaPrincipal.textContent = 'Principal';
+            if (principalIndex === index) {
+                etiquetaPrincipal.classList.add('activo');
+            }
+            item.appendChild(etiquetaPrincipal);
+
+            const botonEliminar = document.createElement('button');
+            botonEliminar.type = 'button';
+            botonEliminar.className = 'btn-del';
+            botonEliminar.innerHTML = '&times;';
+            botonEliminar.addEventListener('click', (event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                eliminarImagenNueva(index);
+                eliminarNueva(index);
             });
-            item.appendChild(btnDel);
-
-            const tagPrincipal = document.createElement('span');
-            tagPrincipal.className = 'tag-principal';
-            tagPrincipal.textContent = 'Principal';
-            if (principalIndex === index) {
-                tagPrincipal.classList.add('activo');
-            }
-            item.appendChild(tagPrincipal);
+            item.appendChild(botonEliminar);
 
             item.addEventListener('click', (event) => {
                 if (event.target instanceof HTMLElement && event.target.classList.contains('btn-del')) {
                     return;
                 }
-                marcarPrincipal(index);
+                principalIndex = index;
+                existePrincipal = false;
+                renderPreviews();
+                actualizarPrincipalHidden();
             });
 
             gridNuevas.appendChild(item);
@@ -424,31 +411,22 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarPrincipalHidden();
     };
 
-    const marcarPrincipal = (index) => {
-        if (index < 0 || index >= dataTransfer.files.length) {
-            return;
-        }
-        principalIndex = index;
-        tienePrincipalExistente = false;
-        renderPreviews();
-    };
-
-    const eliminarImagenNueva = (index) => {
+    const eliminarNueva = (indice) => {
         const archivos = Array.from(dataTransfer.files);
-        if (index < 0 || index >= archivos.length) {
+        if (indice < 0 || indice >= archivos.length) {
             return;
         }
 
-        archivos.splice(index, 1);
+        archivos.splice(indice, 1);
         dataTransfer = new DataTransfer();
-        archivos.forEach((file) => dataTransfer.items.add(file));
+        archivos.forEach((archivo) => dataTransfer.items.add(archivo));
 
         if (principalIndex !== null) {
             if (archivos.length === 0) {
                 principalIndex = null;
-            } else if (index === principalIndex) {
+            } else if (indice === principalIndex) {
                 principalIndex = 0;
-            } else if (index < principalIndex) {
+            } else if (indice < principalIndex) {
                 principalIndex -= 1;
             }
         }
@@ -457,92 +435,88 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPreviews();
     };
 
-    input.addEventListener('change', (event) => {
-        const archivosNuevos = Array.from(event.target.files || []);
-        if (archivosNuevos.length === 0) {
+    inputImagenes.addEventListener('change', (event) => {
+        const nuevosArchivos = Array.from(event.target.files || []);
+        if (nuevosArchivos.length === 0) {
             return;
         }
 
-        const existentes = Array.from(dataTransfer.files);
+        const actuales = Array.from(dataTransfer.files);
         dataTransfer = new DataTransfer();
-        existentes.forEach((file) => dataTransfer.items.add(file));
-        archivosNuevos.forEach((file) => dataTransfer.items.add(file));
+        [...actuales, ...nuevosArchivos].forEach((archivo) => dataTransfer.items.add(archivo));
 
         sincronizarInput();
 
-        if (principalIndex === null && !tienePrincipalExistente) {
+        if (principalIndex === null && !existePrincipal && dataTransfer.files.length > 0) {
             principalIndex = 0;
         }
 
         renderPreviews();
         actualizarPrincipalHidden();
-        input.value = '';
-        sincronizarInput(); // FIX: upload imagenes
+        inputImagenes.value = '';
     });
 
+    const formulario = inputImagenes.closest('form');
     if (formulario) {
         formulario.addEventListener('submit', () => {
-            sincronizarInput(); // FIX: upload imagenes
+            sincronizarInput();
         });
     }
 
-    const marcarPrincipalExistente = (nuevoId) => {
+    const actualizarPrincipalExistentes = (nuevoId) => {
         if (!gridExistentes) {
             return;
         }
 
         const items = gridExistentes.querySelectorAll('.item');
         items.forEach((item) => {
-            const badge = item.querySelector('.tag-principal');
-            if (!(badge instanceof HTMLElement)) {
+            const etiqueta = item.querySelector('.tag-principal');
+            if (!(etiqueta instanceof HTMLElement)) {
                 return;
             }
 
-            if (nuevoId !== null && parseInt(item.dataset.imagenId || '0', 10) === nuevoId) {
-                badge.classList.add('activo');
-            } else if (nuevoId === null) {
-                badge.classList.remove('activo');
+            const idItem = parseInt(item.getAttribute('data-imagen-id') || '0', 10);
+            if (nuevoId !== null && idItem === nuevoId) {
+                etiqueta.classList.add('activo');
             } else {
-                badge.classList.remove('activo');
+                etiqueta.classList.remove('activo');
             }
         });
 
-        if (nuevoId !== null) {
-            tienePrincipalExistente = true;
-        } else {
-            tienePrincipalExistente = gridExistentes.querySelector('.tag-principal.activo') !== null;
-        }
+        existePrincipal = nuevoId !== null || (gridExistentes.querySelector('.tag-principal.activo') !== null);
 
-        if (!tienePrincipalExistente && principalIndex === null && dataTransfer.files.length > 0) {
+        if (!existePrincipal && principalIndex === null && dataTransfer.files.length > 0) {
+            principalIndex = 0;
             renderPreviews();
+            actualizarPrincipalHidden();
         }
     };
 
     if (gridExistentes) {
         gridExistentes.addEventListener('click', async (event) => {
-            const boton = event.target instanceof HTMLElement ? event.target.closest('.btn-del-existente') : null;
-            if (!boton) {
+            const objetivo = event.target instanceof HTMLElement ? event.target.closest('.btn-del-existente') : null;
+            if (!objetivo) {
                 return;
             }
 
             event.preventDefault();
-            const url = boton.dataset.url || '';
+
+            const url = objetivo.getAttribute('data-url') || '';
             if (url === '') {
                 return;
             }
 
-            const item = boton.closest('.item');
+            if (!window.confirm('¿Eliminar esta imagen?')) {
+                return;
+            }
+
+            const item = objetivo.closest('.item');
             if (!item) {
                 return;
             }
 
-            const confirmar = window.confirm('¿Eliminar esta imagen?');
-            if (!confirmar) {
-                return;
-            }
-
-            const badgePrincipal = item.querySelector('.tag-principal');
-            const eraPrincipal = badgePrincipal ? badgePrincipal.classList.contains('activo') : false;
+            const etiqueta = item.querySelector('.tag-principal');
+            const eraPrincipal = etiqueta ? etiqueta.classList.contains('activo') : false;
 
             try {
                 const respuesta = await fetch(url, {
@@ -551,9 +525,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         'X-Requested-With': 'XMLHttpRequest',
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: new URLSearchParams({
-                        csrf_token: csrfToken,
-                    }),
+                    body: new URLSearchParams({ csrf_token: csrfToken }),
                 });
 
                 if (!respuesta.ok) {
@@ -567,21 +539,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 item.remove();
 
-                if (eraPrincipal || typeof data.nuevoPrincipalId !== 'undefined') {
-                    const valorNuevo = data.nuevoPrincipalId;
-                    const nuevoId = valorNuevo !== null && valorNuevo !== undefined
-                        ? parseInt(String(valorNuevo), 10)
-                        : null;
-                    if (!isNaN(nuevoId) && nuevoId !== null) {
-                        marcarPrincipalExistente(nuevoId);
+                if (Object.prototype.hasOwnProperty.call(data, 'nuevoPrincipalId')) {
+                    const valor = data.nuevoPrincipalId;
+                    const nuevoId = valor === null ? null : parseInt(String(valor), 10);
+                    if (nuevoId !== null && !Number.isNaN(nuevoId)) {
+                        actualizarPrincipalExistentes(nuevoId);
                     } else if (eraPrincipal) {
-                        marcarPrincipalExistente(null);
+                        actualizarPrincipalExistentes(null);
                     }
+                } else if (eraPrincipal) {
+                    actualizarPrincipalExistentes(null);
                 }
             } catch (error) {
-                alert(error.message || 'Ocurrió un error al eliminar la imagen.');
+                const mensaje = error instanceof Error ? error.message : 'Ocurrió un error al eliminar la imagen.';
+                alert(mensaje);
             }
         });
     }
+
+    renderPreviews();
 });
 </script>
