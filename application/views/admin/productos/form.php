@@ -31,37 +31,6 @@
     $seleccionadas = is_array($seleccionadas) ? array_map('intval', $seleccionadas) : [];
     $tablaTallasArchivo = trim((string) ($producto['tabla_tallas'] ?? ''));
     $tablaTallasUrl = '';
-    $normalizarRutaImagenProducto = static function (string $ruta): string {
-        $ruta = trim($ruta);
-        if ($ruta === '') {
-            return '';
-        }
-
-        $limpia = ltrim($ruta, '/');
-
-        if (strpos($limpia, 'public/assets/') === 0) {
-            $limpia = ltrim(substr($limpia, strlen('public/assets/')) ?: '', '/');
-        }
-
-        if (strpos($limpia, 'assets/') === 0) {
-            $limpia = ltrim(substr($limpia, strlen('assets/')) ?: '', '/');
-        }
-
-        if (strpos($limpia, 'public/uploads/productos/') === 0) {
-            return base_url($limpia);
-        }
-
-        if (strpos($limpia, 'uploads/') === 0) {
-            return asset_url($limpia);
-        }
-
-        if (strpos($limpia, 'products/') === 0 || strpos($limpia, 'productos/') === 0) {
-            return asset_url('uploads/' . $limpia);
-        }
-
-        return asset_url('uploads/productos/' . $limpia);
-    };
-
     if ($tablaTallasArchivo !== '') {
         $limpiaTabla = ltrim($tablaTallasArchivo, '/');
 
@@ -83,13 +52,6 @@
     }
 ?>
 <style>
-.grid-imagenes{display:flex;flex-wrap:wrap;gap:12px}
-.grid-imagenes .item{position:relative;width:200px;height:200px;border:1px solid #eee;border-radius:8px;overflow:hidden;cursor:pointer;background:#fafafa}
-.grid-imagenes .item img{width:100%;height:100%;object-fit:cover}
-.grid-imagenes .item .btn-del{position:absolute;top:6px;right:6px;background:#fff;border:1px solid #ccc;border-radius:50%;width:28px;height:28px;line-height:26px;text-align:center;cursor:pointer;color:#333;padding:0;font-weight:bold}
-.grid-imagenes .item .tag-principal{position:absolute;bottom:6px;left:6px;background:#111;color:#fff;padding:2px 6px;border-radius:4px;font-size:12px;display:none}
-.grid-imagenes .item .tag-principal.activo{display:inline-block}
-.grid-imagenes .item .btn-del:hover{background:#f8f8f8}
 .tabla-tallas-preview{position:relative;display:inline-block;margin-top:12px}
 .tabla-tallas-preview img{width:120px;height:120px;border-radius:8px;border:1px solid #eee;object-fit:cover}
 .tabla-tallas-preview .btn-del-tabla{position:absolute;top:6px;right:6px;background:#e74c3c;color:#fff;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:16px;line-height:24px;padding:0}
@@ -175,7 +137,7 @@
             <div class="card-body">
                 <h2 class="h6 text-uppercase text-muted mb-3">Recursos multimedia</h2>
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-12">
                         <label for="tablaTallasInput" class="form-label">Tabla de Tallas</label>
                         <input type="file" name="tabla_tallas" id="tablaTallasInput" accept=".jpg,.jpeg,.png,.webp,image/*" class="form-control">
                         <small class="form-text d-block mt-1">Formatos permitidos: JPG, PNG o WEBP.</small>
@@ -192,44 +154,6 @@
                             </div>
                         <?php endif; ?>
                     </div>
-                    <div class="col-md-6">
-                        <label for="imagenes" class="form-label">Imágenes del producto</label>
-                        <input type="file" name="imagenes[]" id="imagenes" accept="image/*" multiple class="form-control">
-                        <small class="form-text d-block mt-1">JPG/PNG/WEBP. Tamaño recomendado 1000×1000. Se generará miniatura.</small>
-                        <input type="hidden" name="imagen_principal_nueva" id="imagen_principal_nueva" value="<?= e(old('imagen_principal_nueva', '')); ?>">
-                        <div id="grid-imagenes-nuevas" class="grid-imagenes mt-3"></div>
-                        <small class="form-text text-muted">Haz clic en una imagen para marcarla como principal. Usa la ✕ para quitarla antes de guardar.</small>
-                        <?php if (!empty($producto['imagenes']) && is_array($producto['imagenes'])): ?>
-                            <div id="grid-imagenes-existentes" class="grid-imagenes mt-3">
-                                <?php foreach ($producto['imagenes'] as $imagen): ?>
-                                    <?php
-                                        $ruta = trim((string) ($imagen['ruta'] ?? ''));
-                                        if ($ruta === '') {
-                                            continue;
-                                        }
-                                        $rutaPublica = $normalizarRutaImagenProducto($ruta);
-                                        if ($rutaPublica === '') {
-                                            continue;
-                                        }
-                                        $esPrincipal = (int) ($imagen['es_principal'] ?? 0) === 1;
-                                        if (!$esPrincipal && isset($imagen['orden'])) {
-                                            $esPrincipal = (int) $imagen['orden'] === 0;
-                                        }
-                                        $imagenId = (int) ($imagen['id'] ?? 0);
-                                        $deleteUrl = ($esEdicion && $productoId > 0 && $imagenId > 0)
-                                            ? base_url('admin/productos/' . $productoId . '/imagenes/' . $imagenId . '/eliminar')
-                                            : '';
-                                    ?>
-                                    <div class="item" data-imagen-id="<?= (int) $imagenId; ?>">
-                                        <img src="<?= e($rutaPublica); ?>" alt="<?= e($ruta); ?>">
-                                        <?php if ($deleteUrl !== ''): ?>
-                                            <button type="button" class="btn-del btn-del-existente" data-url="<?= e($deleteUrl); ?>">&times;</button>
-                                        <?php endif; ?>
-                                        <span class="tag-principal<?= $esPrincipal ? ' activo' : ''; ?>">Principal</span>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -274,11 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const csrfTokenInput = document.querySelector('input[name="csrf_token"]');
     const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
 
-    const inputImagenes = document.getElementById('imagenes');
-    const inputPrincipal = document.getElementById('imagen_principal_nueva');
-    const gridNuevas = document.getElementById('grid-imagenes-nuevas');
-    const gridExistentes = document.getElementById('grid-imagenes-existentes');
-
     const tablaTallasButtons = document.querySelectorAll('.btn-delete-tabla-tallas');
     tablaTallasButtons.forEach((button) => {
         button.addEventListener('click', async (event) => {
@@ -322,241 +241,5 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
-
-    if (typeof DataTransfer === 'undefined' || !inputImagenes || !inputPrincipal || !gridNuevas) {
-        return;
-    }
-
-    let dataTransfer = new DataTransfer();
-    let principalIndex = null;
-    let existePrincipal = gridExistentes ? gridExistentes.querySelector('.tag-principal.activo') !== null : false;
-
-    const sincronizarInput = () => {
-        inputImagenes.files = dataTransfer.files;
-    };
-
-    const actualizarPrincipalHidden = () => {
-        if (principalIndex === null || dataTransfer.files.length === 0) {
-            inputPrincipal.value = '';
-        } else {
-            inputPrincipal.value = String(principalIndex);
-        }
-    };
-
-    const renderPreviews = () => {
-        const archivos = Array.from(dataTransfer.files);
-        gridNuevas.innerHTML = '';
-
-        if (archivos.length === 0) {
-            principalIndex = null;
-            actualizarPrincipalHidden();
-            return;
-        }
-
-        if (principalIndex === null && !existePrincipal) {
-            principalIndex = 0;
-        }
-
-        if (principalIndex !== null && principalIndex >= archivos.length) {
-            principalIndex = archivos.length - 1;
-        }
-
-        archivos.forEach((file, index) => {
-            const item = document.createElement('div');
-            item.className = 'item';
-            item.dataset.index = String(index);
-
-            const imagen = document.createElement('img');
-            const lector = new FileReader();
-            lector.onload = (evento) => {
-                if (evento && evento.target && evento.target.result) {
-                    imagen.src = evento.target.result;
-                }
-            };
-            lector.readAsDataURL(file);
-            item.appendChild(imagen);
-
-            const etiquetaPrincipal = document.createElement('span');
-            etiquetaPrincipal.className = 'tag-principal';
-            etiquetaPrincipal.textContent = 'Principal';
-            if (principalIndex === index) {
-                etiquetaPrincipal.classList.add('activo');
-            }
-            item.appendChild(etiquetaPrincipal);
-
-            const botonEliminar = document.createElement('button');
-            botonEliminar.type = 'button';
-            botonEliminar.className = 'btn-del';
-            botonEliminar.innerHTML = '&times;';
-            botonEliminar.addEventListener('click', (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                eliminarNueva(index);
-            });
-            item.appendChild(botonEliminar);
-
-            item.addEventListener('click', (event) => {
-                if (event.target instanceof HTMLElement && event.target.classList.contains('btn-del')) {
-                    return;
-                }
-                principalIndex = index;
-                existePrincipal = false;
-                renderPreviews();
-                actualizarPrincipalHidden();
-            });
-
-            gridNuevas.appendChild(item);
-        });
-
-        actualizarPrincipalHidden();
-    };
-
-    const eliminarNueva = (indice) => {
-        const archivos = Array.from(dataTransfer.files);
-        if (indice < 0 || indice >= archivos.length) {
-            return;
-        }
-
-        archivos.splice(indice, 1);
-        dataTransfer = new DataTransfer();
-        archivos.forEach((archivo) => dataTransfer.items.add(archivo));
-
-        if (principalIndex !== null) {
-            if (archivos.length === 0) {
-                principalIndex = null;
-            } else if (indice === principalIndex) {
-                principalIndex = 0;
-            } else if (indice < principalIndex) {
-                principalIndex -= 1;
-            }
-        }
-
-        sincronizarInput();
-        renderPreviews();
-    };
-
-    inputImagenes.addEventListener('change', (event) => {
-        const nuevosArchivos = Array.from(event.target.files || []);
-        if (nuevosArchivos.length === 0) {
-            return;
-        }
-
-        const actuales = Array.from(dataTransfer.files);
-        dataTransfer = new DataTransfer();
-        [...actuales, ...nuevosArchivos].forEach((archivo) => dataTransfer.items.add(archivo));
-
-        sincronizarInput();
-
-        if (principalIndex === null && !existePrincipal && dataTransfer.files.length > 0) {
-            principalIndex = 0;
-        }
-
-        renderPreviews();
-        actualizarPrincipalHidden();
-        inputImagenes.value = '';
-    });
-
-    const formulario = inputImagenes.closest('form');
-    if (formulario) {
-        formulario.addEventListener('submit', () => {
-            sincronizarInput();
-        });
-    }
-
-    const actualizarPrincipalExistentes = (nuevoId) => {
-        if (!gridExistentes) {
-            return;
-        }
-
-        const items = gridExistentes.querySelectorAll('.item');
-        items.forEach((item) => {
-            const etiqueta = item.querySelector('.tag-principal');
-            if (!(etiqueta instanceof HTMLElement)) {
-                return;
-            }
-
-            const idItem = parseInt(item.getAttribute('data-imagen-id') || '0', 10);
-            if (nuevoId !== null && idItem === nuevoId) {
-                etiqueta.classList.add('activo');
-            } else {
-                etiqueta.classList.remove('activo');
-            }
-        });
-
-        existePrincipal = nuevoId !== null || (gridExistentes.querySelector('.tag-principal.activo') !== null);
-
-        if (!existePrincipal && principalIndex === null && dataTransfer.files.length > 0) {
-            principalIndex = 0;
-            renderPreviews();
-            actualizarPrincipalHidden();
-        }
-    };
-
-    if (gridExistentes) {
-        gridExistentes.addEventListener('click', async (event) => {
-            const objetivo = event.target instanceof HTMLElement ? event.target.closest('.btn-del-existente') : null;
-            if (!objetivo) {
-                return;
-            }
-
-            event.preventDefault();
-
-            const url = objetivo.getAttribute('data-url') || '';
-            if (url === '') {
-                return;
-            }
-
-            if (!window.confirm('¿Eliminar esta imagen?')) {
-                return;
-            }
-
-            const item = objetivo.closest('.item');
-            if (!item) {
-                return;
-            }
-
-            const etiqueta = item.querySelector('.tag-principal');
-            const eraPrincipal = etiqueta ? etiqueta.classList.contains('activo') : false;
-
-            try {
-                const respuesta = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({ csrf_token: csrfToken }),
-                });
-
-                if (!respuesta.ok) {
-                    throw new Error('No se pudo eliminar la imagen.');
-                }
-
-                const data = await respuesta.json();
-                if (!data.success) {
-                    throw new Error(data.message || 'Ocurrió un error al eliminar la imagen.');
-                }
-
-                item.remove();
-
-                if (Object.prototype.hasOwnProperty.call(data, 'nuevoPrincipalId')) {
-                    const valor = data.nuevoPrincipalId;
-                    const nuevoId = valor === null ? null : parseInt(String(valor), 10);
-                    if (nuevoId !== null && !Number.isNaN(nuevoId)) {
-                        actualizarPrincipalExistentes(nuevoId);
-                    } else if (eraPrincipal) {
-                        actualizarPrincipalExistentes(null);
-                    }
-                } else if (eraPrincipal) {
-                    actualizarPrincipalExistentes(null);
-                }
-            } catch (error) {
-                const mensaje = error instanceof Error ? error.message : 'Ocurrió un error al eliminar la imagen.';
-                alert(mensaje);
-            }
-        });
-    }
-
-    renderPreviews();
 });
 </script>

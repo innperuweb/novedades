@@ -86,11 +86,7 @@ class ProductosController extends BaseController
 
         $producto['colores'] = $this->normalizarOpciones($producto['colores'] ?? []);
         $producto['tallas'] = $this->normalizarOpciones($producto['tallas'] ?? []);
-        if (!isset($producto['imagenes']) || !is_array($producto['imagenes'])) {
-            $producto['imagenes'] = $model->obtenerImagenesPorProducto((int) ($producto['id'] ?? 0));
-        }
-
-        $imagenes = $producto['imagenes'] ?? [];
+        $imagenes = [];
 
         $this->render('detalle_producto', compact('producto', 'imagenes'));
     }

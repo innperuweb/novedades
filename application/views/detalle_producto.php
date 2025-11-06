@@ -67,91 +67,25 @@ if (!empty($productosRelacionados)) {
     $productosRelacionados = array_slice($productosRelacionados, 0, 10);
 }
 
-$imagenes = $imagenes ?? null;
-if ($imagenes === null) {
-    $imagenes = $producto['imagenes'] ?? [];
-}
+$galeriaImagenes = [
+    ['url' => asset_url('img/products/prod-1-1.jpg')],
+    ['url' => asset_url('img/products/prod-1-4.jpg')],
+    ['url' => asset_url('img/products/prod-5-3.jpg')],
+];
 
-if (!is_array($imagenes)) {
-    $imagenes = [];
-}
-
-$galeriaImagenes = [];
-foreach ($imagenes as $indice => $itemImagen) {
-    if (is_array($itemImagen)) {
-        $ruta = trim((string) ($itemImagen['ruta'] ?? ''));
-        $principal = (int) ($itemImagen['es_principal'] ?? 0);
-        $orden = (int) ($itemImagen['orden'] ?? $indice);
-    } else {
-        $ruta = trim((string) $itemImagen);
-        $principal = 0;
-        $orden = $indice;
-    }
-
-    if ($ruta === '') {
-        continue;
-    }
-
-    $galeriaImagenes[] = [
-        'ruta' => $ruta,
-        'es_principal' => $principal,
-        'orden' => $orden,
-    ];
-}
+$galeriaImagenes = array_values(array_filter($galeriaImagenes, static function ($item): bool {
+    return isset($item['url']) && $item['url'] !== '';
+}));
 
 if ($galeriaImagenes === []) {
-    $galeriaImagenes[] = [
-        'ruta' => 'default:no-image.jpg',
-        'es_principal' => 1,
-        'orden' => 0,
-    ];
+    $galeriaImagenes[] = ['url' => asset_url('img/products/prod-1-1.jpg')];
 }
 
-usort($galeriaImagenes, static function ($a, $b): int {
-    $principalA = (int) ($a['es_principal'] ?? 0);
-    $principalB = (int) ($b['es_principal'] ?? 0);
-
-    if ($principalA !== $principalB) {
-        return $principalB <=> $principalA;
-    }
-
-    $ordenA = (int) ($a['orden'] ?? 0);
-    $ordenB = (int) ($b['orden'] ?? 0);
-
-    return $ordenA <=> $ordenB;
-});
-
-$principalAsignado = false;
-foreach ($galeriaImagenes as &$imagenOrdenada) {
-    if ((int) ($imagenOrdenada['es_principal'] ?? 0) === 1 && !$principalAsignado) {
-        $principalAsignado = true;
-    }
-}
-unset($imagenOrdenada);
-
-if (!$principalAsignado && $galeriaImagenes !== []) {
-    $galeriaImagenes[0]['es_principal'] = 1;
-}
-
-$normalizarRuta = static function (string $ruta): string {
+$normalizarRutaTablaTallas = static function (string $ruta): string {
     $ruta = trim($ruta);
 
     if ($ruta === '') {
         return '';
-    }
-
-    if (strpos($ruta, 'default:') === 0) {
-        $archivo = substr($ruta, strlen('default:')) ?: '';
-        $archivo = ltrim($archivo, '/');
-
-        return asset_url('img/' . $archivo);
-    }
-
-    if (strpos($ruta, 'legacy:') === 0) {
-        $ruta = substr($ruta, strlen('legacy:')) ?: '';
-        $ruta = ltrim($ruta, '/');
-
-        return asset_url('img/products/' . $ruta);
     }
 
     if (preg_match('#^https?://#i', $ruta) === 1) {
@@ -164,48 +98,12 @@ $normalizarRuta = static function (string $ruta): string {
         $rutaLimpia = ltrim(substr($rutaLimpia, strlen('public/assets/')) ?: '', '/');
     }
 
-    if (strpos($rutaLimpia, 'assets/') === 0) {
-        $rutaLimpia = ltrim(substr($rutaLimpia, strlen('assets/')) ?: '', '/');
-    }
-
-    if (strpos($rutaLimpia, 'public/uploads/productos/') === 0) {
-        return base_url($rutaLimpia);
-    }
-
     if (strpos($rutaLimpia, 'uploads/') === 0) {
         return asset_url($rutaLimpia);
     }
 
-    if (strpos($rutaLimpia, 'products/') === 0 || strpos($rutaLimpia, 'productos/') === 0) {
-        return asset_url('uploads/' . $rutaLimpia);
-    }
-
-    if (strpos($rutaLimpia, 'tabla_tallas/') === 0) {
-        return asset_url('uploads/' . $rutaLimpia);
-    }
-
-    if (strpos($rutaLimpia, 'uploads/productos/') === 0) {
-        $rutaLimpia = substr($rutaLimpia, strlen('uploads/productos/')) ?: '';
-    }
-
-    return asset_url('uploads/productos/' . $rutaLimpia);
+    return asset_url($rutaLimpia);
 };
-
-foreach ($galeriaImagenes as &$imagenNormalizada) {
-    $imagenNormalizada['url'] = $normalizarRuta((string) ($imagenNormalizada['ruta'] ?? ''));
-}
-unset($imagenNormalizada);
-
-$galeriaImagenes = array_values(array_filter($galeriaImagenes, static fn($item): bool => ($item['url'] ?? '') !== ''));
-
-if ($galeriaImagenes === []) {
-    $galeriaImagenes[] = [
-        'ruta' => 'default:no-image.jpg',
-        'es_principal' => 1,
-        'orden' => 0,
-        'url' => asset_url('img/no-image.jpg'),
-    ];
-}
 
 $sliderMainId = 'product-gallery-main-' . $productoId;
 $sliderThumbId = 'product-gallery-thumb-' . $productoId;
@@ -238,7 +136,7 @@ $mainOptions = json_encode([
 
 $stockCantidad = (int) ($producto['stock'] ?? 0);
 $tablaTallasArchivo = trim((string) ($producto['tabla_tallas'] ?? ''));
-$tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRuta($tablaTallasArchivo) : '';
+$tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRutaTablaTallas($tablaTallasArchivo) : '';
 ?>
 
 <style>
