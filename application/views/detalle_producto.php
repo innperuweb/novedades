@@ -168,6 +168,10 @@ $normalizarRuta = static function (string $ruta): string {
         $rutaLimpia = ltrim(substr($rutaLimpia, strlen('assets/')) ?: '', '/');
     }
 
+    if (strpos($rutaLimpia, 'public/uploads/productos/') === 0) {
+        return base_url($rutaLimpia);
+    }
+
     if (strpos($rutaLimpia, 'uploads/') === 0) {
         return asset_url($rutaLimpia);
     }

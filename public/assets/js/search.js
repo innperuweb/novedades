@@ -58,6 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                     return `${baseUrl}${normalizada}`;
                                 }
 
+                                if (normalizada.startsWith('public/uploads/productos/')) {
+                                    return `${baseUrl}${normalizada}`;
+                                }
+
                                 if (normalizada.startsWith('uploads/')) {
                                     return `${baseUrl}public/assets/${normalizada}`;
                                 }
