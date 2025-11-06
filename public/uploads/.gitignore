@@ -1,0 +1,8 @@
+# Ignorar todos los archivos en esta carpeta
+*
+# Excepto el archivo .gitignore
+!.gitignore
+
+# Excepciones específicas (si es necesario)
+# !carpeta_importante/
+# !archivo_importante.txt
