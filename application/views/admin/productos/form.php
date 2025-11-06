@@ -112,8 +112,8 @@
                     <input type="text" name="marca" id="marca" class="form-control" placeholder="Ejemplo: Nike" value="<?= e($producto['marca'] ?? ''); ?>">
                 </div>
                 <div class="mb-3">
-                    <label for="descripcion" class="form-label">Descripción</label>
-                    <textarea name="descripcion" id="descripcion" rows="4" class="form-control"><?= e($producto['descripcion'] ?? ''); ?></textarea>
+                    <label for="descripcion" class="form-label">Descripción del producto</label>
+                    <textarea name="descripcion" id="descripcion" rows="8" class="form-control"><?= htmlspecialchars((string) (old('descripcion', $producto['descripcion'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></textarea>
                 </div>
                 <div class="row g-3">
                     <div class="col-md-4">
@@ -554,3 +554,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
+
+<?php if (strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/productos/') !== false): ?>
+    <!-- TinyMCE - Editor de texto ligero -->
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+    tinymce.init({
+      selector: 'textarea#descripcion',
+      menubar: false,
+      plugins: 'lists link image code',
+      toolbar: 'undo redo | bold italic underline | bullist numlist | link | code',
+      branding: false,
+      height: 300,
+      content_style: 'body { font-family: Arial, sans-serif; font-size:14px }'
+    });
+    </script>
+<?php endif; ?>
