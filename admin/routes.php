@@ -79,12 +79,6 @@ return [
         'auth' => true,
         'methods' => ['POST'],
     ],
-    'productos/{productoId}/imagenes/{imagenId}/eliminar' => [
-        'controller' => 'ProductosController',
-        'method' => 'eliminarImagenProducto',
-        'auth' => true,
-        'methods' => ['POST'],
-    ],
     'productos/eliminar_tabla_tallas/{id}' => [
         'controller' => 'ProductosController',
         'method' => 'eliminarTablaTallas',
