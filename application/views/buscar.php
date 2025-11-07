@@ -67,14 +67,28 @@ $tituloPagina = $query === ''
 
                                     // Buscar la imagen principal
                                     $imagenPrincipal = '';
-                                    $rutaBase = __DIR__ . '/../../public/assets/uploads/productos/' . $idProducto;
+                                    $rutaPrincipal = isset($p['ruta_principal']) ? trim((string) $p['ruta_principal']) : '';
 
-                                    if (is_dir($rutaBase)) {
-                                        $archivos = scandir($rutaBase);
-                                        foreach ($archivos as $archivo) {
-                                            if (preg_match('/^1_.*\.(jpg|jpeg|png|webp)$/i', $archivo)) {
-                                                $imagenPrincipal = "public/assets/uploads/productos/{$idProducto}/{$archivo}";
-                                                break;
+                                    if ($rutaPrincipal !== '') {
+                                        $normalizado = ltrim(str_replace('\\', '/', $rutaPrincipal), '/');
+                                        if (strpos($normalizado, 'uploads/') === 0) {
+                                            $rutaRelativa = 'public/assets/' . $normalizado;
+                                            $rutaArchivo = rtrim(ROOT_PATH, '/\\') . '/public/assets/' . $normalizado;
+                                            if (is_file($rutaArchivo)) {
+                                                $imagenPrincipal = $rutaRelativa;
+                                            }
+                                        }
+                                    }
+
+                                    if ($imagenPrincipal === '') {
+                                        $rutaBase = rtrim(ROOT_PATH, '/\\') . '/public/assets/uploads/productos/' . $idProducto;
+                                        if (is_dir($rutaBase)) {
+                                            $archivos = scandir($rutaBase);
+                                            foreach ($archivos as $archivo) {
+                                                if (preg_match('/^1_.*\.(jpg|jpeg|png|webp)$/i', $archivo)) {
+                                                    $imagenPrincipal = "public/assets/uploads/productos/{$idProducto}/{$archivo}";
+                                                    break;
+                                                }
                                             }
                                         }
                                     }

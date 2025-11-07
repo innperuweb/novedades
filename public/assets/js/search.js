@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.querySelector('#buscador');
     const resultados = document.querySelector('#resultados');
-    const form = document.querySelector('.searchform');
     const baseUrl = (typeof base_url !== 'undefined' && base_url) ? base_url : '/';
 
     const escapeHtml = (text) => {
@@ -17,13 +16,15 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/'/g, '&#039;');
     };
 
-    if (form) {
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
-        });
-    }
-
     if (input && resultados) {
+        const form = input.closest('form');
+
+        if (form) {
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+            });
+        }
+
         input.addEventListener('keyup', () => {
             const term = input.value.trim();
 
