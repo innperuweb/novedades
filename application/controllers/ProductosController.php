@@ -9,8 +9,80 @@ class ProductosController extends BaseController
 {
     public function index(): void
     {
+        $contexto = $this->construirContextoListado(null, 'productos');
+        $contexto['titulo_pagina'] = 'Producto';
+
+        $this->render('productos', $contexto);
+    }
+
+    public function novedades(): void
+    {
+        $contexto = $this->construirContextoListado('novedades', 'novedades/novedades');
+        $contexto['titulo_pagina'] = 'NOVEDADES';
+
+        $this->render('productos', $contexto);
+    }
+
+    public function populares(): void
+    {
+        $contexto = $this->construirContextoListado('populares', 'populares');
+        $contexto['titulo_pagina'] = 'POPULARES';
+
+        $this->render('productos', $contexto);
+    }
+
+    public function porMayor(): void
+    {
+        $contexto = $this->construirContextoListado('por_mayor', 'por_mayor');
+        $contexto['titulo_pagina'] = 'POR MAYOR';
+
+        $this->render('productos', $contexto);
+    }
+
+    public function detalle(): void
+    {
+        $id = isset($_GET['id']) ? sanitize_int($_GET['id']) : null;
+        $id = $id ?? 1;
+
+        $model = new ProductoModel();
+        $producto = $model->getById($id);
+
+        if ($producto === null) {
+            $producto = $model->getById(1);
+            if ($producto === null) {
+                $this->render('detalle_producto', ['producto' => null]);
+                return;
+            }
+        }
+
+        $producto['colores'] = $this->normalizarOpciones($producto['colores'] ?? []);
+        $producto['tallas'] = $this->normalizarOpciones($producto['tallas'] ?? []);
+        $productoId = (int) ($producto['id'] ?? 0);
+        try {
+            $imagenes = $model->obtenerImagenesPorProducto($productoId);
+        } catch (\Throwable $exception) {
+            $imagenes = [];
+        }
+
+        $this->render('detalle_producto', compact('producto', 'imagenes'));
+    }
+
+    public function ofertas(): void
+    {
+        $this->render('ofertas');
+    }
+
+    private function construirContextoListado(?string $slugForzado, string $rutaBase): array
+    {
         $slugSubcategoria = isset($_GET['subcat']) ? sanitize_string((string) $_GET['subcat']) : '';
         $slugSubcategoria = trim($slugSubcategoria);
+
+        if ($slugForzado !== null) {
+            $slugForzado = trim($slugForzado);
+            if ($slugForzado !== '') {
+                $slugSubcategoria = $slugForzado;
+            }
+        }
 
         $orden = isset($_GET['order']) ? sanitize_string((string) $_GET['order']) : '';
         $ordenesPermitidos = ['precio_asc', 'precio_desc', 'nombre_asc', 'nombre_desc'];
@@ -55,7 +127,7 @@ class ProductosController extends BaseController
             }
         }
 
-        $this->render('productos', [
+        return [
             'productos' => $productos,
             'slug_subcat' => $slugSubcategoria,
             'orden' => $orden,
@@ -65,40 +137,8 @@ class ProductosController extends BaseController
             'subcategorias' => $subcategorias,
             'min_precio' => $minPrecio,
             'max_precio' => $maxPrecio,
-        ]);
-    }
-
-    public function detalle(): void
-    {
-        $id = isset($_GET['id']) ? sanitize_int($_GET['id']) : null;
-        $id = $id ?? 1;
-
-        $model = new ProductoModel();
-        $producto = $model->getById($id);
-
-        if ($producto === null) {
-            $producto = $model->getById(1);
-            if ($producto === null) {
-                $this->render('detalle_producto', ['producto' => null]);
-                return;
-            }
-        }
-
-        $producto['colores'] = $this->normalizarOpciones($producto['colores'] ?? []);
-        $producto['tallas'] = $this->normalizarOpciones($producto['tallas'] ?? []);
-        $productoId = (int) ($producto['id'] ?? 0);
-        try {
-            $imagenes = $model->obtenerImagenesPorProducto($productoId);
-        } catch (\Throwable $exception) {
-            $imagenes = [];
-        }
-
-        $this->render('detalle_producto', compact('producto', 'imagenes'));
-    }
-
-    public function ofertas(): void
-    {
-        $this->render('ofertas');
+            'url_base_listado' => ltrim($rutaBase, '/'),
+        ];
     }
 
     private function sanitizarPrecio($valor, float $predeterminado): float
