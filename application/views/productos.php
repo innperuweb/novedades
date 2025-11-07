@@ -63,17 +63,6 @@ $subcategorias = $subcategorias ?? [];
 $categoria_id = $categoria_id ?? null;
 
 $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrecio($max_precio);
-$productoModel = isset($productoModel) && $productoModel instanceof ProductoModel ? $productoModel : null;
-if (!$productoModel instanceof ProductoModel) {
-    if (!class_exists('ProductoModel')) {
-        require_once APP_PATH . '/models/ProductoModel.php';
-    }
-    if (class_exists('ProductoModel')) {
-        $productoModel = new ProductoModel();
-    }
-}
-
-$cacheSeccionesProducto = [];
 ?>
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
@@ -139,58 +128,10 @@ $cacheSeccionesProducto = [];
                                 </div>
                             <?php else: ?>
                                 <?php foreach ($productos as $p): ?>
-                                    <?php
-                                    $productoId = (int) ($p['id'] ?? 0);
-                                    $nombreProducto = (string) ($p['nombre'] ?? 'Producto');
-                                    $precioProducto = (float) ($p['precio'] ?? 0);
-                                    $urlImagen = $productoModel instanceof ProductoModel
-                                        ? $productoModel->urlImagenPrincipalDeFila($p)
-                                        : base_url('public/assets/img/no-image.jpg');
-                                    $detalleUrl = "http://localhost/novedades/productos/detalle?id=" . (int) $p['id'];
-                                    $mostrarSale = false;
-
-                                    if ($productoModel instanceof ProductoModel && $productoId > 0 && method_exists($productoModel, 'obtenerSeccionesProducto')) {
-                                        if (!array_key_exists($productoId, $cacheSeccionesProducto)) {
-                                            try {
-                                                $cacheSeccionesProducto[$productoId] = $productoModel->obtenerSeccionesProducto($productoId);
-                                            } catch (\Throwable $exception) {
-                                                $cacheSeccionesProducto[$productoId] = [];
-                                            }
-                                        }
-                                        $mostrarSale = in_array('ofertas', $cacheSeccionesProducto[$productoId], true);
-                                    }
-                                    ?>
-                                    <div class="col-lg-4 col-sm-6 mb--40 mb-md--30">
-                                        <div class="airi-product">
-                                            <div class="product-inner">
-                                                <figure class="product-image">
-                                                    <div class="product-image--holder">
-                                                        <a href="<?= e($detalleUrl); ?>">
-                                                            <img src="<?= e($urlImagen); ?>" alt="<?= e($nombreProducto); ?>" class="primary-image">
-                                                        </a>
-                                                    </div>
-                                                    <div class="airi-product-action">
-                                                        <div class="product-action">
-                                                            <a class="quickview-btn action-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver">
-                                                                <span data-bs-toggle="modal" data-bs-target="#productModal">
-                                                                    <i class="dl-icon-view"></i>
-                                                                </span>
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                    <?php if ($mostrarSale): ?>
-                                                        <span class="product-badge sale">Sale</span>
-                                                    <?php endif; ?>
-                                                </figure>
-                                                <div class="product-info text-center">
-                                                    <h3 class="product-title">
-                                                        <a href="<?= e($detalleUrl); ?>"><?= e($nombreProducto); ?></a>
-                                                    </h3>
-                                                    <span class="product-price-wrapper">
-                                                        <span class="money">S/ <?= e($formatearPrecio($precioProducto)); ?></span>
-                                                    </span>
-                                                </div>
-                                            </div>
+                                    <div class="product-item">
+                                        <div class="product-content">
+                                            <h3 class="product-title"><?= e((string) ($p['nombre'] ?? '')); ?></h3>
+                                            <span class="product-price">S/ <?= number_format((float) ($p['precio'] ?? 0), 2); ?></span>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
