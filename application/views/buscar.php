@@ -49,89 +49,42 @@ $tituloPagina = $query === ''
 
                     <div class="shop-products">
                         <div class="row grid-space-30">
-                            <?php if ($totalResultados === 0): ?>
+                            <?php if (empty($resultados)): ?>
                                 <div class="col-12 text-center">
-                                    <?php if ($query === ''): ?>
-                                        <p>Ingresa un término en el buscador…</p>
-                                    <?php else: ?>
-                                        <p>No se encontraron productos.</p>
-                                    <?php endif; ?>
+                                    <p>No se encontraron productos.</p>
                                 </div>
                             <?php else: ?>
                                 <?php foreach ($resultados as $p): ?>
-
                                     <?php
-                                    $idProducto = (int) ($p['id'] ?? 0);
-                                    $nombreProducto = e($p['nombre'] ?? 'Producto');
-                                    $precio = number_format((float) ($p['precio'] ?? 0), 2);
-                                    $detalleUrl = base_url('productos/detalle?id=' . $idProducto);
+                                    $id = (int)$p['id'];
+                                    $nombre = e($p['nombre'] ?? '');
+                                    $precio = number_format((float)$p['precio'] ?? 0, 2);
+                                    $detalleUrl = base_url('productos/detalle?id=' . $id);
+                                    $imagen = 'public/assets/img/no-image.jpg';
 
-                                    // Buscar la imagen principal
-                                    $imagenPrincipal = '';
-                                    $rutaPrincipal = isset($p['ruta_principal']) ? trim((string) $p['ruta_principal']) : '';
-
-                                    if ($rutaPrincipal !== '') {
-                                        $normalizado = ltrim(str_replace('\\', '/', $rutaPrincipal), '/');
-                                        if (strpos($normalizado, 'uploads/') === 0) {
-                                            $rutaRelativa = 'public/assets/' . $normalizado;
-                                            $rutaArchivo = rtrim(ROOT_PATH, '/\\') . '/public/assets/' . $normalizado;
-                                            if (is_file($rutaArchivo)) {
-                                                $imagenPrincipal = $rutaRelativa;
+                                    $dir = __DIR__ . '/../../public/assets/uploads/productos/' . $id;
+                                    if (is_dir($dir)) {
+                                        foreach (scandir($dir) as $f) {
+                                            if (preg_match('/^1_.*\.(jpg|jpeg|png|webp)$/i', $f)) {
+                                                $imagen = 'public/assets/uploads/productos/' . $id . '/' . $f;
+                                                break;
                                             }
                                         }
-                                    }
-
-                                    if ($imagenPrincipal === '') {
-                                        $rutaBase = rtrim(ROOT_PATH, '/\\') . '/public/assets/uploads/productos/' . $idProducto;
-                                        if (is_dir($rutaBase)) {
-                                            $archivos = scandir($rutaBase);
-                                            foreach ($archivos as $archivo) {
-                                                if (preg_match('/^1_.*\.(jpg|jpeg|png|webp)$/i', $archivo)) {
-                                                    $imagenPrincipal = "public/assets/uploads/productos/{$idProducto}/{$archivo}";
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    if ($imagenPrincipal === '') {
-                                        $imagenPrincipal = 'public/assets/img/no-image.jpg';
-                                    }
-
-                                    $imagenUrl = $imagenPrincipal;
-                                    if ($imagenUrl !== '' && preg_match('#^https?://#i', $imagenUrl) !== 1) {
-                                        $imagenUrl = base_url(ltrim($imagenUrl, '/'));
                                     }
                                     ?>
-
                                     <div class="col-xl-3 col-md-6 mb--40 mb-md--30">
                                         <div class="airi-product">
                                             <div class="product-inner">
                                                 <figure class="product-image">
                                                     <div class="product-image--holder">
                                                         <a href="<?= e($detalleUrl); ?>">
-                                                            <img src="<?= e($imagenUrl); ?>" alt="<?= $nombreProducto; ?>">
+                                                            <img src="<?= e(base_url($imagen)); ?>" alt="<?= $nombre; ?>">
                                                         </a>
-                                                    </div>
-                                                    <div class="airi-product-action">
-                                                        <div class="product-action">
-                                                            <a href="<?= e($detalleUrl); ?>"
-                                                                class="quickview-btn action-btn"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-placement="left"
-                                                                title="Ver producto">
-                                                                <i class="dl-icon-view"></i>
-                                                            </a>
-                                                        </div>
                                                     </div>
                                                 </figure>
                                                 <div class="product-info text-center">
-                                                    <h3 class="product-title">
-                                                        <a href="<?= e($detalleUrl); ?>"><?= $nombreProducto; ?></a>
-                                                    </h3>
-                                                    <span class="product-price-wrapper">
-                                                        <span class="money">S/ <?= $precio; ?></span>
-                                                    </span>
+                                                    <h3 class="product-title"><?= $nombre; ?></h3>
+                                                    <span class="product-price">S/ <?= $precio; ?></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -140,6 +93,7 @@ $tituloPagina = $query === ''
                             <?php endif; ?>
                         </div>
                     </div>
+
 
                 </div>
             </div>

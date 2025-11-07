@@ -83,9 +83,9 @@ foreach ($miniCartItems as $miniCartItem) {
 
                             <div class="col-lg-8 order-3 order-lg-2">
                                 <nav class="main-navigation">
-<?php
-$uri_actual = $_SERVER['REQUEST_URI'] ?? '';
-?>
+                                    <?php
+                                    $uri_actual = $_SERVER['REQUEST_URI'] ?? '';
+                                    ?>
                                     <ul class="mainmenu mainmenu--centered">
                                         <li class="mainmenu__item <?= strpos($uri_actual, '/novedades/') === false && strpos($uri_actual, '/productos') === false ? 'active' : '' ?>">
                                             <a href="http://localhost/novedades" class="mainmenu__link">
@@ -182,8 +182,7 @@ $uri_actual = $_SERVER['REQUEST_URI'] ?? '';
                         class="searchform__input"
                         placeholder="Buscar productos..."
                         required
-                        aria-label="Buscar productos"
-                    >
+                        aria-label="Buscar productos">
                     <button type="submit" class="searchform__submit">
                         <i class="dl-icon-search10"></i>
                     </button>
@@ -210,7 +209,7 @@ $uri_actual = $_SERVER['REQUEST_URI'] ?? '';
                                         <a href="#sideNav" class="toolbar-btn"></a>
                                         <i class="dl-icon-menu2 categoria_responsive"></i>
                                     </li>
-                                    
+
                                     <li class="header-toolbar__item user-info-menu-btn">
                                         <a href="#">
                                             <i class="fa fa-user-circle-o"></i>
@@ -296,3 +295,58 @@ $uri_actual = $_SERVER['REQUEST_URI'] ?? '';
                 <div class="mobile-sticky-header-height"></div>
             </div>
         </header>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const searchBtn = document.querySelector('.search-btn');
+                const searchInput = document.querySelector('#search');
+
+                if (searchBtn && searchInput) {
+                    searchBtn.addEventListener('click', function() {
+                        setTimeout(() => searchInput.focus(), 150);
+                    });
+                }
+            });
+        </script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const searchForm = document.getElementById('searchForm');
+                const searchBtn = document.querySelector('.search-btn');
+                const closeBtn = document.querySelector('.btn-close');
+                const searchInput = document.getElementById('search');
+
+                // Abrir buscador
+                if (searchBtn && searchForm) {
+                    searchBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        searchForm.classList.add('open');
+                        setTimeout(() => searchInput && searchInput.focus(), 150);
+                    });
+                }
+
+                // Cerrar al hacer clic en el botón de cerrar
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        searchForm.classList.remove('open');
+                    });
+                }
+
+                // Cerrar con la tecla ESC
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && searchForm.classList.contains('open')) {
+                        searchForm.classList.remove('open');
+                    }
+                });
+
+                // Cerrar si hace clic fuera del formulario
+                searchForm.addEventListener('click', function(e) {
+                    const isBody = e.target.classList.contains('searchform__body');
+                    const isPopup = e.target.id === 'searchForm';
+                    if (isBody || isPopup) {
+                        searchForm.classList.remove('open');
+                    }
+                });
+            });
+        </script>

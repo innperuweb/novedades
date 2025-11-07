@@ -116,8 +116,8 @@ class ProductoModel
             $pdo = Database::connect();
             $stmt = $pdo->prepare(
                 'SELECT id, producto_id, nombre, ruta, es_principal, orden, creado_en '
-                . 'FROM producto_imagenes WHERE producto_id = :producto '
-                . 'ORDER BY COALESCE(orden, 0) ASC, id ASC'
+                    . 'FROM producto_imagenes WHERE producto_id = :producto '
+                    . 'ORDER BY COALESCE(orden, 0) ASC, id ASC'
             );
             $stmt->execute([':producto' => $productoId]);
             $imagenes = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
@@ -296,59 +296,58 @@ class ProductoModel
         return $ruta ?? 'no-image.jpg';
     }
 
+
+
     public function buscarProductos(string $query): array
     {
-        $query = trim($query);
-
         if ($query === '') {
             return [];
         }
 
-        $esc = static function (string $valor): string {
-            return strtr($valor, ['\\' => '\\\\', '%' => '\\%', '_' => '\\_']);
-        };
-
         try {
             $pdo = Database::connect();
 
-            $sql = "SELECT p.*, (
-                        SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre)
+            $sql = "SELECT p.*, 
+                       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre)
                         FROM producto_imagenes pi
                         WHERE pi.producto_id = p.id
                         ORDER BY pi.es_principal DESC, pi.id ASC
-                        LIMIT 1
-                    ) AS ruta_principal
-                    FROM productos p
-                    WHERE (p.nombre LIKE :q ESCAPE '\\'
-                           OR CAST(p.id AS CHAR) LIKE :q ESCAPE '\\')
-                      AND p.visible = 1 AND p.estado = 1 AND p.stock >= 0
-                    ORDER BY p.id DESC";
+                        LIMIT 1) AS ruta_principal
+                FROM productos p
+                WHERE (LOWER(p.nombre) LIKE :q1 
+                       OR CAST(p.id AS CHAR) LIKE :q2)
+                  AND p.visible = 1 
+                  AND p.estado = 1 
+                  AND p.stock >= 0
+                ORDER BY p.id DESC";
 
             $stmt = $pdo->prepare($sql);
-            $like = '%' . $esc($query) . '%';
-            $stmt->execute([':q' => $like]);
 
+            // Vincula ambas variables
+            $like = '%' . mb_strtolower($query, 'UTF-8') . '%';
+            $stmt->bindValue(':q1', $like, \PDO::PARAM_STR);
+            $stmt->bindValue(':q2', $like, \PDO::PARAM_STR);
+
+            $stmt->execute();
             $resultados = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
-        } catch (\Throwable $exception) {
+
+            // 🔍 Logs
+            error_log("🧾 Filas devueltas: " . count($resultados));
+            if (!empty($resultados)) {
+                error_log("🧩 Primer resultado: " . json_encode($resultados[0], JSON_UNESCAPED_UNICODE));
+            }
+
+            foreach ($resultados as &$r) {
+                $r['nombre'] = trim((string)($r['nombre'] ?? ''));
+                $r['precio'] = (float)($r['precio'] ?? 0);
+                $r['ruta_principal'] = trim((string)($r['ruta_principal'] ?? ''));
+            }
+
+            return $resultados;
+        } catch (\Throwable $e) {
+            error_log("❌ Error en buscarProductos: " . $e->getMessage());
             return [];
         }
-
-        foreach ($resultados as &$producto) {
-            $producto['id'] = isset($producto['id']) ? (int) $producto['id'] : 0;
-            $producto['nombre'] = trim((string) ($producto['nombre'] ?? ''));
-            $producto['precio'] = (float) ($producto['precio'] ?? 0);
-
-            if (isset($producto['imagen'])) {
-                $producto['imagen'] = trim((string) $producto['imagen']);
-            }
-
-            if (isset($producto['ruta_principal'])) {
-                $producto['ruta_principal'] = trim((string) $producto['ruta_principal']);
-            }
-        }
-        unset($producto);
-
-        return $resultados;
     }
 
     private function fetchProductoDesdeBaseDeDatos($id): ?array
@@ -410,7 +409,7 @@ class ProductoModel
         $partes = array_map(static function ($item): string {
             return trim((string) $item);
         }, $partes);
-        $partes = array_filter($partes, static fn ($item): bool => $item !== '');
+        $partes = array_filter($partes, static fn($item): bool => $item !== '');
 
         return array_values(array_unique($partes));
     }
@@ -421,8 +420,8 @@ class ProductoModel
             return [];
         }
 
-        $items = array_map(static fn ($item): string => trim((string) $item), $valor);
-        $items = array_filter($items, static fn ($item): bool => $item !== '');
+        $items = array_map(static fn($item): string => trim((string) $item), $valor);
+        $items = array_filter($items, static fn($item): bool => $item !== '');
 
         return array_values(array_unique($items));
     }
@@ -439,11 +438,11 @@ class ProductoModel
             $db = Database::connect();
             $stmt = $db->prepare(
                 'SELECT DISTINCT p.*, ' .
-                "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
-                . 'FROM productos p '
-                . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
-                . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
-                . 'WHERE s.slug = :slug AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
+                    "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
+                    . 'FROM productos p '
+                    . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
+                    . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
+                    . 'WHERE s.slug = :slug AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
             );
             $stmt->execute([':slug' => $slug]);
 
@@ -485,11 +484,11 @@ class ProductoModel
             $db = Database::connect();
             $stmt = $db->prepare(
                 'SELECT DISTINCT p.*, ' .
-                "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
-                . 'FROM productos p '
-                . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
-                . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
-                . 'WHERE s.slug = :slug AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY ' . $ordenSQL
+                    "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
+                    . 'FROM productos p '
+                    . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
+                    . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
+                    . 'WHERE s.slug = :slug AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY ' . $ordenSQL
             );
             $stmt->execute([':slug' => $slug]);
 
@@ -526,12 +525,12 @@ class ProductoModel
             $db = Database::connect();
             $stmt = $db->prepare(
                 'SELECT DISTINCT p.*, ' .
-                "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
-                . 'FROM productos p '
-                . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
-                . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
-                . 'WHERE s.slug = :slug AND p.precio BETWEEN :min AND :max '
-                . 'AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
+                    "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
+                    . 'FROM productos p '
+                    . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
+                    . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
+                    . 'WHERE s.slug = :slug AND p.precio BETWEEN :min AND :max '
+                    . 'AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
             );
             $stmt->execute([':slug' => $slug, ':min' => $min, ':max' => $max]);
 
@@ -575,7 +574,7 @@ class ProductoModel
             return [];
         }
 
-        $secciones = array_map(static fn ($item): string => trim((string) $item), $secciones);
+        $secciones = array_map(static fn($item): string => trim((string) $item), $secciones);
         $secciones = array_values(array_intersect($secciones, self::SECCIONES_PERMITIDAS));
 
         return $secciones;
@@ -587,7 +586,7 @@ class ProductoModel
             return;
         }
 
-        $secciones = array_map(static fn ($item): string => trim((string) $item), $secciones);
+        $secciones = array_map(static fn($item): string => trim((string) $item), $secciones);
         $secciones = array_values(array_intersect($secciones, self::SECCIONES_PERMITIDAS));
         $secciones = array_values(array_unique($secciones));
 
