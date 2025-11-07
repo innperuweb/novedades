@@ -194,12 +194,12 @@ $referenciaValor = $referenciaCliente !== '' ? $referenciaCliente : $referenciaG
                                 </div>
                                 <div class="payment-group mb--10">
                                     <div class="payment-radio">
-                                        <input type="radio" value="cash" name="metodo_envio" id="cash">
-                                        <label class="payment-label" for="cash">
+                                        <input type="radio" value="aereo" name="metodo_envio" id="aereo">
+                                        <label class="payment-label" for="aereo">
                                             AÉREO/EXPRESS (S/ 18.00)
                                         </label>
                                     </div>
-                                    <div class="payment-info cash hide-in-default" data-method="cash">
+                                    <div class="payment-info aereo hide-in-default" data-method="aereo">
                                         <p> <a class="fono" href="tel:+51901110822"> <i class="fa-brands fa-whatsapp" style="font-size: 20px; padding-top: 10px;"></i> &nbsp; Click para consultar disponibilidad</a> </p>
                                     </div>
                                 </div>
