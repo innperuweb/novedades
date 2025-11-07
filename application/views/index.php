@@ -265,6 +265,66 @@
         </div>
     </section>
 
+    <?php
+    $novedades = $novedades ?? [];
+    $ofertas = $ofertas ?? [];
+    $populares = $populares ?? [];
+
+    $obtenerImagenPrincipal = static function (array $producto): string {
+        $productoId = (int) ($producto['id'] ?? 0);
+        $imagenPrincipal = 'public/assets/img/no-image.jpg';
+
+        if ($productoId > 0) {
+            $directorio = __DIR__ . '/../../public/assets/uploads/productos/' . $productoId;
+
+            if (is_dir($directorio)) {
+                $archivos = scandir($directorio);
+                foreach ($archivos as $archivo) {
+                    if (preg_match('/^1_.*\.(jpe?g|png|gif|webp)$/i', $archivo)) {
+                        $imagenPrincipal = 'public/assets/uploads/productos/' . $productoId . '/' . $archivo;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if ($imagenPrincipal === 'public/assets/img/no-image.jpg') {
+            $rutaPrincipal = isset($producto['ruta_principal']) ? (string) $producto['ruta_principal'] : '';
+            $rutaPrincipal = str_replace('\\', '/', trim($rutaPrincipal));
+            if ($rutaPrincipal !== '') {
+                $rutaPrincipal = trim($rutaPrincipal, '/');
+                $prefijo = 'uploads/productos/';
+                if (stripos($rutaPrincipal, $prefijo) === 0) {
+                    $rutaPrincipal = substr($rutaPrincipal, strlen($prefijo));
+                }
+                if ($rutaPrincipal !== '') {
+                    $rutaPosible = 'public/assets/uploads/productos/' . $rutaPrincipal;
+                    $rutaLocal = __DIR__ . '/../../' . $rutaPosible;
+                    if (is_file($rutaLocal)) {
+                        $imagenPrincipal = $rutaPosible;
+                    }
+                }
+            }
+        }
+
+        return $imagenPrincipal;
+    };
+
+    $obtenerDetalleProducto = static function (int $productoId): string {
+        if ($productoId <= 0) {
+            return 'http://localhost/novedades/productos';
+        }
+
+        return 'http://localhost/novedades/productos/detalle?id=' . $productoId;
+    };
+
+    $formatearPrecioProducto = static function ($precio): string {
+        $valor = is_numeric($precio) ? (float) $precio : 0.0;
+
+        return 'S/ ' . number_format($valor, 2, '.', '');
+    };
+    ?>
+
     <section class="product-carousel-area pt--70 pt-md--50 pb--75 pb-md--55">
         <div class="container-fluid">
             <div class="row mb--40 mb-md--25">
@@ -296,35 +356,49 @@
                                         "slidesToShow": 1
                                     } }
                                 ]'>
-                        <div class="airi-product">
-                            <div class="product-inner">
-                                <figure class="product-image">
-                                    <div class="product-image--holder">
-                                        <a href="">
-                                            <img src="" alt="Product Image" >
-                                        </a>
-                                    </div>
-                                    <div class="airi-product-action">
-                                        <div class="product-action">
-                                            <a href="" class="quickview-btn action-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver">
-                                                <span data-bs-toggle="modal">
-                                                    <i
-                                                        class="dl-icon-view"></i>
-                                                </span>
-                                            </a>
+                        <?php if ($novedades === []): ?>
+                            <div class="text-center w-100">
+                                <p class="mb-0">No hay productos de novedades disponibles en este momento.</p>
+                            </div>
+                        <?php else: ?>
+                            <?php foreach ($novedades as $producto): ?>
+                                <?php
+                                $productoId = (int) ($producto['id'] ?? 0);
+                                $nombreProducto = trim((string) ($producto['nombre'] ?? ''));
+                                $detalleUrl = $obtenerDetalleProducto($productoId);
+                                $imagenPrincipal = $obtenerImagenPrincipal($producto);
+                                $precioProducto = $formatearPrecioProducto($producto['precio'] ?? 0);
+                                ?>
+                                <div class="airi-product">
+                                    <div class="product-inner">
+                                        <figure class="product-image">
+                                            <div class="product-image--holder">
+                                                <a href="<?= e($detalleUrl); ?>">
+                                                    <img src="<?= e($imagenPrincipal); ?>" alt="<?= e($nombreProducto); ?>">
+                                                </a>
+                                            </div>
+                                            <div class="airi-product-action">
+                                                <div class="product-action">
+                                                    <a href="<?= e($detalleUrl); ?>" class="quickview-btn action-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver">
+                                                        <span data-bs-toggle="modal">
+                                                            <i class="dl-icon-view"></i>
+                                                        </span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </figure>
+                                        <div class="product-info">
+                                            <h3 class="product-title">
+                                                <a href="<?= e($detalleUrl); ?>"><?= e($nombreProducto); ?></a>
+                                            </h3>
+                                            <span class="product-price-wrapper">
+                                                <span class="money"><?= e($precioProducto); ?></span>
+                                            </span>
                                         </div>
                                     </div>
-                                </figure>
-                                <div class="product-info">
-                                    <h3 class="product-title">
-                                        <a href="">Blusa invierno de seda</a>
-                                    </h3>
-                                    <span class="product-price-wrapper">
-                                        <span class="money">S/ 149.00</span>
-                                    </span>
                                 </div>
-                            </div>
-                        </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -362,36 +436,50 @@
                                         "slidesToShow": 1
                                     } }
                                 ]'>
-                        <div class="airi-product">
-                            <div class="product-inner">
-                                <figure class="product-image">
-                                    <div class="product-image--holder">
-                                        <a href="">
-                                            <img src="" alt="Product Image" >
-                                        </a>
-                                    </div>
-                                    <div class="airi-product-action">
-                                        <div class="product-action">
-                                            <a href="" class="quickview-btn action-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver">
-                                                <span data-bs-toggle="modal" data-bs-target="#productModal">
-                                                    <i
-                                                        class="dl-icon-view"></i>
-                                                </span>
-                                            </a>
+                        <?php if ($ofertas === []): ?>
+                            <div class="text-center w-100">
+                                <p class="mb-0">No hay productos en ofertas disponibles actualmente.</p>
+                            </div>
+                        <?php else: ?>
+                            <?php foreach ($ofertas as $producto): ?>
+                                <?php
+                                $productoId = (int) ($producto['id'] ?? 0);
+                                $nombreProducto = trim((string) ($producto['nombre'] ?? ''));
+                                $detalleUrl = $obtenerDetalleProducto($productoId);
+                                $imagenPrincipal = $obtenerImagenPrincipal($producto);
+                                $precioProducto = $formatearPrecioProducto($producto['precio'] ?? 0);
+                                ?>
+                                <div class="airi-product">
+                                    <div class="product-inner">
+                                        <figure class="product-image">
+                                            <div class="product-image--holder">
+                                                <a href="<?= e($detalleUrl); ?>">
+                                                    <img src="<?= e($imagenPrincipal); ?>" alt="<?= e($nombreProducto); ?>">
+                                                </a>
+                                            </div>
+                                            <div class="airi-product-action">
+                                                <div class="product-action">
+                                                    <a href="<?= e($detalleUrl); ?>" class="quickview-btn action-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver">
+                                                        <span data-bs-toggle="modal" data-bs-target="#productModal">
+                                                            <i class="dl-icon-view"></i>
+                                                        </span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <span class="product-badge hot">Sale</span>
+                                        </figure>
+                                        <div class="product-info">
+                                            <h3 class="product-title">
+                                                <a href="<?= e($detalleUrl); ?>"><?= e($nombreProducto); ?></a>
+                                            </h3>
+                                            <span class="product-price-wrapper">
+                                                <span class="money"><?= e($precioProducto); ?></span>
+                                            </span>
                                         </div>
                                     </div>
-                                    <span class="product-badge hot">Sale</span>
-                                </figure>
-                                <div class="product-info">
-                                    <h3 class="product-title">
-                                        <a href="">Blusa invierno de seda</a>
-                                    </h3>
-                                    <span class="product-price-wrapper">
-                                        <span class="money">S/ 149.00</span>
-                                    </span>
                                 </div>
-                            </div>
-                        </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -429,35 +517,49 @@
                                         "slidesToShow": 1
                                     } }
                                 ]'>
-                        <div class="airi-product">
-                            <div class="product-inner">
-                                <figure class="product-image">
-                                    <div class="product-image--holder">
-                                        <a href="detalle_producto.php">
-                                            <img src="" alt="Product Image" >
-                                        </a>
-                                    </div>
-                                    <div class="airi-product-action">
-                                        <div class="product-action">
-                                            <a href="detalle_producto.php" class="quickview-btn action-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver">
-                                                <span data-bs-toggle="modal" data-bs-target="#productModal">
-                                                    <i
-                                                        class="dl-icon-view"></i>
-                                                </span>
-                                            </a>
+                        <?php if ($populares === []): ?>
+                            <div class="text-center w-100">
+                                <p class="mb-0">No hay productos populares disponibles actualmente.</p>
+                            </div>
+                        <?php else: ?>
+                            <?php foreach ($populares as $producto): ?>
+                                <?php
+                                $productoId = (int) ($producto['id'] ?? 0);
+                                $nombreProducto = trim((string) ($producto['nombre'] ?? ''));
+                                $detalleUrl = $obtenerDetalleProducto($productoId);
+                                $imagenPrincipal = $obtenerImagenPrincipal($producto);
+                                $precioProducto = $formatearPrecioProducto($producto['precio'] ?? 0);
+                                ?>
+                                <div class="airi-product">
+                                    <div class="product-inner">
+                                        <figure class="product-image">
+                                            <div class="product-image--holder">
+                                                <a href="<?= e($detalleUrl); ?>">
+                                                    <img src="<?= e($imagenPrincipal); ?>" alt="<?= e($nombreProducto); ?>">
+                                                </a>
+                                            </div>
+                                            <div class="airi-product-action">
+                                                <div class="product-action">
+                                                    <a href="<?= e($detalleUrl); ?>" class="quickview-btn action-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver">
+                                                        <span data-bs-toggle="modal" data-bs-target="#productModal">
+                                                            <i class="dl-icon-view"></i>
+                                                        </span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </figure>
+                                        <div class="product-info">
+                                            <h3 class="product-title">
+                                                <a href="<?= e($detalleUrl); ?>"><?= e($nombreProducto); ?></a>
+                                            </h3>
+                                            <span class="product-price-wrapper">
+                                                <span class="money"><?= e($precioProducto); ?></span>
+                                            </span>
                                         </div>
                                     </div>
-                                </figure>
-                                <div class="product-info">
-                                    <h3 class="product-title">
-                                        <a href="">Blusa invierno de seda</a>
-                                    </h3>
-                                    <span class="product-price-wrapper">
-                                        <span class="money">S/ 149.00</span>
-                                    </span>
                                 </div>
-                            </div>
-                        </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
