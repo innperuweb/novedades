@@ -66,6 +66,40 @@ class ProductoModel
         return $this->listarConPrincipalPorSeccion(null);
     }
 
+    public function obtenerProductosAleatorios(int $limite = 15): array
+    {
+        if ($limite <= 0) {
+            return [];
+        }
+
+        try {
+            $pdo = Database::connect();
+            $sql =
+                'SELECT p.id, p.nombre, '
+                . "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
+                . 'FROM productos p '
+                . 'WHERE p.visible = 1 AND p.estado = 1 AND p.stock > 0 '
+                . 'ORDER BY RAND() '
+                . 'LIMIT ' . (int) $limite;
+            $stmt = $pdo->query($sql);
+
+            $productos = $stmt !== false ? $stmt->fetchAll(\PDO::FETCH_ASSOC) : [];
+        } catch (\Throwable $exception) {
+            return [];
+        }
+
+        foreach ($productos as &$producto) {
+            $producto['id'] = (int) ($producto['id'] ?? 0);
+            $producto['nombre'] = trim((string) ($producto['nombre'] ?? ''));
+            if (isset($producto['ruta_principal'])) {
+                $producto['ruta_principal'] = trim((string) $producto['ruta_principal']);
+            }
+        }
+        unset($producto);
+
+        return $productos;
+    }
+
     public function getById($id): ?array
     {
         if ($id === null) {
