@@ -2,7 +2,7 @@
 
 return [
     '' => ['HomeController', 'index'],
-    'buscar' => ['BuscarController', 'resultado'],
+    'buscar' => ['BuscarController', 'index'],
     'search/ajax' => ['SearchController', 'ajax'],
     'productos' => ['ProductosController', 'index'],
     'productos/detalle' => ['ProductosController', 'detalle'],

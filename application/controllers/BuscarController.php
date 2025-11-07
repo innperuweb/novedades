@@ -6,7 +6,7 @@ require_once APP_PATH . '/helpers/security_helper.php';
 
 class BuscarController extends BaseController
 {
-    public function resultado(): void
+    public function index(): void
     {
         $termino = isset($_GET['q']) ? clean_string((string) $_GET['q']) : '';
         $termino = trim($termino);
