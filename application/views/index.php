@@ -1,5 +1,3 @@
-
-
 <div id="content" class="main-content-wrapper">
     <div class="homepage-slider" id="homepage-slider-1">
         <div id="rev_slider_7_1_wrapper" class="rev_slider_wrapper fullwidthbanner-container" data-alias="home-12" data-source="gallery" style="margin:0px auto;background:transparent;padding:0px;margin-top:0px;margin-bottom:0px;">
@@ -276,63 +274,57 @@
             </div>
             <div class="row">
                 <div class="col-12">
-                    <div class="row grid-space-30">
-                        <?php
-                        $productos = $novedades;
-                        ?>
-                        <?php if (empty($productos)): ?>
-                            <div class="col-12 text-center">
-                                <p>No se encontraron productos para esta sección.</p>
-                            </div>
-                        <?php else: ?>
-                            <?php foreach ($productos as $p): ?>
-                                <?php
-                                $id = (int) $p['id'];
-                                $nombre = e($p['nombre'] ?? '');
-                                $precio = number_format((float) ($p['precio'] ?? 0), 2);
-                                $detalleUrl = base_url('productos/detalle?id=' . $id);
-                                $imagen = 'public/assets/img/no-image.jpg';
-
-                                $dir = __DIR__ . '/../../public/assets/uploads/productos/' . $id;
-                                if (is_dir($dir)) {
-                                    foreach (scandir($dir) as $f) {
-                                        if (preg_match('/^1_.*\.(jpg|jpeg|png|webp)$/i', $f)) {
-                                            $imagen = 'public/assets/uploads/productos/' . $id . '/' . $f;
-                                            break;
-                                        }
-                                    }
-                                }
-                                ?>
-                                <div class="col-xl-3 col-md-6 mb--40 mb-md--30">
-                                    <div class="airi-product">
-                                        <div class="product-inner">
-                                            <figure class="product-image">
-                                                <div class="product-image--holder">
-                                                    <a href="<?= e($detalleUrl); ?>">
-                                                        <img src="<?= e(base_url($imagen)); ?>" alt="<?= $nombre; ?>">
-                                                    </a>
-                                                </div>
-                                                <div class="airi-product-action">
-                                                    <div class="product-action">
-                                                        <a href="<?= e($detalleUrl); ?>"
-                                                           class="quickview-btn action-btn"
-                                                           data-bs-toggle="tooltip"
-                                                           data-bs-placement="left"
-                                                           title="Ver producto">
-                                                           <i class="dl-icon-view"></i>
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </figure>
-                                            <div class="product-info text-center">
-                                                <h3 class="product-title"><?= $nombre; ?></h3>
-                                                <span class="product-price">S/ <?= $precio; ?></span>
-                                            </div>
+                    <div class="airi-element-carousel product-carousel dot-style-2 dot-center cs-mt--5" data-slick-options='{
+                                    "spaceBetween": 60,
+                                    "spaceBetween_xl": 30,
+                                    "slidesToShow": 5,
+                                    "slidesToScroll": 5,
+                                    "autoplaySpeed": 5000,
+                                    "speed": 1000,
+                                    "dots": true
+                                }' data-slick-responsive='[
+                                    {"breakpoint":1200, "settings": {
+                                        "slidesToShow": 3,
+                                        "slidesToScroll": 3
+                                    } },
+                                    {"breakpoint":992, "settings": {
+                                        "slidesToShow": 2,
+                                        "slidesToScroll": 2
+                                    } },
+                                    {"breakpoint":576, "settings": {
+                                        "slidesToShow": 1,
+                                        "slidesToShow": 1
+                                    } }
+                                ]'>
+                        <div class="airi-product">
+                            <div class="product-inner">
+                                <figure class="product-image">
+                                    <div class="product-image--holder">
+                                        <a href="">
+                                            <img src="" alt="Product Image" >
+                                        </a>
+                                    </div>
+                                    <div class="airi-product-action">
+                                        <div class="product-action">
+                                            <a href="" class="quickview-btn action-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver">
+                                                <span data-bs-toggle="modal">
+                                                    <i
+                                                        class="dl-icon-view"></i>
+                                                </span>
+                                            </a>
                                         </div>
                                     </div>
+                                </figure>
+                                <div class="product-info">
+                                    <h3 class="product-title">
+                                        <a href="">Blusa invierno de seda</a>
+                                    </h3>
+                                    <span class="product-price-wrapper">
+                                        <span class="money">S/ 149.00</span>
+                                    </span>
                                 </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -340,78 +332,71 @@
     </section>
 
     <section class="product-carousel-area pt--70 pt-md--50 pb--75 pb-md--55">
-    <div class="container-fluid">
-        <div class="row mb--40 mb-md--25">
-            <div class="col-12 text-center">
-                <h2 class="heading-secondary">Ofertas</h2>
+        <div class="container-fluid">
+            <div class="row mb--40 mb-md--25">
+                <div class="col-12 text-center">
+                    <h2 class="heading-secondary">Ofertas</h2>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="row grid-space-30">
-                    <?php
-                    $productos = array_slice($ofertas, 0, 10);
-                    ?>
-                    <?php if ($productos === []): ?>
-                        <div class="col-12 text-center">
-                            <p>No se encontraron productos para esta sección.</p>
-                        </div>
-                    <?php else: ?>
-                        <?php foreach ($productos as $p): ?>
-                            <?php
-                            $id = (int) ($p['id'] ?? 0);
-                            $nombre = e((string) ($p['nombre'] ?? ''));
-                            $precio = number_format((float) ($p['precio'] ?? 0), 2);
-                            $detalleUrl = base_url('productos/detalle?id=' . $id);
-
-                            // Determinar la ruta de imagen principal
-                            $rutaPrincipal = isset($p['ruta_principal']) ? (string) $p['ruta_principal'] : '';
-                            $imagen = 'public/assets/img/no-image.jpg';
-                            if ($rutaPrincipal !== '') {
-                                $rutaRelativa = 'public/assets/' . ltrim($rutaPrincipal, '/');
-                                $baseFisica = defined('ROOT_PATH') ? ROOT_PATH : dirname(__DIR__, 2);
-                                $rutaFisica = rtrim($baseFisica, '/\\') . '/' . str_replace(['\\', '//'], '/', $rutaRelativa);
-                                if (is_file($rutaFisica)) {
-                                    $imagen = $rutaRelativa;
-                                }
-                            }
-                            ?>
-                            <div class="col-xl-3 col-md-6 mb--40 mb-md--30">
-                                <div class="airi-product">
-                                    <div class="product-inner">
-                                        <figure class="product-image">
-                                            <div class="product-image--holder">
-                                                <a href="<?= e($detalleUrl); ?>">
-                                                    <img src="<?= e(base_url($imagen)); ?>" alt="<?= $nombre; ?>">
-                                                </a>
-                                            </div>
-                                            <div class="airi-product-action">
-                                                <div class="product-action">
-                                                    <a href="<?= e($detalleUrl); ?>"
-                                                       class="quickview-btn action-btn"
-                                                       data-bs-toggle="tooltip"
-                                                       data-bs-placement="left"
-                                                       title="Ver producto">
-                                                       <i class="dl-icon-view"></i>
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </figure>
-                                        <div class="product-info text-center">
-                                            <h3 class="product-title"><?= $nombre; ?></h3>
-                                            <span class="product-price">S/ <?= $precio; ?></span>
+            <div class="row">
+                <div class="col-12">
+                    <div class="airi-element-carousel product-carousel dot-style-2 dot-center cs-mt--5" data-slick-options='{
+                                    "spaceBetween": 60,
+                                    "spaceBetween_xl": 30,
+                                    "slidesToShow": 5,
+                                    "slidesToScroll": 5,
+                                    "autoplaySpeed": 5000,
+                                    "speed": 1000,
+                                    "dots": true
+                                }' data-slick-responsive='[
+                                    {"breakpoint":1200, "settings": {
+                                        "slidesToShow": 3,
+                                        "slidesToScroll": 3
+                                    } },
+                                    {"breakpoint":992, "settings": {
+                                        "slidesToShow": 2,
+                                        "slidesToScroll": 2
+                                    } },
+                                    {"breakpoint":576, "settings": {
+                                        "slidesToShow": 1,
+                                        "slidesToShow": 1
+                                    } }
+                                ]'>
+                        <div class="airi-product">
+                            <div class="product-inner">
+                                <figure class="product-image">
+                                    <div class="product-image--holder">
+                                        <a href="">
+                                            <img src="" alt="Product Image" >
+                                        </a>
+                                    </div>
+                                    <div class="airi-product-action">
+                                        <div class="product-action">
+                                            <a href="" class="quickview-btn action-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver">
+                                                <span data-bs-toggle="modal" data-bs-target="#productModal">
+                                                    <i
+                                                        class="dl-icon-view"></i>
+                                                </span>
+                                            </a>
                                         </div>
                                     </div>
+                                    <span class="product-badge hot">Sale</span>
+                                </figure>
+                                <div class="product-info">
+                                    <h3 class="product-title">
+                                        <a href="">Blusa invierno de seda</a>
+                                    </h3>
+                                    <span class="product-price-wrapper">
+                                        <span class="money">S/ 149.00</span>
+                                    </span>
                                 </div>
                             </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
-
+    </section>
 
     <section class="product-carousel-area pt--70 pt-md--50 pb--75 pb-md--55">
         <div class="container-fluid">
@@ -422,63 +407,57 @@
             </div>
             <div class="row">
                 <div class="col-12">
-                    <div class="row grid-space-30">
-                        <?php
-                        $productos = $populares;
-                        ?>
-                        <?php if (empty($productos)): ?>
-                            <div class="col-12 text-center">
-                                <p>No se encontraron productos para esta sección.</p>
-                            </div>
-                        <?php else: ?>
-                            <?php foreach ($productos as $p): ?>
-                                <?php
-                                $id = (int) $p['id'];
-                                $nombre = e($p['nombre'] ?? '');
-                                $precio = number_format((float) ($p['precio'] ?? 0), 2);
-                                $detalleUrl = base_url('productos/detalle?id=' . $id);
-                                $imagen = 'public/assets/img/no-image.jpg';
-
-                                $dir = __DIR__ . '/../../public/assets/uploads/productos/' . $id;
-                                if (is_dir($dir)) {
-                                    foreach (scandir($dir) as $f) {
-                                        if (preg_match('/^1_.*\.(jpg|jpeg|png|webp)$/i', $f)) {
-                                            $imagen = 'public/assets/uploads/productos/' . $id . '/' . $f;
-                                            break;
-                                        }
-                                    }
-                                }
-                                ?>
-                                <div class="col-xl-3 col-md-6 mb--40 mb-md--30">
-                                    <div class="airi-product">
-                                        <div class="product-inner">
-                                            <figure class="product-image">
-                                                <div class="product-image--holder">
-                                                    <a href="<?= e($detalleUrl); ?>">
-                                                        <img src="<?= e(base_url($imagen)); ?>" alt="<?= $nombre; ?>">
-                                                    </a>
-                                                </div>
-                                                <div class="airi-product-action">
-                                                    <div class="product-action">
-                                                        <a href="<?= e($detalleUrl); ?>"
-                                                           class="quickview-btn action-btn"
-                                                           data-bs-toggle="tooltip"
-                                                           data-bs-placement="left"
-                                                           title="Ver producto">
-                                                           <i class="dl-icon-view"></i>
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </figure>
-                                            <div class="product-info text-center">
-                                                <h3 class="product-title"><?= $nombre; ?></h3>
-                                                <span class="product-price">S/ <?= $precio; ?></span>
-                                            </div>
+                    <div class="airi-element-carousel product-carousel dot-style-2 dot-center cs-mt--5" data-slick-options='{
+                                    "spaceBetween": 60,
+                                    "spaceBetween_xl": 30,
+                                    "slidesToShow": 5,
+                                    "slidesToScroll": 5,
+                                    "autoplaySpeed": 5000,
+                                    "speed": 1000,
+                                    "dots": true
+                                }' data-slick-responsive='[
+                                    {"breakpoint":1200, "settings": {
+                                        "slidesToShow": 3,
+                                        "slidesToScroll": 3
+                                    } },
+                                    {"breakpoint":992, "settings": {
+                                        "slidesToShow": 2,
+                                        "slidesToScroll": 2
+                                    } },
+                                    {"breakpoint":576, "settings": {
+                                        "slidesToShow": 1,
+                                        "slidesToShow": 1
+                                    } }
+                                ]'>
+                        <div class="airi-product">
+                            <div class="product-inner">
+                                <figure class="product-image">
+                                    <div class="product-image--holder">
+                                        <a href="detalle_producto.php">
+                                            <img src="" alt="Product Image" >
+                                        </a>
+                                    </div>
+                                    <div class="airi-product-action">
+                                        <div class="product-action">
+                                            <a href="detalle_producto.php" class="quickview-btn action-btn" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver">
+                                                <span data-bs-toggle="modal" data-bs-target="#productModal">
+                                                    <i
+                                                        class="dl-icon-view"></i>
+                                                </span>
+                                            </a>
                                         </div>
                                     </div>
+                                </figure>
+                                <div class="product-info">
+                                    <h3 class="product-title">
+                                        <a href="">Blusa invierno de seda</a>
+                                    </h3>
+                                    <span class="product-price-wrapper">
+                                        <span class="money">S/ 149.00</span>
+                                    </span>
                                 </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -651,4 +630,3 @@
 
 
 </div>
-
