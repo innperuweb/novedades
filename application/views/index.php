@@ -350,30 +350,26 @@
                 <div class="col-12">
                     <div class="row grid-space-30">
                         <?php
-                        $productos = $ofertas;
+                        $productos = array_slice($ofertas, 0, 10);
                         ?>
-                        <?php if (empty($productos)): ?>
+                        <?php if ($productos === []): ?>
                             <div class="col-12 text-center">
                                 <p>No se encontraron productos para esta sección.</p>
                             </div>
                         <?php else: ?>
                             <?php foreach ($productos as $p): ?>
                                 <?php
-                                $id = (int) $p['id'];
-                                $nombre = e($p['nombre'] ?? '');
+                                $id = (int) ($p['id'] ?? 0);
+                                $nombre = e((string) ($p['nombre'] ?? ''));
                                 $precio = number_format((float) ($p['precio'] ?? 0), 2);
                                 $detalleUrl = base_url('productos/detalle?id=' . $id);
-                                $imagen = 'public/assets/img/no-image.jpg';
 
-                                $dir = __DIR__ . '/../../public/assets/uploads/productos/' . $id;
-                                if (is_dir($dir)) {
-                                    foreach (scandir($dir) as $f) {
-                                        if (preg_match('/^1_.*\.(jpg|jpeg|png|webp)$/i', $f)) {
-                                            $imagen = 'public/assets/uploads/productos/' . $id . '/' . $f;
-                                            break;
-                                        }
-                                    }
+                                $rutaPrincipal = trim((string) ($p['ruta_principal'] ?? ''));
+                                if ($rutaPrincipal !== '') {
+                                    $rutaPrincipal = 'public/assets/' . ltrim($rutaPrincipal, '/');
                                 }
+
+                                $imagen = $rutaPrincipal !== '' ? $rutaPrincipal : 'public/assets/img/no-image.jpg';
                                 ?>
                                 <div class="col-xl-3 col-md-6 mb--40 mb-md--30">
                                     <div class="airi-product">

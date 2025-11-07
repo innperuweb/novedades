@@ -16,19 +16,32 @@ class ProductoModel
         }
 
         try {
+            if (!in_array($seccion, self::SECCIONES_PERMITIDAS, true)) {
+                return [];
+            }
+
             $pdo = Database::connect();
             $sql = <<<'SQL'
-SELECT * FROM productos
-WHERE FIND_IN_SET(:seccion, secciones)
-  AND visible = 1
-  AND estado = 1
-  AND stock >= 0
-ORDER BY id DESC
+SELECT
+    p.*,
+    (
+        SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre)
+        FROM producto_imagenes pi
+        WHERE pi.producto_id = p.id
+        ORDER BY pi.es_principal DESC, pi.id ASC
+        LIMIT 1
+    ) AS ruta_principal
+FROM productos p
+WHERE p.categoria_slug = :slug
+  AND p.visible = 1
+  AND p.estado = 1
+  AND p.stock >= 0
+ORDER BY p.id DESC
 LIMIT :limite
 SQL;
 
             $stmt = $pdo->prepare($sql);
-            $stmt->bindValue(':seccion', $seccion, \PDO::PARAM_STR);
+            $stmt->bindValue(':slug', $seccion, \PDO::PARAM_STR);
             $stmt->bindValue(':limite', $limite, \PDO::PARAM_INT);
             $stmt->execute();
 
@@ -42,6 +55,9 @@ SQL;
             $producto['nombre'] = trim((string) ($producto['nombre'] ?? ''));
             if (isset($producto['precio'])) {
                 $producto['precio'] = (float) $producto['precio'];
+            }
+            if (isset($producto['ruta_principal'])) {
+                $producto['ruta_principal'] = trim((string) $producto['ruta_principal']);
             }
         }
         unset($producto);
