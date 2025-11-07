@@ -63,14 +63,44 @@ if (!function_exists('url_imagen_producto')) {
             return $placeholder;
         }
 
-        $rutaBD = trim($rutaBD, '/');
-        $dir    = dirname($rutaBD);
-        $file   = basename($rutaBD);
-        $url    = $base . $uploadsRel . '/' . ($dir === '.' ? '' : $dir . '/') . rawurlencode($file);
+$rutaBD = str_replace('\\', '/', (string) $rutaBD);
+$rutaBD = trim($rutaBD, '/');
 
-        $docRoot = $_SERVER['DOCUMENT_ROOT'] ?? '';
-        $docRoot = rtrim($docRoot, '/\\');
-        $local   = $docRoot . '/novedades' . $uploadsRel . '/' . ($dir === '.' ? '' : $dir . '/') . $file;
+// Si está vacío, usa imagen por defecto
+if ($rutaBD === '') {
+    return $placeholder;
+}
+
+// Si ya es una URL absoluta, devuélvela tal cual
+if (preg_match('~^https?://~i', $rutaBD)) {
+    return $rutaBD;
+}
+
+// Elimina el prefijo "uploads/productos/" si ya viene incluido
+$uploadsPrefix = ltrim($uploadsRel, '/');
+if (stripos($rutaBD, $uploadsPrefix . '/') === 0) {
+    $rutaBD = substr($rutaBD, strlen($uploadsPrefix) + 1);
+}
+
+// Separa directorio y archivo
+$dir  = dirname($rutaBD);
+$file = basename($rutaBD);
+
+// Validar nombre del archivo
+if ($file === '' || $file === '.' || $file === '..') {
+    return $placeholder;
+}
+
+// Construir URL y ruta local
+$relativeDir = $dir === '.' ? '' : trim($dir, '/');
+$urlPath = $uploadsRel . '/' . ($relativeDir === '' ? '' : $relativeDir . '/');
+$url     = $base . $urlPath . rawurlencode($file);
+
+$docRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\');
+$local   = $docRoot . '/novedades' . $urlPath . $file;
+
+return is_file($local) ? $url : $placeholder;
+
 
         return is_file($local) ? $url : $placeholder;
     }
