@@ -90,28 +90,100 @@ class ProductoModel
         return $imagenes;
     }
 
-    public function obtenerImagenPrincipal(int $producto_id): ?string
+    public function obtenerImagenPrincipalRuta(int $productoId): ?string
     {
-        if ($producto_id <= 0) {
-            return 'no-image.jpg';
+        if ($productoId <= 0) {
+            return null;
         }
 
         try {
             $pdo = Database::connect();
-            $stmt = $pdo->prepare('SELECT ruta FROM producto_imagenes WHERE producto_id = ? AND es_principal = 1 LIMIT 1');
-            $stmt->execute([$producto_id]);
-            $imagen = $stmt->fetchColumn();
+            $stmt = $pdo->prepare(
+                'SELECT ruta FROM producto_imagenes WHERE producto_id = ? ORDER BY es_principal DESC, id ASC LIMIT 1'
+            );
+            $stmt->execute([$productoId]);
+            $ruta = $stmt->fetchColumn();
 
-            if (!$imagen) {
-                $stmt = $pdo->prepare('SELECT ruta FROM producto_imagenes WHERE producto_id = ? ORDER BY id ASC LIMIT 1');
-                $stmt->execute([$producto_id]);
-                $imagen = $stmt->fetchColumn();
+            if ($ruta === false) {
+                return null;
             }
 
-            return $imagen ?: 'no-image.jpg';
+            $ruta = trim((string) $ruta);
+
+            return $ruta !== '' ? $ruta : null;
         } catch (\Throwable $exception) {
-            return 'no-image.jpg';
+            return null;
         }
+    }
+
+    public function obtenerImagenPrincipalURL(int $productoId): string
+    {
+        $placeholder = base_url('public/assets/img/no-image.jpg');
+
+        $ruta = $this->obtenerImagenPrincipalRuta($productoId);
+        if ($ruta === null) {
+            return $placeholder;
+        }
+
+        $ruta = trim($ruta);
+        $ruta = str_replace('\\', '/', $ruta);
+        $ruta = trim($ruta, '/');
+        if ($ruta === '') {
+            return $placeholder;
+        }
+
+        $directory = dirname($ruta);
+        $directory = ($directory === '.' || $directory === DIRECTORY_SEPARATOR) ? '' : $directory;
+        $filename = basename($ruta);
+
+        if ($filename === '' || $filename === '.' || $filename === '..') {
+            return $placeholder;
+        }
+
+        $relativeDir = '';
+        if ($directory !== '') {
+            $normalizedDir = str_replace('\\', '/', $directory);
+            $relativeDir = trim($normalizedDir, '/');
+        }
+
+        $uploadsBase = 'uploads/productos';
+        $uploadsUrlBase = rtrim(base_url($uploadsBase), '/');
+        $encodedFilename = rawurlencode($filename);
+        $url = $uploadsUrlBase . '/' . ($relativeDir !== '' ? $relativeDir . '/' : '') . $encodedFilename;
+
+        $relativePath = $uploadsBase . '/' . ($relativeDir !== '' ? $relativeDir . '/' : '') . $filename;
+        $relativePathNormalized = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePath);
+
+        $documentRoot = $_SERVER['DOCUMENT_ROOT'] ?? '';
+        if ($documentRoot !== '') {
+            $documentRoot = rtrim((string) $documentRoot, '/\\');
+            $baseUrlPath = parse_url(base_url(), PHP_URL_PATH);
+            $baseUrlPath = $baseUrlPath !== null ? trim($baseUrlPath, '/') : '';
+            $docRelative = $baseUrlPath !== '' ? $baseUrlPath . '/' . trim($relativePath, '/') : trim($relativePath, '/');
+            $docRelative = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $docRelative);
+            $documentPath = $documentRoot . DIRECTORY_SEPARATOR . $docRelative;
+
+            if (is_file($documentPath)) {
+                return $url;
+            }
+        }
+
+        $projectRoot = defined('ROOT_PATH') ? ROOT_PATH : dirname(__DIR__, 2);
+        $projectRoot = rtrim($projectRoot, '/\\');
+        $projectPath = $projectRoot . DIRECTORY_SEPARATOR . $relativePathNormalized;
+
+        if (is_file($projectPath)) {
+            return $url;
+        }
+
+        return $placeholder;
+    }
+
+    public function obtenerImagenPrincipal(int $producto_id): ?string
+    {
+        $ruta = $this->obtenerImagenPrincipalRuta($producto_id);
+
+        return $ruta ?? 'no-image.jpg';
     }
 
     public function buscarProductos($term): array
