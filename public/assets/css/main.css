@@ -3057,7 +3057,7 @@ Bootstrap Dropdown
 
 .main-navigation .mainmenu__item.menu-item-has-children>ul .megamenu-banner:hover .megamenu-banner-image:after,
 .banner-box.banner-hover-1:hover .banner-image:after {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgb(0 0 0 / 75%);
 }
 
 .main-navigation .mainmenu__item.menu-item-has-children>ul .megamenu-banner:hover .megamenu-banner-image:before,
@@ -23516,7 +23516,8 @@ span,
 .banner-box .banner-title-1 {
     color: #ffffff;
     font-size: 15px;
-    margin-bottom: 0;
+    margin-bottom: 6px;
+    padding-right: 20px;
 }
 
 .banner-box .banner-title-2 {

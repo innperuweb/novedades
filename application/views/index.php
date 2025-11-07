@@ -253,7 +253,6 @@
                                                 </div>
                                                 <div class="banner-info">
                                                     <p class="banner-title-1 lts-5"><?= e($nombreProducto); ?></p>
-                                                    <h2 class="banner-title-2">Producto destacado</h2>
                                                 </div>
                                                 <a class="banner-link banner-overlay" href="<?= e($detalleUrl); ?>" tabindex="0">Ver producto</a>
                                             </div>
