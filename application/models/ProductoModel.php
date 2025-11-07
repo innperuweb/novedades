@@ -8,6 +8,47 @@ class ProductoModel
 {
     private const SECCIONES_PERMITIDAS = ['tienda', 'novedades', 'ofertas', 'populares', 'por_mayor'];
 
+    public function obtenerProductosPorSeccion(string $seccion, int $limite = 10): array
+    {
+        $seccion = trim($seccion);
+        if ($seccion === '' || $limite <= 0) {
+            return [];
+        }
+
+        try {
+            $pdo = Database::connect();
+            $sql = <<<'SQL'
+SELECT * FROM productos
+WHERE FIND_IN_SET(:seccion, secciones)
+  AND visible = 1
+  AND estado = 1
+  AND stock >= 0
+ORDER BY id DESC
+LIMIT :limite
+SQL;
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(':seccion', $seccion, \PDO::PARAM_STR);
+            $stmt->bindValue(':limite', $limite, \PDO::PARAM_INT);
+            $stmt->execute();
+
+            $productos = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+        } catch (\Throwable $exception) {
+            return [];
+        }
+
+        foreach ($productos as &$producto) {
+            $producto['id'] = (int) ($producto['id'] ?? 0);
+            $producto['nombre'] = trim((string) ($producto['nombre'] ?? ''));
+            if (isset($producto['precio'])) {
+                $producto['precio'] = (float) $producto['precio'];
+            }
+        }
+        unset($producto);
+
+        return $productos;
+    }
+
     public function getAll(): array
     {
         return $this->obtenerTodos();
