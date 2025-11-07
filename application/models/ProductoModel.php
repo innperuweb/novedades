@@ -13,24 +13,57 @@ class ProductoModel
         return $this->obtenerTodos();
     }
 
-    public function obtenerTodos(): array
+    public function listarConPrincipalPorSeccion(?string $seccion = null): array
     {
         $pdo = Database::connect();
-        $stmt = $pdo->query(
-            "
-        SELECT p.*,
-               (SELECT ruta FROM producto_imagenes pi
-                WHERE pi.producto_id = p.id
-                ORDER BY es_principal DESC, id ASC
-                LIMIT 1) AS ruta_imagen
-        FROM productos p
-        WHERE p.visible = 1 AND p.estado = 1 AND p.stock >= 0
-        ORDER BY p.id DESC
-    "
-        );
-        $productos = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+
+        $sql = "
+      SELECT p.*,
+             (
+               SELECT pi.ruta
+               FROM producto_imagenes pi
+               WHERE pi.producto_id = p.id
+               ORDER BY pi.es_principal DESC, pi.id ASC
+               LIMIT 1
+             ) AS ruta_principal
+      FROM productos p
+    ";
+
+        $params = [];
+        $where = 'WHERE p.visible = 1 AND p.estado = 1 AND p.stock >= 0';
+
+        $seccion = $seccion !== null ? trim($seccion) : null;
+        if ($seccion === '' || $seccion === 'tienda') {
+            $seccion = null;
+        }
+
+        if ($seccion !== null) {
+            if (!in_array($seccion, self::SECCIONES_PERMITIDAS, true)) {
+                return [];
+            }
+
+            $sql .= ' INNER JOIN producto_categorias_web pcw ON pcw.producto_id = p.id';
+            $where .= ' AND pcw.seccion = :sec';
+            $params[':sec'] = $seccion;
+        }
+
+        $sql .= ' ' . $where . ' ORDER BY p.id DESC';
+
+        if ($params !== []) {
+            $st = $pdo->prepare($sql);
+            $st->execute($params);
+        } else {
+            $st = $pdo->query($sql);
+        }
+
+        $productos = $st->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
         return $this->normalizarListadoProductos($productos);
+    }
+
+    public function obtenerTodos(): array
+    {
+        return $this->listarConPrincipalPorSeccion(null);
     }
 
     public function getById($id): ?array
@@ -49,6 +82,9 @@ class ProductoModel
             }
             if (isset($producto['imagen'])) {
                 $producto['imagen'] = trim((string) $producto['imagen']);
+            }
+            if (isset($producto['ruta_principal'])) {
+                $producto['ruta_principal'] = trim((string) $producto['ruta_principal']);
             }
         }
 
@@ -191,6 +227,68 @@ class ProductoModel
         return $placeholder;
     }
 
+    public function urlImagenPrincipalDeFila(array $fila): string
+    {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $base = rtrim("$scheme://$host", '/') . '/novedades';
+
+        $uploadsRel = '/uploads/productos';
+        $placeholder = $base . '/public/assets/img/no-image.jpg';
+
+        $ruta = $fila['ruta_principal'] ?? null;
+        if (!$ruta) {
+            $productoId = isset($fila['id']) ? (int) $fila['id'] : 0;
+            if ($productoId > 0) {
+                $ruta = $this->obtenerImagenPrincipalRuta($productoId);
+            }
+        }
+
+        if (!$ruta) {
+            return $placeholder;
+        }
+
+        $ruta = str_replace('\\', '/', (string) $ruta);
+        $ruta = trim($ruta);
+        if ($ruta === '') {
+            return $placeholder;
+        }
+
+        $ruta = trim($ruta, '/');
+        if (strpos($ruta, $uploadsRel) !== false) {
+            $pos = strpos($ruta, $uploadsRel);
+            if ($pos !== false) {
+                $ruta = ltrim(substr($ruta, $pos + strlen($uploadsRel)), '/');
+            }
+        }
+
+        $dir = dirname($ruta);
+        $dir = ($dir === '.' || $dir === DIRECTORY_SEPARATOR) ? '' : $dir;
+        $file = basename($ruta);
+
+        if ($file === '' || $file === '.' || $file === '..') {
+            return $placeholder;
+        }
+
+        $encodedFile = rawurlencode($file);
+        $dirSegment = $dir !== '' ? trim(str_replace('\\', '/', $dir), '/') . '/' : '';
+        $url = $base . $uploadsRel . '/' . $dirSegment . $encodedFile;
+
+        $docRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\');
+        $local = $docRoot . '/novedades' . $uploadsRel . '/' . $dirSegment . $file;
+
+        if ($docRoot !== '' && is_file($local)) {
+            return $url;
+        }
+
+        $projectRoot = defined('ROOT_PATH') ? ROOT_PATH : dirname(__DIR__, 2);
+        $projectRoot = rtrim($projectRoot, '/\\');
+        $relativeLocal = 'uploads/productos/' . $dirSegment . $file;
+        $projectPath = $projectRoot . DIRECTORY_SEPARATOR . trim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativeLocal), DIRECTORY_SEPARATOR);
+
+        return is_file($projectPath) ? $url : $placeholder;
+    }
+
     public function obtenerImagenPrincipal(int $producto_id): ?string
     {
         $ruta = $this->obtenerImagenPrincipalRuta($producto_id);
@@ -202,9 +300,11 @@ class ProductoModel
     {
         $pdo = Database::connect();
 
-        $sql = 'SELECT p.id, p.nombre, p.precio, p.imagen FROM productos p ' .
-            'WHERE (p.nombre LIKE :term OR p.descripcion LIKE :term) ' .
-            'AND p.visible = 1 AND p.estado = 1 AND p.stock >= 0 LIMIT 10';
+        $sql = 'SELECT p.id, p.nombre, p.precio, p.imagen, ' .
+            '       (SELECT pi.ruta FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal '
+            . 'FROM productos p '
+            . 'WHERE (p.nombre LIKE :term OR p.descripcion LIKE :term) '
+            . 'AND p.visible = 1 AND p.estado = 1 AND p.stock >= 0 LIMIT 10';
 
         $stmt = $pdo->prepare($sql);
         $likeTerm = '%' . $term . '%';
@@ -217,6 +317,9 @@ class ProductoModel
                 $producto['imagen'] = trim((string) $producto['imagen']);
             } else {
                 $producto['imagen'] = '';
+            }
+            if (isset($producto['ruta_principal'])) {
+                $producto['ruta_principal'] = trim((string) $producto['ruta_principal']);
             }
         }
         unset($producto);
@@ -311,10 +414,12 @@ class ProductoModel
         try {
             $db = Database::connect();
             $stmt = $db->prepare(
-                'SELECT DISTINCT p.* FROM productos p ' .
-                'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id ' .
-                'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id ' .
-                'WHERE s.slug = :slug AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
+                'SELECT DISTINCT p.*, ' .
+                '       (SELECT pi.ruta FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal '
+                . 'FROM productos p '
+                . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
+                . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
+                . 'WHERE s.slug = :slug AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
             );
             $stmt->execute([':slug' => $slug]);
 
@@ -323,6 +428,9 @@ class ProductoModel
             foreach ($productos as &$producto) {
                 if (isset($producto['imagen'])) {
                     $producto['imagen'] = trim((string) $producto['imagen']);
+                }
+                if (isset($producto['ruta_principal'])) {
+                    $producto['ruta_principal'] = trim((string) $producto['ruta_principal']);
                 }
             }
             unset($producto);
@@ -352,10 +460,12 @@ class ProductoModel
         try {
             $db = Database::connect();
             $stmt = $db->prepare(
-                'SELECT DISTINCT p.* FROM productos p ' .
-                'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id ' .
-                'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id ' .
-                'WHERE s.slug = :slug AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY ' . $ordenSQL
+                'SELECT DISTINCT p.*, ' .
+                '       (SELECT pi.ruta FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal '
+                . 'FROM productos p '
+                . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
+                . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
+                . 'WHERE s.slug = :slug AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY ' . $ordenSQL
             );
             $stmt->execute([':slug' => $slug]);
 
@@ -364,6 +474,9 @@ class ProductoModel
             foreach ($productos as &$producto) {
                 if (isset($producto['imagen'])) {
                     $producto['imagen'] = trim((string) $producto['imagen']);
+                }
+                if (isset($producto['ruta_principal'])) {
+                    $producto['ruta_principal'] = trim((string) $producto['ruta_principal']);
                 }
             }
             unset($producto);
@@ -388,11 +501,13 @@ class ProductoModel
         try {
             $db = Database::connect();
             $stmt = $db->prepare(
-                'SELECT DISTINCT p.* FROM productos p ' .
-                'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id ' .
-                'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id ' .
-                'WHERE s.slug = :slug AND p.precio BETWEEN :min AND :max ' .
-                'AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
+                'SELECT DISTINCT p.*, ' .
+                '       (SELECT pi.ruta FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal '
+                . 'FROM productos p '
+                . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
+                . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
+                . 'WHERE s.slug = :slug AND p.precio BETWEEN :min AND :max '
+                . 'AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
             );
             $stmt->execute([':slug' => $slug, ':min' => $min, ':max' => $max]);
 
@@ -401,6 +516,9 @@ class ProductoModel
             foreach ($productos as &$producto) {
                 if (isset($producto['imagen'])) {
                     $producto['imagen'] = trim((string) $producto['imagen']);
+                }
+                if (isset($producto['ruta_principal'])) {
+                    $producto['ruta_principal'] = trim((string) $producto['ruta_principal']);
                 }
             }
             unset($producto);
@@ -422,9 +540,11 @@ class ProductoModel
         try {
             $db = Database::connect();
             $stmt = $db->prepare(
-                'SELECT p.* FROM productos p ' .
-                'WHERE (p.nombre LIKE :q OR p.descripcion LIKE :q) ' .
-                'AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
+                'SELECT p.*, ' .
+                '       (SELECT pi.ruta FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal '
+                . 'FROM productos p '
+                . 'WHERE (p.nombre LIKE :q OR p.descripcion LIKE :q) '
+                . 'AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
             );
             $like = '%' . $termino . '%';
             $stmt->execute([':q' => $like]);
@@ -434,6 +554,9 @@ class ProductoModel
             foreach ($productos as &$producto) {
                 if (isset($producto['imagen'])) {
                     $producto['imagen'] = trim((string) $producto['imagen']);
+                }
+                if (isset($producto['ruta_principal'])) {
+                    $producto['ruta_principal'] = trim((string) $producto['ruta_principal']);
                 }
             }
             unset($producto);
@@ -500,32 +623,7 @@ class ProductoModel
             return [];
         }
 
-        if ($seccion === 'tienda') {
-            return $this->obtenerTodos();
-        }
-
-        try {
-            $pdo = Database::connect();
-            $stmt = $pdo->prepare(
-                "
-        SELECT p.*,
-               (SELECT ruta FROM producto_imagenes pi
-                WHERE pi.producto_id = p.id
-                ORDER BY es_principal DESC, id ASC
-                LIMIT 1) AS ruta_imagen
-        FROM productos p
-        INNER JOIN producto_categorias_web pcw ON pcw.producto_id = p.id
-        WHERE pcw.seccion = :seccion AND p.visible = 1 AND p.estado = 1 AND p.stock >= 0
-        ORDER BY p.id DESC
-    "
-            );
-            $stmt->execute([':seccion' => $seccion]);
-            $productos = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
-        } catch (\Throwable $exception) {
-            return [];
-        }
-
-        return $this->normalizarListadoProductos($productos);
+        return $this->listarConPrincipalPorSeccion($seccion === 'tienda' ? null : $seccion);
     }
 
     private function normalizarListadoProductos(array $productos): array
@@ -541,6 +639,9 @@ class ProductoModel
             }
             if (isset($producto['imagen'])) {
                 $producto['imagen'] = trim((string) $producto['imagen']);
+            }
+            if (array_key_exists('ruta_principal', $producto)) {
+                $producto['ruta_principal'] = trim((string) ($producto['ruta_principal'] ?? ''));
             }
         }
         unset($producto);

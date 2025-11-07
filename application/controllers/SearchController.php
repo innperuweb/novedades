@@ -5,6 +5,7 @@
 // Conectado al router principal desde index.php
 
 require_once APP_PATH . '/controllers/BaseController.php';
+require_once APP_PATH . '/models/ProductoModel.php';
 
 class SearchController extends BaseController
 {
@@ -12,6 +13,7 @@ class SearchController extends BaseController
     {
         $term = isset($_GET['q']) ? sanitize((string) $_GET['q']) : '';
         $resultados = [];
+        $productoModel = new ProductoModel();
 
         if ($term !== '') {
             $resultados = ProductoModel::buscar($term);
@@ -21,6 +23,7 @@ class SearchController extends BaseController
             'moduleAction' => 'index',
             'term' => $term,
             'resultados' => $resultados,
+            'productoModel' => $productoModel,
         ]);
     }
 

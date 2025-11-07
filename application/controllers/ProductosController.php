@@ -112,8 +112,8 @@ class ProductosController extends BaseController
 
         if ($slugSubcategoria === '' || in_array($slugSubcategoria, $seccionesEspeciales, true)) {
             $aplicarFiltroPrecio = false;
-            $seccionConsulta = $slugSubcategoria === '' ? 'tienda' : $slugSubcategoria;
-            $productos = $productoModel->obtenerPorSeccion($seccionConsulta);
+            $seccionConsulta = $slugSubcategoria === '' ? null : $slugSubcategoria;
+            $productos = $productoModel->listarConPrincipalPorSeccion($seccionConsulta);
         } else {
             if ($slugSubcategoria !== '') {
                 $subcategoria = SubcategoriaModel::obtenerPorSlug($slugSubcategoria);
@@ -150,6 +150,7 @@ class ProductosController extends BaseController
             'min_precio' => $minPrecio,
             'max_precio' => $maxPrecio,
             'url_base_listado' => ltrim($rutaBase, '/'),
+            'productoModel' => $productoModel,
         ];
     }
 
