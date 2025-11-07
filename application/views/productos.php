@@ -17,7 +17,7 @@ if ($total_resultados > 0) {
 $min_precio = isset($min_precio) ? (float) $min_precio : 0.0;
 $max_precio = isset($max_precio) ? (float) $max_precio : 10000.0;
 
-$formatearPrecio = static fn (float $valor): string => number_format($valor, 2, '.', '');
+$formatearPrecio = static fn(float $valor): string => number_format($valor, 2, '.', '');
 
 $titulo_pagina = isset($titulo_pagina) ? trim((string) $titulo_pagina) : '';
 $titulo_pagina = $titulo_pagina !== '' ? $titulo_pagina : 'Producto';
@@ -120,24 +120,50 @@ $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrec
                             </div>
                         </div>
                     </div>
+
                     <div class="shop-products">
-                        <div class="row grid-space-20 xxl-block-grid-4">
+                        <div class="row grid-space-30">
                             <?php if ($productos === []): ?>
                                 <div class="col-12">
                                     <p class="text-center">No se encontraron productos para esta subcategoría.</p>
                                 </div>
                             <?php else: ?>
                                 <?php foreach ($productos as $p): ?>
-                                    <div class="product-item">
-                                        <div class="product-content">
-                                            <h3 class="product-title"><?= e((string) ($p['nombre'] ?? '')); ?></h3>
-                                            <span class="product-price">S/ <?= number_format((float) ($p['precio'] ?? 0), 2); ?></span>
+                                    <div class="col-xl-4 col-md-6 mb--40 mb-md--30">
+                                        <div class="airi-product">
+                                            <div class="product-inner">
+                                                <figure class="product-image">
+                                                    <div class="product-image--holder">
+                                                        <a href="#">
+                                                            <img src="public/assets/uploads/productos/18/1_690cff061230c6.10920117.webp"
+                                                                alt="Product Image">
+                                                        </a>
+                                                    </div>
+                                                    <div class="airi-product-action">
+                                                        <div class="product-action">
+                                                            <a class="quickview-btn action-btn" data-bs-toggle="tooltip"
+                                                                data-bs-placement="left" title="Quick Shop">
+                                                                <span data-bs-toggle="modal" data-bs-target="#productModal">
+                                                                    <i class="dl-icon-view"></i>
+                                                                </span>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </figure>
+                                                <div class="product-info text-center">
+                                                    <h3 class="product-title"><?= e((string) ($p['nombre'] ?? '')); ?></h3>
+                                                    <span class="product-price">S/ <?= number_format((float) ($p['precio'] ?? 0), 2); ?></span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </div>
                     </div>
+
+
+
                 </div>
                 <div class="col-lg-3 order-lg-1 mt--30 mt-md--40" id="primary-sidebar">
                     <div class="sidebar-widget">
@@ -154,10 +180,10 @@ $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrec
                                         $urlSub = $slug !== '' ? $generarUrlSubcategoria($slug) : $urlBaseProductos;
                                         ?>
                                         <li<?= $clase; ?>><a href="<?= e($urlSub); ?>"><?= e($nombre); ?></a></li>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <li><span>No hay subcategorías disponibles.</span></li>
-                                <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <li><span>No hay subcategorías disponibles.</span></li>
+                                    <?php endif; ?>
                             </ul>
                         </div>
 
@@ -166,8 +192,8 @@ $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrec
                             <div class="widget_content">
                                 <form action="<?= e($formActionProductos); ?>" method="post" class="price-filter-form">
                                     <div id="slider-range" class="price-slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"
-                                         data-min-default="0" data-max-default="10000"
-                                         data-min="<?= e($formatearPrecio($min_precio)); ?>" data-max="<?= e($formatearPrecio($max_precio)); ?>">
+                                        data-min-default="0" data-max-default="10000"
+                                        data-min="<?= e($formatearPrecio($min_precio)); ?>" data-max="<?= e($formatearPrecio($max_precio)); ?>">
                                         <div class="ui-slider-range ui-widget-header ui-corner-all"></div>
                                         <span class="ui-slider-handle ui-state-default ui-corner-all" tabindex="0"></span>
                                         <span class="ui-slider-handle ui-state-default ui-corner-all" tabindex="0"></span>
@@ -194,4 +220,3 @@ $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrec
         </div>
     </div>
 </div>
-
