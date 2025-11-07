@@ -2,18 +2,17 @@
 $query = isset($query) ? trim((string) $query) : '';
 $resultados = isset($resultados) && is_array($resultados) ? $resultados : [];
 $totalResultados = count($resultados);
+
+// Definir título de página dinámico
+$tituloPagina = $query === ''
+    ? 'Busca productos'
+    : 'Resultados para: ' . $query;
 ?>
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
         <div class="row">
             <div class="col-12 text-center">
-                <h1 class="page-title">
-                    <?php if ($query !== ''): ?>
-                        Resultados para: <?= e($query); ?>
-                    <?php else: ?>
-                        Busca productos
-                    <?php endif; ?>
-                </h1>
+                <h1 class="page-title"><?= e($tituloPagina); ?></h1>
             </div>
         </div>
     </div>
@@ -29,16 +28,23 @@ $totalResultados = count($resultados);
                             <div class="row align-items-center">
                                 <div class="col-12 text-center">
                                     <?php if ($totalResultados > 0): ?>
-                                        <p class="product-pages">Se encontraron <?= e((string) $totalResultados); ?> producto(s).</p>
+                                        <p class="product-pages">
+                                            Se encontraron <?= e((string)$totalResultados); ?> producto(s).
+                                        </p>
                                     <?php elseif ($query === ''): ?>
-                                        <p class="product-pages">Ingresa un término en el buscador para encontrar productos.</p>
+                                        <p class="product-pages">
+                                            Ingresa un término en el buscador para encontrar productos.
+                                        </p>
                                     <?php else: ?>
-                                        <p class="product-pages">No se encontraron productos.</p>
+                                        <p class="product-pages">
+                                            No se encontraron productos.
+                                        </p>
                                     <?php endif; ?>
                                 </div>
                             </div>
                         </div>
                     </div>
+
 
                     <div class="shop-products">
                         <div class="row grid-space-30">
@@ -52,46 +58,32 @@ $totalResultados = count($resultados);
                                 </div>
                             <?php else: ?>
                                 <?php foreach ($resultados as $p): ?>
+
                                     <?php
-                                        $idProducto = (int) ($p['id'] ?? 0);
-                                        $nombreProducto = e($p['nombre'] ?? 'Producto');
-                                        $precio = number_format((float) ($p['precio'] ?? 0), 2);
-                                        $detalleUrl = base_url('productos/detalle?id=' . $idProducto);
+                                    $idProducto = (int) ($p['id'] ?? 0);
+                                    $nombreProducto = e($p['nombre'] ?? 'Producto');
+                                    $precio = number_format((float) ($p['precio'] ?? 0), 2);
+                                    $detalleUrl = base_url('productos/detalle?id=' . $idProducto);
 
-                                        $imagenPrincipal = '';
-                                        $rutaBaseProyecto = defined('ROOT_PATH') ? ROOT_PATH : __DIR__ . '/../../..';
+                                    // Buscar la imagen principal
+                                    $imagenPrincipal = '';
+                                    $rutaBase = __DIR__ . '/../../public/assets/uploads/productos/' . $idProducto;
 
-                                        if (!empty($p['ruta_principal'])) {
-                                            $rutaPrincipal = str_replace('\\', '/', (string) $p['ruta_principal']);
-                                            $rutaPrincipal = trim($rutaPrincipal, '/');
-
-                                            if ($rutaPrincipal !== '') {
-                                                $candidata = strpos($rutaPrincipal, 'public/') === 0
-                                                    ? $rutaPrincipal
-                                                    : 'public/assets/' . ltrim($rutaPrincipal, '/');
-
-                                                $rutaFisicaCandidata = rtrim($rutaBaseProyecto, '/\\') . '/' . ltrim($candidata, '/');
-
-                                                if (is_file($rutaFisicaCandidata)) {
-                                                    $imagenPrincipal = $candidata;
-                                                }
+                                    if (is_dir($rutaBase)) {
+                                        $archivos = scandir($rutaBase);
+                                        foreach ($archivos as $archivo) {
+                                            if (preg_match('/^1_.*\.(jpg|jpeg|png|webp)$/i', $archivo)) {
+                                                $imagenPrincipal = "public/assets/uploads/productos/{$idProducto}/{$archivo}";
+                                                break;
                                             }
                                         }
+                                    }
 
-                                        if ($imagenPrincipal === '') {
-                                            $imagenBase = $p['imagen'] ?? '';
-                                            $candidata = "public/assets/uploads/productos/{$idProducto}/1_" . ($imagenBase !== '' ? $imagenBase : 'no-image.jpg');
-                                            $rutaFisicaCandidata = rtrim($rutaBaseProyecto, '/\\') . '/' . ltrim($candidata, '/');
-
-                                            if (is_file($rutaFisicaCandidata)) {
-                                                $imagenPrincipal = $candidata;
-                                            }
-                                        }
-
-                                        if ($imagenPrincipal === '') {
-                                            $imagenPrincipal = 'public/assets/img/no-image.jpg';
-                                        }
+                                    if ($imagenPrincipal === '') {
+                                        $imagenPrincipal = 'public/assets/img/no-image.jpg';
+                                    }
                                     ?>
+
                                     <div class="col-xl-3 col-md-6 mb--40 mb-md--30">
                                         <div class="airi-product">
                                             <div class="product-inner">
@@ -128,6 +120,7 @@ $totalResultados = count($resultados);
                             <?php endif; ?>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
