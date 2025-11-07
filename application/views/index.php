@@ -350,28 +350,28 @@
                 <div class="col-12">
                     <div class="row grid-space-30">
                         <?php
-                        $productos = $ofertas;
+                        $productos = array_slice($ofertas, 0, 10);
                         ?>
-                        <?php if (empty($productos)): ?>
+                        <?php if ($productos === []): ?>
                             <div class="col-12 text-center">
                                 <p>No se encontraron productos para esta sección.</p>
                             </div>
                         <?php else: ?>
                             <?php foreach ($productos as $p): ?>
                                 <?php
-                                $id = (int) $p['id'];
-                                $nombre = e($p['nombre'] ?? '');
+                                $id = (int) ($p['id'] ?? 0);
+                                $nombre = e((string) ($p['nombre'] ?? ''));
                                 $precio = number_format((float) ($p['precio'] ?? 0), 2);
                                 $detalleUrl = base_url('productos/detalle?id=' . $id);
-                                $imagen = 'public/assets/img/no-image.jpg';
 
-                                $dir = __DIR__ . '/../../public/assets/uploads/productos/' . $id;
-                                if (is_dir($dir)) {
-                                    foreach (scandir($dir) as $f) {
-                                        if (preg_match('/^1_.*\.(jpg|jpeg|png|webp)$/i', $f)) {
-                                            $imagen = 'public/assets/uploads/productos/' . $id . '/' . $f;
-                                            break;
-                                        }
+                                $rutaPrincipal = isset($p['ruta_principal']) ? (string) $p['ruta_principal'] : '';
+                                $imagen = 'public/assets/img/no-image.jpg';
+                                if ($rutaPrincipal !== '') {
+                                    $rutaRelativa = 'public/assets/' . ltrim($rutaPrincipal, '/');
+                                    $baseFisica = defined('ROOT_PATH') ? ROOT_PATH : dirname(__DIR__, 2);
+                                    $rutaFisica = rtrim($baseFisica, '/\\') . '/' . str_replace(['\\', '//'], '/', $rutaRelativa);
+                                    if (is_file($rutaFisica)) {
+                                        $imagen = $rutaRelativa;
                                     }
                                 }
                                 ?>
