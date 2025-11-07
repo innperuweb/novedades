@@ -31,12 +31,6 @@ class CarritoController extends BaseController
             $this->redirectToCarrito();
         }
 
-        if ($color === '' || $talla === '') {
-            $_SESSION['error'] = 'Debe seleccionar color y talla antes de agregar al carrito.';
-            header('Location: ' . base_url('detalle_producto.php?id=' . $id));
-            exit;
-        }
-
         $cantidad = $cantidad !== null ? max(1, $cantidad) : 1;
 
         $model = new ProductoModel();
@@ -45,6 +39,23 @@ class CarritoController extends BaseController
         if ($producto !== null) {
             $coloresDisponibles = array_map('strval', $producto['colores'] ?? []);
             $tallasDisponibles = array_map('strval', $producto['tallas'] ?? []);
+
+            $requiereColor = $coloresDisponibles !== [];
+            $requiereTalla = $tallasDisponibles !== [];
+
+            if ($requiereColor && !in_array($color, $coloresDisponibles, true)) {
+                $color = '';
+            }
+
+            if ($requiereTalla && !in_array($talla, $tallasDisponibles, true)) {
+                $talla = '';
+            }
+
+            if (($requiereColor && $color === '') || ($requiereTalla && $talla === '')) {
+                $_SESSION['error'] = 'Debe seleccionar las opciones disponibles antes de agregar al carrito.';
+                header('Location: ' . base_url('detalle_producto.php?id=' . $id));
+                exit;
+            }
 
             if ($coloresDisponibles !== [] && !in_array($color, $coloresDisponibles, true)) {
                 $color = '';
