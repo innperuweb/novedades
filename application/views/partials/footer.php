@@ -185,73 +185,146 @@
     </div>
 </aside>
 
+<?php
+$miniCartItems = isset($miniCartItems) && is_array($miniCartItems)
+    ? $miniCartItems
+    : (function_exists('get_cart_session')
+        ? get_cart_session()
+        : (isset($_SESSION['carrito']) && is_array($_SESSION['carrito']) ? $_SESSION['carrito'] : [])
+    );
+
+if (!is_array($miniCartItems)) {
+    $miniCartItems = [];
+}
+
+$miniCartSubtotal = 0.0;
+?>
+
 <aside class="mini-cart" id="miniCart">
     <div class="mini-cart-wrapper">
         <a href="#" class="btn-close"><i class="dl-icon-close"></i></a>
         <div class="mini-cart-inner">
             <h5 class="mini-cart__heading mb--40 mb-lg--30">Mis compras</h5>
             <div class="mini-cart__content">
-                <ul class="mini-cart__list">
-                    <li class="mini-cart__product">
-                        <a href="#" class="remove-from-cart remove">
-                            <i class="dl-icon-close"></i>
-                        </a>
-                        <div class="mini-cart__product__image">
-                            <img src="<?= asset_url('img/products/prod-17-1-70x91.jpg'); ?>" alt="products">
-                        </div>
-                        <div class="mini-cart__product__content">
-                            <a class="mini-cart__product__title" href="#">Chain print bermuda
-                                shorts </a>
-                            <span class="mini-cart__product__quantity">S/ 49.00</span>
-                        </div>
-                    </li>
-                    <li class="mini-cart__product">
-                        <a href="#" class="remove-from-cart remove">
-                            <i class="dl-icon-close"></i>
-                        </a>
-                        <div class="mini-cart__product__image">
-                            <img src="<?= asset_url('img/products/prod-18-1-70x91.jpg'); ?>" alt="products">
-                        </div>
-                        <div class="mini-cart__product__content">
-                            <a class="mini-cart__product__title" href="#">Waxed-effect
-                                pleated skirt</a>
-                            <span class="mini-cart__product__quantity">S/ 49.00</span>
-                        </div>
-                    </li>
-                    <li class="mini-cart__product">
-                        <a href="#" class="remove-from-cart remove">
-                            <i class="dl-icon-close"></i>
-                        </a>
-                        <div class="mini-cart__product__image">
-                            <img src="<?= asset_url('img/products/prod-19-1-70x91.jpg'); ?>" alt="products">
-                        </div>
-                        <div class="mini-cart__product__content">
-                            <a class="mini-cart__product__title" href="#">Waxed-effect
-                                pleated skirt</a>
-                            <span class="mini-cart__product__quantity">S/ 49.00</span>
-                        </div>
-                    </li>
-                    <li class="mini-cart__product">
-                        <a href="#" class="remove-from-cart remove">
-                            <i class="dl-icon-close"></i>
-                        </a>
-                        <div class="mini-cart__product__image">
-                            <img src="<?= asset_url('img/products/prod-2-1-70x91.jpg'); ?>" alt="products">
-                        </div>
-                        <div class="mini-cart__product__content">
-                            <a class="mini-cart__product__title" href="#">Waxed-effect
-                                pleated skirt</a>
-                            <span class="mini-cart__product__quantity">S/ 49.00</span>
-                        </div>
-                    </li>
-                </ul>
-                <div class="mini-cart__total">
-                    <span>Subtotal</span>
-                    <span class="ammount">S/ 98.00</span>
-                </div>
-                <div class="mini-cart__buttons">
-                    <a href="<?= base_url('carrito'); ?>" class="btn btn-fullwidth btn-style-1">Ver carrito</a>
-                </div>
+                <?php if (!empty($miniCartItems)): ?>
+                    <ul class="mini-cart__list">
+                        <?php foreach ($miniCartItems as $item): ?>
+                            <?php
+                            $idProducto = (int) ($item['id'] ?? 0);
+                            $nombre = e($item['nombre'] ?? 'Producto');
+                            $precio = (float) ($item['precio'] ?? 0);
+                            $cantidad = isset($item['cantidad']) && is_numeric($item['cantidad']) ? (int) $item['cantidad'] : 1;
+                            $cantidad = $cantidad > 0 ? $cantidad : 1;
+                            $subtotalItem = $precio * $cantidad;
+                            $miniCartSubtotal += $subtotalItem;
+                            $uid = (string) ($item['uid'] ?? '');
+                            $removeQuery = $uid !== ''
+                                ? 'uid=' . urlencode($uid)
+                                : 'id=' . urlencode((string) $idProducto);
+                            $detalleUrl = base_url('productos/detalle?id=' . $idProducto);
+                            $imagenUrl = base_url('public/assets/img/no-image.jpg');
+                            $imagenCampo = trim((string) ($item['imagen'] ?? ''));
+                            $imagenRel = null;
+
+                            if ($idProducto > 0) {
+                                $directorio = __DIR__ . '/../../public/assets/uploads/productos/' . $idProducto;
+                                if (is_dir($directorio)) {
+                                    $archivos = scandir($directorio);
+                                    if ($archivos !== false) {
+                                        foreach ($archivos as $archivo) {
+                                            if (preg_match('/^1_.*\\.(jpg|jpeg|png|webp)$/i', $archivo)) {
+                                                $imagenRel = 'public/assets/uploads/productos/' . $idProducto . '/' . $archivo;
+                                                break;
+                                            }
+                                        }
+
+                                        if ($imagenRel === null) {
+                                            foreach ($archivos as $archivo) {
+                                                if ($archivo === '.' || $archivo === '..') {
+                                                    continue;
+                                                }
+
+                                                if (preg_match('/\\.(jpg|jpeg|png|webp)$/i', $archivo)) {
+                                                    $imagenRel = 'public/assets/uploads/productos/' . $idProducto . '/' . $archivo;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            if ($imagenRel === null && $imagenCampo !== '') {
+                                if (preg_match('~^https?://~i', $imagenCampo)) {
+                                    $imagenUrl = $imagenCampo;
+                                } else {
+                                    $candidato = ltrim($imagenCampo, '/');
+                                    $posibles = [];
+
+                                    if (strpos($candidato, 'public/') === 0) {
+                                        $posibles[] = $candidato;
+                                    } elseif (strpos($candidato, 'assets/') === 0) {
+                                        $posibles[] = 'public/' . $candidato;
+                                    } elseif (strpos($candidato, 'uploads/') === 0) {
+                                        $posibles[] = 'public/' . $candidato;
+                                        $posibles[] = 'public/assets/' . $candidato;
+                                    } else {
+                                        if ($idProducto > 0) {
+                                            $posibles[] = 'public/assets/uploads/productos/' . $idProducto . '/' . $candidato;
+                                        }
+                                        $posibles[] = 'public/assets/' . $candidato;
+                                    }
+
+                                    foreach ($posibles as $posible) {
+                                        $rutaLocal = __DIR__ . '/../../' . $posible;
+                                        if (is_file($rutaLocal)) {
+                                            $imagenRel = $posible;
+                                            break;
+                                        }
+                                    }
+
+                                    if ($imagenRel === null && $candidato !== '' && $idProducto > 0) {
+                                        $imagenRel = 'public/assets/uploads/productos/' . $idProducto . '/' . $candidato;
+                                    }
+                                }
+                            }
+
+                            if ($imagenRel !== null) {
+                                $imagenUrl = base_url($imagenRel);
+                            } elseif (!preg_match('~^https?://~i', $imagenUrl)) {
+                                $imagenUrl = base_url('public/assets/img/no-image.jpg');
+                            }
+                            ?>
+                            <li class="mini-cart__product">
+                                <a href="<?= e(base_url('carrito/eliminar?' . $removeQuery)); ?>" class="remove-from-cart remove">
+                                    <i class="dl-icon-close"></i>
+                                </a>
+                                <div class="mini-cart__product__image">
+                                    <img src="<?= e($imagenUrl); ?>" alt="<?= $nombre; ?>">
+                                </div>
+                                <div class="mini-cart__product__content">
+                                    <a class="mini-cart__product__title" href="<?= e($detalleUrl); ?>">
+                                        <?= $nombre; ?>
+                                    </a>
+                                    <span class="mini-cart__product__quantity">
+                                        <?= e((string) $cantidad); ?> x S/ <?= number_format($precio, 2); ?>
+                                    </span>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+
+                    <div class="mini-cart__total">
+                        <span>Subtotal</span>
+                        <span class="ammount">S/ <?= number_format($miniCartSubtotal, 2); ?></span>
+                    </div>
+
+                    <div class="mini-cart__buttons">
+                        <a href="<?= base_url('carrito'); ?>" class="btn btn-fullwidth btn-style-1">Ver carrito</a>
+                    </div>
+                <?php else: ?>
+                    <p class="text-center">Tu carrito está vacío.</p>
+                <?php endif; ?>
             </div>
         </div>
     </div>

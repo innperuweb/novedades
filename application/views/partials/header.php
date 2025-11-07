@@ -1,3 +1,25 @@
+<?php
+$miniCartItems = isset($miniCartItems) && is_array($miniCartItems)
+    ? $miniCartItems
+    : (function_exists('get_cart_session')
+        ? get_cart_session()
+        : (isset($_SESSION['carrito']) && is_array($_SESSION['carrito']) ? $_SESSION['carrito'] : [])
+    );
+
+if (!is_array($miniCartItems)) {
+    $miniCartItems = [];
+}
+
+$miniCartCount = 0;
+foreach ($miniCartItems as $miniCartItem) {
+    $cantidadItem = isset($miniCartItem['cantidad']) && is_numeric($miniCartItem['cantidad'])
+        ? (int) $miniCartItem['cantidad']
+        : 1;
+
+    $miniCartCount += max(1, $cantidadItem);
+}
+?>
+
 <body>
 
     <div class="fixed-action-btn">
@@ -128,7 +150,7 @@ $uri_actual = $_SERVER['REQUEST_URI'] ?? '';
                                     <li class="header-toolbar__item">
                                         <a href="#miniCart" class="mini-cart-btn toolbar-btn">
                                             <i class="dl-icon-cart4"></i>
-                                            <sup class="mini-cart-count">2</sup>
+                                            <sup class="mini-cart-count"><?= $miniCartCount ?></sup>
                                         </a>
                                     </li>
                                     <li class="header-toolbar__item">
@@ -188,7 +210,7 @@ $uri_actual = $_SERVER['REQUEST_URI'] ?? '';
                                     <li class="header-toolbar__item">
                                         <a href="#miniCart" class="mini-cart-btn toolbar-btn">
                                             <i class="dl-icon-cart4"></i>
-                                            <sup class="mini-cart-count">2</sup>
+                                            <sup class="mini-cart-count"><?= $miniCartCount ?></sup>
                                         </a>
                                     </li>
                                     <li class="header-toolbar__item">
