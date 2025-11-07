@@ -96,11 +96,13 @@ $uri_actual = $_SERVER['REQUEST_URI'] ?? '';
                                                 <span class="mm-text">Por Mayor</span>
                                             </a>
                                         </li>
+                                        <!--------
                                         <li class="mainmenu__item ">
                                             <a href="http://localhost/novedades/blog" class="mainmenu__link">
                                                 <span class="mm-text">Blog</span>
                                             </a>
                                         </li>
+                                        -------->
                                     </ul>
                                 </nav>
                             </div>

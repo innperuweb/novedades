@@ -30,7 +30,8 @@ if ($orden === null): ?>
             </div>
         </div>
     </div>
-<?php return; endif;
+<?php return;
+endif;
 
 $fechaFormateada = date('d/m/Y', strtotime($orden['fecha'] ?? 'now'));
 $metodoEnvio = $orden['metodo_envio_texto'] ?? $orden['metodo_envio'] ?? '';
@@ -134,27 +135,31 @@ $totalOrden = number_format((float) ($orden['total'] ?? 0), 2);
 
                                     <div class="col-lg-12 mt-md--40">
                                         <div class="order-details">
+
                                             <div class="cliente">
-                                                <p><strong>Cliente:</strong> <?= e($orden['nombre'] ?? '') ?> <?= e($orden['apellidos'] ?? '') ?></p>
-                                                <?php if (!empty($orden['dni'] ?? '')): ?>
-                                                    <p><strong>DNI:</strong> <?= e($orden['dni']) ?></p>
-                                                <?php endif; ?>
-                                                <?php if (!empty($orden['telefono'] ?? '')): ?>
-                                                    <p><strong>Teléfono:</strong> <?= e($orden['telefono']) ?></p>
-                                                <?php endif; ?>
-                                                <?php if (!empty($orden['email'] ?? '')): ?>
-                                                    <p><strong>Email:</strong> <?= e($orden['email']) ?></p>
-                                                <?php endif; ?>
-                                                <p><strong>Dirección:</strong> <?= e($orden['direccion'] ?? '') ?><?php if (!empty($orden['distrito'] ?? '')): ?>, <?= e($orden['distrito']) ?><?php endif; ?></p>
-                                                <?php if ($referencia !== ''): ?>
-                                                    <p><strong>Referencia:</strong> <?= e($referencia) ?></p>
-                                                <?php endif; ?>
+                                                <div class="col">
+                                                    <p><strong>Cliente:</strong> <?= e($orden['nombre'] ?? '') ?> <?= e($orden['apellidos'] ?? '') ?></p>
+                                                    <?php if (!empty($orden['dni'] ?? '')): ?>
+                                                        <p><strong>DNI:</strong> <?= e($orden['dni']) ?></p>
+                                                    <?php endif; ?>
+                                                </div>
+
+                                                <div class="col">
+                                                    <?php if (!empty($orden['email'] ?? '')): ?>
+                                                        <p><strong>Email:</strong> <?= e($orden['email']) ?></p>
+                                                    <?php endif; ?>
+                                                    <?php if ($referencia !== ''): ?>
+                                                        <p><strong>Referencia:</strong> <?= e($referencia) ?></p>
+                                                    <?php endif; ?>
+                                                </div>
+
+                                                <div class="col">
+                                                    <?php if ($metodoEnvio !== ''): ?>
+                                                        <p><strong>Método de envío:</strong> <?= e($metodoEnvio) ?></p>
+                                                    <?php endif; ?>
+                                                </div>
                                             </div>
-                                            <?php if ($metodoEnvio !== ''): ?>
-                                                <p><strong>Método de envío:</strong> <?= e($metodoEnvio) ?></p>
-                                            <?php endif; ?>
-                                            <p><strong>Costo de envío:</strong> S/ <?= e($costoEnvio) ?></p>
-                                            <p><strong>Total:</strong> S/ <?= e($totalOrden) ?></p>
+
                                             <div class="table-content table-responsive mb--30">
                                                 <table class="table order-table order-table-2">
                                                     <thead>

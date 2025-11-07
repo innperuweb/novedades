@@ -15,11 +15,9 @@ $ordenes = $ordenes ?? ($id_cliente ? OrdenModel::obtenerPorCliente($id_cliente)
         <main class="page-content">
             <div class="container">
                 <div class="row">
-                    <div class="col-lg-3 mb--30 mb-lg--0">
+                    <div class="col-lg-2 mb--30 mb-lg--0">
                         <div class="nav flex-column nav-pills" id="account-sidebar" role="tablist">
                             <a class="nav-link active" href="<?= e(base_url('mi_cuenta')); ?>">Órdenes</a>
-                            <a class="nav-link" href="#">Datos personales</a>
-                            <a class="nav-link" href="<?= e(base_url('cliente/logout')); ?>">Cerrar sesión</a>
                         </div>
                     </div>
                     <div class="col-lg-9">
