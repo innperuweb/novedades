@@ -143,10 +143,6 @@ $cacheSeccionesProducto = [];
                                     $productoId = (int) ($p['id'] ?? 0);
                                     $nombreProducto = (string) ($p['nombre'] ?? 'Producto');
                                     $precioProducto = (float) ($p['precio'] ?? 0);
-                                    $urlImagen = $productoModel instanceof ProductoModel
-                                        ? $productoModel->urlImagenPrincipalDeFila($p)
-                                        : base_url('public/assets/img/no-image.jpg');
-                                    $detalleUrl = "http://localhost/novedades/productos/detalle?id=" . (int) $p['id'];
                                     $mostrarSale = false;
 
                                     if ($productoModel instanceof ProductoModel && $productoId > 0 && method_exists($productoModel, 'obtenerSeccionesProducto')) {
@@ -164,9 +160,16 @@ $cacheSeccionesProducto = [];
                                         <div class="airi-product">
                                             <div class="product-inner">
                                                 <figure class="product-image">
+                                                    <?php
+                                                        $idProducto = $productoId;
+                                                        $detalleUrl = "http://localhost/novedades/productos/detalle?id=" . $idProducto;
+                                                        $rutaImagen = !empty($p['ruta_principal']) ? $p['ruta_principal'] : 'public/assets/img/no-image.jpg';
+                                                    ?>
                                                     <div class="product-image--holder">
                                                         <a href="<?= e($detalleUrl); ?>">
-                                                            <img src="<?= e($urlImagen); ?>" alt="<?= e($nombreProducto); ?>" class="primary-image">
+                                                            <img src="<?= e($rutaImagen); ?>"
+                                                                 alt="<?= e($p['nombre']); ?>"
+                                                                 class="primary-image">
                                                         </a>
                                                     </div>
                                                     <div class="airi-product-action">
