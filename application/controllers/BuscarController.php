@@ -12,7 +12,15 @@ class BuscarController extends BaseController
         $termino = trim($termino);
 
         $productoModel = new ProductoModel();
-        $resultados = $termino === '' ? [] : $productoModel->buscarProductos($termino);
+        $resultados = [];
+
+        if ($termino !== '') {
+            try {
+                $resultados = $productoModel->buscarProductos($termino);
+            } catch (\Throwable $exception) {
+                $resultados = [];
+            }
+        }
 
         $this->render('buscar', [
             'query' => $termino,

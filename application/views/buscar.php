@@ -18,6 +18,7 @@ $tituloPagina = $query === ''
     </div>
 </div>
 
+
 <div id="content" class="main-content-wrapper">
     <div class="page-content-inner enable-page-sidebar">
         <div class="container-fluid">
@@ -33,7 +34,7 @@ $tituloPagina = $query === ''
                                         </p>
                                     <?php elseif ($query === ''): ?>
                                         <p class="product-pages">
-                                            Ingresa un término en el buscador para encontrar productos.
+                                            Ingresa un término en el buscador…
                                         </p>
                                     <?php else: ?>
                                         <p class="product-pages">
@@ -51,7 +52,7 @@ $tituloPagina = $query === ''
                             <?php if ($totalResultados === 0): ?>
                                 <div class="col-12 text-center">
                                     <?php if ($query === ''): ?>
-                                        <p>Utiliza el campo de búsqueda para comenzar.</p>
+                                        <p>Ingresa un término en el buscador…</p>
                                     <?php else: ?>
                                         <p>No se encontraron productos.</p>
                                     <?php endif; ?>
@@ -96,6 +97,11 @@ $tituloPagina = $query === ''
                                     if ($imagenPrincipal === '') {
                                         $imagenPrincipal = 'public/assets/img/no-image.jpg';
                                     }
+
+                                    $imagenUrl = $imagenPrincipal;
+                                    if ($imagenUrl !== '' && preg_match('#^https?://#i', $imagenUrl) !== 1) {
+                                        $imagenUrl = base_url(ltrim($imagenUrl, '/'));
+                                    }
                                     ?>
 
                                     <div class="col-xl-3 col-md-6 mb--40 mb-md--30">
@@ -104,7 +110,7 @@ $tituloPagina = $query === ''
                                                 <figure class="product-image">
                                                     <div class="product-image--holder">
                                                         <a href="<?= e($detalleUrl); ?>">
-                                                            <img src="<?= e(base_url($imagenPrincipal)); ?>" alt="<?= $nombreProducto; ?>">
+                                                            <img src="<?= e($imagenUrl); ?>" alt="<?= $nombreProducto; ?>">
                                                         </a>
                                                     </div>
                                                     <div class="airi-product-action">
