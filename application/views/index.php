@@ -201,102 +201,67 @@
                                 }' data-slick-responsive='[
                                     {"breakpoint":991, "settings": {"slidesToShow": 1} }
                                 ]'>
-                        <div class="item">
-                            <div class="single-featured-product">
-                                <div class="banner-box banner-type-3 banner-hover-1">
-                                    <div class="banner-inner">
-                                        <div class="banner-image">
-                                            <img src="<?= asset_url('img/banner/m02-banner6.jpg'); ?>" alt="Banner">
+                        <?php if (($productosAleatorios ?? []) === []): ?>
+                            <p class="text-center mb-0">No hay productos disponibles en este momento.</p>
+                        <?php else: ?>
+                            <?php foreach ($productosAleatorios as $producto): ?>
+                                <?php
+                                $productoId = (int) ($producto['id'] ?? 0);
+                                $nombreProducto = (string) ($producto['nombre'] ?? '');
+                                $detalleUrl = 'http://localhost/novedades/productos/detalle?id=' . $productoId;
+                                $imagenPrincipal = 'public/assets/img/no-image.jpg';
+
+                                if ($productoId > 0) {
+                                    $directorio = __DIR__ . '/../../public/assets/uploads/productos/' . $productoId;
+
+                                    if (is_dir($directorio)) {
+                                        $archivos = scandir($directorio);
+                                        foreach ($archivos as $archivo) {
+                                            if (preg_match('/^1_.*\.(jpe?g|png|gif|webp)$/i', $archivo)) {
+                                                $imagenPrincipal = 'public/assets/uploads/productos/' . $productoId . '/' . $archivo;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if ($imagenPrincipal === 'public/assets/img/no-image.jpg') {
+                                    $rutaPrincipal = isset($producto['ruta_principal']) ? (string) $producto['ruta_principal'] : '';
+                                    $rutaPrincipal = str_replace('\\', '/', trim($rutaPrincipal));
+                                    if ($rutaPrincipal !== '') {
+                                        $rutaPrincipal = trim($rutaPrincipal, '/');
+                                        $prefijo = 'uploads/productos/';
+                                        if (stripos($rutaPrincipal, $prefijo) === 0) {
+                                            $rutaPrincipal = substr($rutaPrincipal, strlen($prefijo));
+                                        }
+                                        if ($rutaPrincipal !== '') {
+                                            $rutaPosible = 'public/assets/uploads/productos/' . $rutaPrincipal;
+                                            $rutaLocal = __DIR__ . '/../../' . $rutaPosible;
+                                            if (is_file($rutaLocal)) {
+                                                $imagenPrincipal = $rutaPosible;
+                                            }
+                                        }
+                                    }
+                                }
+                                ?>
+                                <div class="item">
+                                    <div class="single-featured-product">
+                                        <div class="banner-box banner-type-3 banner-hover-1">
+                                            <div class="banner-inner">
+                                                <div class="banner-image">
+                                                    <img src="<?= e($imagenPrincipal); ?>" alt="<?= e($nombreProducto); ?>">
+                                                </div>
+                                                <div class="banner-info">
+                                                    <p class="banner-title-1 lts-5"><?= e($nombreProducto); ?></p>
+                                                    <h2 class="banner-title-2">Producto destacado</h2>
+                                                </div>
+                                                <a class="banner-link banner-overlay" href="<?= e($detalleUrl); ?>" tabindex="0">Ver producto</a>
+                                            </div>
                                         </div>
-                                        <div class="banner-info">
-                                            <p class="banner-title-1 lts-5">NEW MAN
-                                            </p>
-                                            <h2 class="banner-title-2">Autumn Winter
-                                            </h2>
-                                        </div>
-                                        <a class="banner-link banner-overlay" href="#">Shop
-                                            Now</a>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="single-featured-product">
-                                <div class="banner-box banner-type-3 banner-hover-1">
-                                    <div class="banner-inner">
-                                        <div class="banner-image">
-                                            <img src="<?= asset_url('img/banner/m02-banner7.jpg'); ?>" alt="Banner">
-                                        </div>
-                                        <div class="banner-info">
-                                            <p class="banner-title-1 lts-5">Hello</p>
-                                            <h2 class="banner-title-2">Women
-                                                <strong>2019</strong>
-                                            </h2>
-                                        </div>
-                                        <a class="banner-link banner-overlay" href="#">Shop
-                                            Now</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="single-featured-product">
-                                <div class="banner-box banner-type-3 banner-hover-1">
-                                    <div class="banner-inner">
-                                        <div class="banner-image">
-                                            <img src="<?= asset_url('img/banner/m02-banner8.jpg'); ?>" alt="Banner">
-                                        </div>
-                                        <div class="banner-info">
-                                            <p class="banner-title-1 lts-5">Jacket</p>
-                                            <h2 class="banner-title-2">Man
-                                                <strong>2019</strong>
-                                            </h2>
-                                        </div>
-                                        <a class="banner-link banner-overlay" href="#">Shop
-                                            Now</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="single-featured-product">
-                                <div class="banner-box banner-type-3 banner-hover-1">
-                                    <div class="banner-inner">
-                                        <div class="banner-image">
-                                            <img src="<?= asset_url('img/banner/m02-banner9.jpg'); ?>" alt="Banner">
-                                        </div>
-                                        <div class="banner-info">
-                                            <p class="banner-title-1 lts-5">New Season
-                                            </p>
-                                            <h2 class="banner-title-2">Man
-                                                <strong>T-Shirt</strong>
-                                            </h2>
-                                        </div>
-                                        <a class="banner-link banner-overlay" href="#">Shop
-                                            Now</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="single-featured-product">
-                                <div class="banner-box banner-type-3 banner-hover-1">
-                                    <div class="banner-inner">
-                                        <div class="banner-image">
-                                            <img src="<?= asset_url('img/banner/m02-banner8.jpg'); ?>" alt="Banner">
-                                        </div>
-                                        <div class="banner-info">
-                                            <p class="banner-title-1 lts-5">Jacket</p>
-                                            <h2 class="banner-title-2">Man
-                                                <strong>2019</strong>
-                                            </h2>
-                                        </div>
-                                        <a class="banner-link banner-overlay" href="#">Shop
-                                            Now</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
