@@ -59,39 +59,6 @@ if ($orden !== '') {
 
 $formActionProductos = $urlBaseProductos . ($formActionParametros !== [] ? ('?' . http_build_query($formActionParametros)) : '');
 
-$normalizarImagen = static function (?string $ruta) {
-    $ruta = trim((string) $ruta);
-
-    if ($ruta === '') {
-        return asset_url('img/products/prod-20-1.jpg');
-    }
-
-    if (preg_match('#^https?://#i', $ruta) === 1) {
-        return $ruta;
-    }
-
-    if (strpos($ruta, 'legacy:') === 0) {
-        $ruta = substr($ruta, strlen('legacy:')) ?: '';
-        $ruta = ltrim($ruta, '/');
-
-        return asset_url('img/products/' . $ruta);
-    }
-
-    $rutaLimpia = ltrim($ruta, '/');
-    if (strpos($rutaLimpia, 'public/uploads/productos/') === 0) {
-        return base_url($rutaLimpia);
-    }
-    if (strpos($rutaLimpia, 'uploads/productos/') === 0) {
-        $rutaLimpia = substr($rutaLimpia, strlen('uploads/productos/')) ?: '';
-    }
-
-    if ($rutaLimpia === '') {
-        return asset_url('img/products/prod-20-1.jpg');
-    }
-
-    return asset_url('uploads/productos/' . $rutaLimpia);
-};
-
 $subcategorias = $subcategorias ?? [];
 $categoria_id = $categoria_id ?? null;
 
@@ -172,10 +139,33 @@ $cacheSeccionesProducto = [];
                                     $productoId = (int) ($producto['id'] ?? 0);
                                     $nombreProducto = (string) ($producto['nombre'] ?? 'Producto');
                                     $precioProducto = (float) ($producto['precio'] ?? 0);
-                                    $rutaPrincipal = $normalizarImagen($producto['imagen'] ?? '');
-                                    $rutaSecundaria = $normalizarImagen($producto['imagen_secundaria'] ?? $producto['imagen'] ?? '');
                                     $detalleUrl = $productoId > 0 ? site_url('productos/detalle?id=' . $productoId) : '#';
                                     $mostrarSale = false;
+                                    $imagenPrincipal = 'no-image.jpg';
+                                    if ($productoId > 0 && $productoModelInstance !== null && method_exists($productoModelInstance, 'obtenerImagenPrincipal')) {
+                                        try {
+                                            $imagenPrincipal = $productoModelInstance->obtenerImagenPrincipal($productoId);
+                                        } catch (\Throwable $exception) {
+                                            $imagenPrincipal = 'no-image.jpg';
+                                        }
+                                    }
+                                    $imagenPrincipal = trim((string) $imagenPrincipal);
+                                    if ($imagenPrincipal === '') {
+                                        $imagenPrincipal = 'no-image.jpg';
+                                    }
+                                    $imagenPrincipalOriginal = $imagenPrincipal;
+                                    if (preg_match('#^https?://#i', $imagenPrincipalOriginal) === 1 || strpos($imagenPrincipalOriginal, '//') === 0) {
+                                        $urlImagen = $imagenPrincipalOriginal;
+                                    } else {
+                                        $imagenPrincipal = ltrim($imagenPrincipal, '/');
+                                        if (strpos($imagenPrincipal, 'uploads/productos/') === 0) {
+                                            $urlImagen = '/' . $imagenPrincipal;
+                                        } elseif (strpos($imagenPrincipal, 'public/uploads/productos/') === 0) {
+                                            $urlImagen = '/' . $imagenPrincipal;
+                                        } else {
+                                            $urlImagen = '/uploads/productos/' . $imagenPrincipal;
+                                        }
+                                    }
                                     if ($productoModelInstance !== null && $productoId > 0 && method_exists($productoModelInstance, 'obtenerSeccionesProducto')) {
                                         if (!array_key_exists($productoId, $cacheSeccionesProducto)) {
                                             try {
@@ -193,8 +183,7 @@ $cacheSeccionesProducto = [];
                                                 <figure class="product-image">
                                                     <div class="product-image--holder">
                                                         <a href="<?= e($detalleUrl); ?>">
-                                                            <img src="<?= e($rutaPrincipal); ?>" alt="<?= e($nombreProducto); ?>" class="primary-image">
-                                                            <img src="<?= e($rutaSecundaria); ?>" alt="<?= e($nombreProducto); ?>" class="secondary-image">
+                                                            <img src="<?= e($urlImagen); ?>" alt="<?= e($nombreProducto); ?>" class="primary-image">
                                                         </a>
                                                     </div>
                                                     <div class="airi-product-action">
