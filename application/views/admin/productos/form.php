@@ -84,6 +84,29 @@
         return asset_url('uploads/productos/' . $rutaLimpia);
     };
     $descripcionValor = old('descripcion', $producto['descripcion'] ?? '');
+    $seccionesDisponibles = ['tienda' => 'Tienda', 'novedades' => 'Novedades', 'ofertas' => 'Ofertas', 'populares' => 'Populares', 'por_mayor' => 'Por Mayor'];
+    $seccionesDesdeControlador = isset($seccionesSeleccionadas) && is_array($seccionesSeleccionadas) ? $seccionesSeleccionadas : null;
+    $seccionesIniciales = $seccionesDesdeControlador ?? (isset($producto['secciones']) && is_array($producto['secciones']) ? $producto['secciones'] : []);
+    $seccionesSeleccionadasFormulario = array_values(array_intersect(array_map('strtolower', array_map('strval', $seccionesIniciales)), array_keys($seccionesDisponibles)));
+    $oldSecciones = old('secciones', null);
+    if ($oldSecciones !== null) {
+        if (!is_array($oldSecciones)) {
+            $oldSecciones = [$oldSecciones];
+        }
+        $oldSecciones = array_map(static function ($item) {
+            return strtolower(trim((string) $item));
+        }, $oldSecciones);
+        $oldSecciones = array_filter($oldSecciones, static fn ($item) => $item !== '');
+        $seccionesSeleccionadasFormulario = array_values(array_intersect($oldSecciones, array_keys($seccionesDisponibles)));
+    }
+    if ($seccionesSeleccionadasFormulario === [] && isset($productoModel) && $productoId > 0 && method_exists($productoModel, 'obtenerSeccionesProducto')) {
+        try {
+            $seccionesSeleccionadasFormulario = $productoModel->obtenerSeccionesProducto($productoId);
+        } catch (\Throwable $exception) {
+            $seccionesSeleccionadasFormulario = [];
+        }
+        $seccionesSeleccionadasFormulario = array_values(array_intersect(array_map('strtolower', $seccionesSeleccionadasFormulario), array_keys($seccionesDisponibles)));
+    }
 ?>
 <style>
 .tabla-tallas-preview{position:relative;display:inline-block;margin-top:12px}
@@ -126,6 +149,15 @@
                       });
                     </script>
                     <?php endif; ?>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label d-block">Mostrar este producto en:</label>
+                    <?php foreach ($seccionesDisponibles as $key => $label): ?>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="chk_<?= e($key); ?>" name="secciones[]" value="<?= e($key); ?>" <?= in_array($key, $seccionesSeleccionadasFormulario, true) ? 'checked' : ''; ?>>
+                            <label class="form-check-label" for="chk_<?= e($key); ?>"><?= e($label); ?></label>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
                 <div class="row g-3">
                     <div class="col-md-4">

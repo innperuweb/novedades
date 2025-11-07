@@ -60,6 +60,11 @@ final class AdminProductoModel extends ProductoModel
         $producto['visible'] = (int) ($producto['visible'] ?? ($producto['activo'] ?? 0));
         $producto['estado'] = (int) ($producto['estado'] ?? ($producto['activo'] ?? 0));
         $producto['activo'] = ($producto['visible'] === 1 && $producto['estado'] === 1) ? 1 : 0;
+        try {
+            $producto['secciones'] = $this->obtenerSeccionesProducto($id);
+        } catch (\Throwable $exception) {
+            $producto['secciones'] = [];
+        }
 
         return $producto;
     }

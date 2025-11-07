@@ -96,6 +96,13 @@ $subcategorias = $subcategorias ?? [];
 $categoria_id = $categoria_id ?? null;
 
 $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrecio($max_precio);
+$productoModelInstance = null;
+if (isset($productoModel) && $productoModel instanceof ProductoModel) {
+    $productoModelInstance = $productoModel;
+} elseif (class_exists('ProductoModel')) {
+    $productoModelInstance = new ProductoModel();
+}
+$cacheSeccionesProducto = [];
 ?>
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
@@ -168,6 +175,17 @@ $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrec
                                     $rutaPrincipal = $normalizarImagen($producto['imagen'] ?? '');
                                     $rutaSecundaria = $normalizarImagen($producto['imagen_secundaria'] ?? $producto['imagen'] ?? '');
                                     $detalleUrl = $productoId > 0 ? site_url('productos/detalle?id=' . $productoId) : '#';
+                                    $mostrarSale = false;
+                                    if ($productoModelInstance !== null && $productoId > 0 && method_exists($productoModelInstance, 'obtenerSeccionesProducto')) {
+                                        if (!array_key_exists($productoId, $cacheSeccionesProducto)) {
+                                            try {
+                                                $cacheSeccionesProducto[$productoId] = $productoModelInstance->obtenerSeccionesProducto($productoId);
+                                            } catch (\Throwable $exception) {
+                                                $cacheSeccionesProducto[$productoId] = [];
+                                            }
+                                        }
+                                        $mostrarSale = in_array('ofertas', $cacheSeccionesProducto[$productoId], true);
+                                    }
                                     ?>
                                     <div class="col-lg-4 col-sm-6 mb--40 mb-md--30">
                                         <div class="airi-product">
@@ -188,6 +206,9 @@ $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrec
                                                             </a>
                                                         </div>
                                                     </div>
+                                                    <?php if ($mostrarSale): ?>
+                                                        <span class="product-badge sale">Sale</span>
+                                                    <?php endif; ?>
                                                 </figure>
                                                 <div class="product-info text-center">
                                                     <h3 class="product-title">

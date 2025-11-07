@@ -18,6 +18,8 @@ final class ProductosController extends AdminBaseController
         'image/webp' => 'webp',
     ];
 
+    private const SECCIONES_WEB = ['tienda', 'novedades', 'ofertas', 'populares', 'por_mayor'];
+
     private AdminProductoModel $productoModel;
     private AdminCategoriaModel $categoriaModel;
     private string $directorioTablaTallas;
@@ -58,6 +60,7 @@ final class ProductosController extends AdminBaseController
             'colores' => [],
             'tallas' => [],
             'subcategorias' => [],
+            'secciones' => [],
             'visible' => 1,
             'estado' => 1,
         ], [], false);
@@ -106,9 +109,11 @@ final class ProductosController extends AdminBaseController
         $datos = $this->obtenerDatosProductoDesdeRequest();
         $errores = $this->validarProducto($datos);
         $subcategorias = $this->obtenerSubcategoriasDesdeRequest();
+        $secciones = $this->obtenerSeccionesDesdeRequest();
 
         if ($errores !== []) {
             $datos['subcategorias'] = $subcategorias;
+            $datos['secciones'] = $secciones;
             $this->mostrarFormularioProducto($datos, $errores, false);
 
             return;
@@ -118,6 +123,7 @@ final class ProductosController extends AdminBaseController
         if (isset($tablaTallas['error'])) {
             admin_set_flash('danger', $tablaTallas['error']);
             $datos['subcategorias'] = $subcategorias;
+            $datos['secciones'] = $secciones;
             $this->mostrarFormularioProducto($datos, [], false);
 
             return;
@@ -128,6 +134,7 @@ final class ProductosController extends AdminBaseController
         }
 
         $nuevoId = $this->productoModel->crear($datos, $subcategorias);
+        $this->productoModel->guardarSeccionesProducto($nuevoId, $secciones);
         admin_set_flash('success', 'Producto creado correctamente.');
         $this->redirect('admin/productos/editar/' . $nuevoId);
     }
@@ -162,10 +169,12 @@ final class ProductosController extends AdminBaseController
         $datos = $this->obtenerDatosProductoDesdeRequest();
         $errores = $this->validarProducto($datos);
         $subcategorias = $this->obtenerSubcategoriasDesdeRequest();
+        $secciones = $this->obtenerSeccionesDesdeRequest();
 
         if ($errores !== []) {
             $datos['id'] = $productoId;
             $datos['subcategorias'] = $subcategorias;
+            $datos['secciones'] = $secciones;
             $this->mostrarFormularioProducto($datos, $errores, true);
 
             return;
@@ -176,6 +185,7 @@ final class ProductosController extends AdminBaseController
             admin_set_flash('danger', $tablaTallas['error']);
             $datos['id'] = $productoId;
             $datos['subcategorias'] = $subcategorias;
+            $datos['secciones'] = $secciones;
             $this->mostrarFormularioProducto($datos, [], true);
 
             return;
@@ -185,6 +195,7 @@ final class ProductosController extends AdminBaseController
             $datos['tabla_tallas'] = $tablaTallas['archivo'];
         }
         $this->productoModel->actualizarProducto($productoId, $datos, $subcategorias);
+        $this->productoModel->guardarSeccionesProducto($productoId, $secciones);
 
         admin_set_flash('success', 'Producto actualizado correctamente.');
         $this->redirect('admin/productos/editar/' . $productoId);
@@ -412,6 +423,17 @@ final class ProductosController extends AdminBaseController
             }
         }
 
+        $seccionesSeleccionadas = [];
+        if (isset($producto['secciones']) && is_array($producto['secciones'])) {
+            $seccionesSeleccionadas = array_values(array_intersect($producto['secciones'], self::SECCIONES_WEB));
+        } elseif ($productoId > 0) {
+            try {
+                $seccionesSeleccionadas = $this->productoModel->obtenerSeccionesProducto($productoId);
+            } catch (\Throwable $exception) {
+                $seccionesSeleccionadas = [];
+            }
+        }
+
         $this->render('productos/form', [
             'title' => $esEdicion ? 'Editar producto' : 'Nuevo producto',
             'producto' => $producto,
@@ -420,6 +442,8 @@ final class ProductosController extends AdminBaseController
             'errores' => $errores,
             'esEdicion' => $esEdicion,
             'imagenes' => $imagenes,
+            'seccionesSeleccionadas' => $seccionesSeleccionadas,
+            'productoModel' => $this->productoModel,
         ]);
     }
 
@@ -483,6 +507,30 @@ final class ProductosController extends AdminBaseController
         });
 
         return array_values(array_unique($valores));
+    }
+
+    private function obtenerSeccionesDesdeRequest(): array
+    {
+        if (!isset($_POST['secciones'])) {
+            return [];
+        }
+
+        $valores = $_POST['secciones'];
+        if (!is_array($valores)) {
+            $valores = [$valores];
+        }
+
+        $valores = array_map(static function ($item): string {
+            return strtolower(trim((string) $item));
+        }, $valores);
+
+        $valores = array_filter($valores, static function ($item): bool {
+            return $item !== '';
+        });
+
+        $valores = array_values(array_unique($valores));
+
+        return array_values(array_intersect($valores, self::SECCIONES_WEB));
     }
 
     private function obtenerOpcionesDesdePost(string $campo): array

@@ -6,6 +6,7 @@
 
 class ProductoModel
 {
+    private const SECCIONES_PERMITIDAS = ['tienda', 'novedades', 'ofertas', 'populares', 'por_mayor'];
 
     public function getAll(): array
     {
@@ -17,22 +18,7 @@ class ProductoModel
 
         $productos = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
-        foreach ($productos as &$producto) {
-            $producto['colores'] = $this->limpiarOpciones($this->decodificarLista($producto['colores'] ?? null));
-            $producto['tallas'] = $this->limpiarOpciones($this->decodificarLista($producto['tallas'] ?? null));
-            $producto['subcategorias'] = [];
-            $producto['subcategorias_nombres'] = [];
-            $producto['stock'] = (int) ($producto['stock'] ?? 0);
-            if (array_key_exists('tabla_tallas', $producto)) {
-                $producto['tabla_tallas'] = trim((string) ($producto['tabla_tallas'] ?? ''));
-            }
-            if (isset($producto['imagen'])) {
-                $producto['imagen'] = trim((string) $producto['imagen']);
-            }
-        }
-        unset($producto);
-
-        return $productos;
+        return $this->normalizarListadoProductos($productos);
     }
 
     public function getById($id): ?array
@@ -364,5 +350,102 @@ class ProductoModel
         } catch (\Throwable $exception) {
             return [];
         }
+    }
+
+    public function obtenerSeccionesProducto(int $producto_id): array
+    {
+        if ($producto_id <= 0) {
+            return [];
+        }
+
+        try {
+            $pdo = Database::connect();
+            $stmt = $pdo->prepare('SELECT seccion FROM producto_categorias_web WHERE producto_id = ?');
+            $stmt->execute([$producto_id]);
+            $secciones = $stmt->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+        } catch (\Throwable $exception) {
+            return [];
+        }
+
+        $secciones = array_map(static fn ($item): string => trim((string) $item), $secciones);
+        $secciones = array_values(array_intersect($secciones, self::SECCIONES_PERMITIDAS));
+
+        return $secciones;
+    }
+
+    public function guardarSeccionesProducto(int $producto_id, array $secciones): void
+    {
+        if ($producto_id <= 0) {
+            return;
+        }
+
+        $secciones = array_map(static fn ($item): string => trim((string) $item), $secciones);
+        $secciones = array_values(array_intersect($secciones, self::SECCIONES_PERMITIDAS));
+        $secciones = array_values(array_unique($secciones));
+
+        try {
+            $pdo = Database::connect();
+            $pdo->prepare('DELETE FROM producto_categorias_web WHERE producto_id = ?')->execute([$producto_id]);
+
+            if ($secciones === []) {
+                return;
+            }
+
+            $stmt = $pdo->prepare('INSERT INTO producto_categorias_web (producto_id, seccion) VALUES (?, ?)');
+            foreach ($secciones as $seccion) {
+                $stmt->execute([$producto_id, $seccion]);
+            }
+        } catch (\Throwable $exception) {
+            // Silenciar errores para no interrumpir el flujo principal del guardado.
+        }
+    }
+
+    public function obtenerPorSeccion(string $seccion): array
+    {
+        $seccion = trim($seccion);
+
+        if ($seccion === '' || !in_array($seccion, self::SECCIONES_PERMITIDAS, true)) {
+            return [];
+        }
+
+        if ($seccion === 'tienda') {
+            return $this->getAll();
+        }
+
+        try {
+            $pdo = Database::connect();
+            $stmt = $pdo->prepare(
+                'SELECT p.* FROM productos p '
+                . 'INNER JOIN producto_categorias_web pcw ON pcw.producto_id = p.id '
+                . 'WHERE pcw.seccion = :seccion AND p.visible = 1 AND p.estado = 1 AND p.stock >= 0 '
+                . 'ORDER BY p.id DESC'
+            );
+            $stmt->execute([':seccion' => $seccion]);
+            $productos = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+        } catch (\Throwable $exception) {
+            return [];
+        }
+
+        return $this->normalizarListadoProductos($productos);
+    }
+
+    private function normalizarListadoProductos(array $productos): array
+    {
+        foreach ($productos as &$producto) {
+            $producto['colores'] = $this->limpiarOpciones($this->decodificarLista($producto['colores'] ?? null));
+            $producto['tallas'] = $this->limpiarOpciones($this->decodificarLista($producto['tallas'] ?? null));
+            $producto['subcategorias'] = [];
+            $producto['subcategorias_nombres'] = [];
+            $producto['stock'] = (int) ($producto['stock'] ?? 0);
+            if (array_key_exists('tabla_tallas', $producto)) {
+                $producto['tabla_tallas'] = trim((string) ($producto['tabla_tallas'] ?? ''));
+            }
+            if (isset($producto['imagen'])) {
+                $producto['imagen'] = trim((string) $producto['imagen']);
+            }
+        }
+        unset($producto);
+
+        return $productos;
     }
 }

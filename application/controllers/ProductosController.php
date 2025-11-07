@@ -69,7 +69,10 @@ class ProductosController extends BaseController
 
     public function ofertas(): void
     {
-        $this->render('ofertas');
+        $contexto = $this->construirContextoListado('ofertas', 'ofertas');
+        $contexto['titulo_pagina'] = 'OFERTAS';
+
+        $this->render('ofertas', $contexto);
     }
 
     private function construirContextoListado(?string $slugForzado, string $rutaBase): array
@@ -98,31 +101,40 @@ class ProductosController extends BaseController
         $categoriaId = null;
         $subcategorias = [];
 
+        $productoModel = new ProductoModel();
+        $seccionesEspeciales = ['tienda', 'novedades', 'ofertas', 'populares', 'por_mayor'];
+
         $minPrecio = $this->sanitizarPrecio($_POST['min_precio'] ?? null, 0.0);
         $maxPrecio = $this->sanitizarPrecio($_POST['max_precio'] ?? null, 10000.0);
 
         $esSolicitudPost = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST';
         $aplicarFiltroPrecio = $esSolicitudPost && ($slugSubcategoria !== '');
 
-        if ($slugSubcategoria !== '') {
-            $subcategoria = SubcategoriaModel::obtenerPorSlug($slugSubcategoria);
+        if ($slugSubcategoria === '' || in_array($slugSubcategoria, $seccionesEspeciales, true)) {
+            $aplicarFiltroPrecio = false;
+            $seccionConsulta = $slugSubcategoria === '' ? 'tienda' : $slugSubcategoria;
+            $productos = $productoModel->obtenerPorSeccion($seccionConsulta);
+        } else {
+            if ($slugSubcategoria !== '') {
+                $subcategoria = SubcategoriaModel::obtenerPorSlug($slugSubcategoria);
 
-            if ($subcategoria !== null) {
-                $categoriaId = (int) ($subcategoria['categoria_id'] ?? 0);
-                if ($categoriaId > 0) {
-                    $subcategorias = SubcategoriaModel::obtenerPorCategoria($categoriaId);
-                }
-
-                if ($aplicarFiltroPrecio) {
-                    if ($minPrecio > $maxPrecio) {
-                        [$minPrecio, $maxPrecio] = [$maxPrecio, $minPrecio];
+                if ($subcategoria !== null) {
+                    $categoriaId = (int) ($subcategoria['categoria_id'] ?? 0);
+                    if ($categoriaId > 0) {
+                        $subcategorias = SubcategoriaModel::obtenerPorCategoria($categoriaId);
                     }
 
-                    $productos = ProductoModel::filtrarPorPrecio($slugSubcategoria, $minPrecio, $maxPrecio);
-                } elseif ($orden !== '') {
-                    $productos = ProductoModel::obtenerFiltrados($slugSubcategoria, $orden);
-                } else {
-                    $productos = ProductoModel::obtenerPorSubcategoria($slugSubcategoria);
+                    if ($aplicarFiltroPrecio) {
+                        if ($minPrecio > $maxPrecio) {
+                            [$minPrecio, $maxPrecio] = [$maxPrecio, $minPrecio];
+                        }
+
+                        $productos = ProductoModel::filtrarPorPrecio($slugSubcategoria, $minPrecio, $maxPrecio);
+                    } elseif ($orden !== '') {
+                        $productos = ProductoModel::obtenerFiltrados($slugSubcategoria, $orden);
+                    } else {
+                        $productos = ProductoModel::obtenerPorSubcategoria($slugSubcategoria);
+                    }
                 }
             }
         }
