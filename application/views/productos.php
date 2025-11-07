@@ -70,6 +70,7 @@ if (isset($productoModel) && $productoModel instanceof ProductoModel) {
     $productoModelInstance = new ProductoModel();
 }
 $cacheSeccionesProducto = [];
+$placeholderImagen = base_url('public/assets/img/no-image.jpg');
 ?>
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
@@ -141,30 +142,16 @@ $cacheSeccionesProducto = [];
                                     $precioProducto = (float) ($producto['precio'] ?? 0);
                                     $detalleUrl = $productoId > 0 ? site_url('productos/detalle?id=' . $productoId) : '#';
                                     $mostrarSale = false;
-                                    $imagenPrincipal = 'no-image.jpg';
-                                    if ($productoId > 0 && $productoModelInstance !== null && method_exists($productoModelInstance, 'obtenerImagenPrincipal')) {
+                                    $urlImagen = $placeholderImagen;
+                                    if ($productoId > 0 && $productoModelInstance !== null && method_exists($productoModelInstance, 'obtenerImagenPrincipalURL')) {
                                         try {
-                                            $imagenPrincipal = $productoModelInstance->obtenerImagenPrincipal($productoId);
+                                            $urlImagen = $productoModelInstance->obtenerImagenPrincipalURL($productoId);
                                         } catch (\Throwable $exception) {
-                                            $imagenPrincipal = 'no-image.jpg';
+                                            $urlImagen = $placeholderImagen;
                                         }
                                     }
-                                    $imagenPrincipal = trim((string) $imagenPrincipal);
-                                    if ($imagenPrincipal === '') {
-                                        $imagenPrincipal = 'no-image.jpg';
-                                    }
-                                    $imagenPrincipalOriginal = $imagenPrincipal;
-                                    if (preg_match('#^https?://#i', $imagenPrincipalOriginal) === 1 || strpos($imagenPrincipalOriginal, '//') === 0) {
-                                        $urlImagen = $imagenPrincipalOriginal;
-                                    } else {
-                                        $imagenPrincipal = ltrim($imagenPrincipal, '/');
-                                        if (strpos($imagenPrincipal, 'uploads/productos/') === 0) {
-                                            $urlImagen = '/' . $imagenPrincipal;
-                                        } elseif (strpos($imagenPrincipal, 'public/uploads/productos/') === 0) {
-                                            $urlImagen = '/' . $imagenPrincipal;
-                                        } else {
-                                            $urlImagen = '/uploads/productos/' . $imagenPrincipal;
-                                        }
+                                    if (!is_string($urlImagen) || $urlImagen === '') {
+                                        $urlImagen = $placeholderImagen;
                                     }
                                     if ($productoModelInstance !== null && $productoId > 0 && method_exists($productoModelInstance, 'obtenerSeccionesProducto')) {
                                         if (!array_key_exists($productoId, $cacheSeccionesProducto)) {
