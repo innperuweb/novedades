@@ -170,6 +170,27 @@ $uri_actual = $_SERVER['REQUEST_URI'] ?? '';
             </div>
         </header>
 
+        <div class="searchform__popup" id="searchForm">
+            <a href="#" class="btn-close"><i class="dl-icon-close"></i></a>
+            <div class="searchform__body">
+                <p>¿Qué producto buscas?</p>
+                <form class="searchform" action="<?= base_url('buscar'); ?>" method="get">
+                    <input
+                        type="text"
+                        name="q"
+                        id="search"
+                        class="searchform__input"
+                        placeholder="Buscar productos..."
+                        required
+                        aria-label="Buscar productos"
+                    >
+                    <button type="submit" class="searchform__submit">
+                        <i class="dl-icon-search10"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
         <header class="header-mobile">
             <div class="header-mobile__outer">
                 <div class="header-mobile__inner fixed-header">

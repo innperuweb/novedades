@@ -100,20 +100,6 @@
     </div>
 </footer>
 
-<div class="searchform__popup" id="searchForm">
-    <a href="#" class="btn-close"><i class="dl-icon-close"></i></a>
-    <div class="searchform__body">
-        <p>¿Qué producto buscas?</p>
-        <form class="searchform" action="<?= base_url('buscar') ?>" method="get">
-            <input type="text" name="q" id="search" class="searchform__input" placeholder="Buscar producto...">
-            <button type="submit" class="searchform__submit">
-                <i class="dl-icon-search10"></i>
-            </button>
-        </form>
-        <div id="resultados"></div>
-    </div>
-</div>
-
 <aside class="side-navigation side-navigation--left" id="sideNav">
     <div class="side-navigation-wrapper">
         <a href="#" class="btn-close"><i class="dl-icon-close"></i></a>

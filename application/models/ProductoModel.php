@@ -296,27 +296,43 @@ class ProductoModel
         return $ruta ?? 'no-image.jpg';
     }
 
-    public function buscarProductos($term): array
+    public function buscarProductos(string $query): array
     {
-        $pdo = Database::connect();
+        $query = trim($query);
 
-        $sql = 'SELECT p.id, p.nombre, p.precio, p.imagen, ' .
-            "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
-            . 'FROM productos p '
-            . 'WHERE (p.nombre LIKE :term OR p.descripcion LIKE :term) '
-            . 'AND p.visible = 1 AND p.estado = 1 AND p.stock >= 0 LIMIT 10';
+        if ($query === '') {
+            return [];
+        }
 
-        $stmt = $pdo->prepare($sql);
-        $likeTerm = '%' . $term . '%';
-        $stmt->execute([':term' => $likeTerm]);
+        try {
+            $pdo = Database::connect();
 
-        $resultados = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+            $sql = "SELECT p.*, "
+                . "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) "
+                . "          FROM producto_imagenes pi "
+                . "         WHERE pi.producto_id = p.id "
+                . "         ORDER BY pi.es_principal DESC, pi.id ASC "
+                . "         LIMIT 1) AS ruta_principal "
+                . 'FROM productos p '
+                . 'WHERE (p.nombre LIKE :query OR CAST(p.id AS CHAR) LIKE :queryNum) '
+                . 'AND p.visible = 1 AND p.estado = 1 AND p.stock >= 0 '
+                . 'ORDER BY p.id DESC';
+
+            $stmt = $pdo->prepare($sql);
+            $likeQuery = '%' . $query . '%';
+            $stmt->execute([
+                ':query' => $likeQuery,
+                ':queryNum' => $likeQuery,
+            ]);
+
+            $resultados = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+        } catch (\Throwable $exception) {
+            return [];
+        }
 
         foreach ($resultados as &$producto) {
             if (isset($producto['imagen'])) {
                 $producto['imagen'] = trim((string) $producto['imagen']);
-            } else {
-                $producto['imagen'] = '';
             }
             if (isset($producto['ruta_principal'])) {
                 $producto['ruta_principal'] = trim((string) $producto['ruta_principal']);
@@ -531,40 +547,9 @@ class ProductoModel
 
     public static function buscar(string $termino): array
     {
-        $termino = trim($termino);
+        $modelo = new self();
 
-        if ($termino === '') {
-            return [];
-        }
-
-        try {
-            $db = Database::connect();
-            $stmt = $db->prepare(
-                'SELECT p.*, ' .
-                "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
-                . 'FROM productos p '
-                . 'WHERE (p.nombre LIKE :q OR p.descripcion LIKE :q) '
-                . 'AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
-            );
-            $like = '%' . $termino . '%';
-            $stmt->execute([':q' => $like]);
-
-            $productos = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
-
-            foreach ($productos as &$producto) {
-                if (isset($producto['imagen'])) {
-                    $producto['imagen'] = trim((string) $producto['imagen']);
-                }
-                if (isset($producto['ruta_principal'])) {
-                    $producto['ruta_principal'] = trim((string) $producto['ruta_principal']);
-                }
-            }
-            unset($producto);
-
-            return $productos;
-        } catch (\Throwable $exception) {
-            return [];
-        }
+        return $modelo->buscarProductos($termino);
     }
 
     public function obtenerSeccionesProducto(int $producto_id): array

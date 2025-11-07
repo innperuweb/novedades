@@ -8,13 +8,16 @@ class BuscarController extends BaseController
 {
     public function resultado(): void
     {
-        $termino = isset($_GET['q']) ? sanitize((string) $_GET['q']) : '';
-        $resultados = $termino !== '' ? ProductoModel::buscar($termino) : [];
+        $termino = isset($_GET['q']) ? clean_string((string) $_GET['q']) : '';
+        $termino = trim($termino);
 
-        $this->render('search/index', [
-            'moduleAction' => 'resultado',
-            'term' => $termino,
+        $productoModel = new ProductoModel();
+        $resultados = $termino === '' ? [] : $productoModel->buscarProductos($termino);
+
+        $this->render('buscar', [
+            'query' => $termino,
             'resultados' => $resultados,
+            'productoModel' => $productoModel,
         ]);
     }
 }
