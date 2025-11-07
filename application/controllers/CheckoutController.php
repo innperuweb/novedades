@@ -65,6 +65,10 @@ class CheckoutController extends BaseController
         $guardarDatos = isset($_POST['shipdifferetads']);
 
         $metodoEnvio = trim($_POST['metodo_envio'] ?? '');
+
+        if ($metodoEnvio === 'cash') {
+            $metodoEnvio = 'aereo';
+        }
         $metodoPago = trim($_POST['metodo_pago'] ?? '');
 
         // Convertir código del distrito a nombre completo
