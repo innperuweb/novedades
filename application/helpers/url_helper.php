@@ -48,3 +48,54 @@ if (!function_exists('current_url')) {
         return $scheme . $host . $requestUri;
     }
 }
+
+if (!function_exists('url_imagen_producto')) {
+    function url_imagen_producto(int $productoId, ?string $rutaBD): string
+    {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $base   = rtrim("$scheme://$host/novedades", '/');
+
+        $uploadsRel  = '/uploads/productos';
+        $placeholder = $base . '/public/assets/img/no-image.jpg';
+
+        if (!$rutaBD) {
+            return $placeholder;
+        }
+
+        $rutaBD = str_replace('\\', '/', $rutaBD);
+        $rutaBD = trim($rutaBD);
+
+        if ($rutaBD === '') {
+            return $placeholder;
+        }
+
+        if (preg_match('~^https?://~i', $rutaBD) === 1) {
+            return $rutaBD;
+        }
+
+        $rutaBD = ltrim($rutaBD, '/');
+
+        $uploadsPrefix = ltrim($uploadsRel, '/');
+        if (stripos($rutaBD, $uploadsPrefix . '/') === 0) {
+            $rutaBD = substr($rutaBD, strlen($uploadsPrefix) + 1);
+        }
+
+        $dir  = dirname($rutaBD);
+        $file = basename($rutaBD);
+
+        if ($file === '' || $file === '.' || $file === '..') {
+            return $placeholder;
+        }
+
+        $relativeDir = $dir === '.' ? '' : trim($dir, '/');
+        $urlPath = $uploadsRel . '/' . ($relativeDir === '' ? '' : $relativeDir . '/');
+        $url     = $base . $urlPath . rawurlencode($file);
+
+        $docRoot = $_SERVER['DOCUMENT_ROOT'] ?? '';
+        $docRoot = rtrim($docRoot, '/\\');
+        $local   = $docRoot . '/novedades' . $urlPath . $file;
+
+        return is_file($local) ? $url : $placeholder;
+    }
+}
