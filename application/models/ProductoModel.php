@@ -10,12 +10,24 @@ class ProductoModel
 
     public function getAll(): array
     {
+        return $this->obtenerTodos();
+    }
+
+    public function obtenerTodos(): array
+    {
         $pdo = Database::connect();
-
-        $sql = 'SELECT p.* FROM productos p ' . 'WHERE p.visible = 1 AND p.estado = 1 AND p.stock >= 0 ORDER BY p.id DESC';
-
-        $stmt = $pdo->query($sql);
-
+        $stmt = $pdo->query(
+            "
+        SELECT p.*,
+               (SELECT ruta FROM producto_imagenes pi
+                WHERE pi.producto_id = p.id
+                ORDER BY es_principal DESC, id ASC
+                LIMIT 1) AS ruta_imagen
+        FROM productos p
+        WHERE p.visible = 1 AND p.estado = 1 AND p.stock >= 0
+        ORDER BY p.id DESC
+    "
+        );
         $productos = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
         return $this->normalizarListadoProductos($productos);
@@ -489,16 +501,23 @@ class ProductoModel
         }
 
         if ($seccion === 'tienda') {
-            return $this->getAll();
+            return $this->obtenerTodos();
         }
 
         try {
             $pdo = Database::connect();
             $stmt = $pdo->prepare(
-                'SELECT p.* FROM productos p '
-                . 'INNER JOIN producto_categorias_web pcw ON pcw.producto_id = p.id '
-                . 'WHERE pcw.seccion = :seccion AND p.visible = 1 AND p.estado = 1 AND p.stock >= 0 '
-                . 'ORDER BY p.id DESC'
+                "
+        SELECT p.*,
+               (SELECT ruta FROM producto_imagenes pi
+                WHERE pi.producto_id = p.id
+                ORDER BY es_principal DESC, id ASC
+                LIMIT 1) AS ruta_imagen
+        FROM productos p
+        INNER JOIN producto_categorias_web pcw ON pcw.producto_id = p.id
+        WHERE pcw.seccion = :seccion AND p.visible = 1 AND p.estado = 1 AND p.stock >= 0
+        ORDER BY p.id DESC
+    "
             );
             $stmt->execute([':seccion' => $seccion]);
             $productos = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
