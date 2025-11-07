@@ -20,7 +20,7 @@ class ProductoModel
         $sql = "
       SELECT p.*,
              (
-               SELECT pi.ruta
+               SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre)
                FROM producto_imagenes pi
                WHERE pi.producto_id = p.id
                ORDER BY pi.es_principal DESC, pi.id ASC
@@ -301,7 +301,7 @@ class ProductoModel
         $pdo = Database::connect();
 
         $sql = 'SELECT p.id, p.nombre, p.precio, p.imagen, ' .
-            '       (SELECT pi.ruta FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal '
+            "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
             . 'FROM productos p '
             . 'WHERE (p.nombre LIKE :term OR p.descripcion LIKE :term) '
             . 'AND p.visible = 1 AND p.estado = 1 AND p.stock >= 0 LIMIT 10';
@@ -415,7 +415,7 @@ class ProductoModel
             $db = Database::connect();
             $stmt = $db->prepare(
                 'SELECT DISTINCT p.*, ' .
-                '       (SELECT pi.ruta FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal '
+                "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
                 . 'FROM productos p '
                 . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
                 . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
@@ -461,7 +461,7 @@ class ProductoModel
             $db = Database::connect();
             $stmt = $db->prepare(
                 'SELECT DISTINCT p.*, ' .
-                '       (SELECT pi.ruta FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal '
+                "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
                 . 'FROM productos p '
                 . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
                 . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
@@ -502,7 +502,7 @@ class ProductoModel
             $db = Database::connect();
             $stmt = $db->prepare(
                 'SELECT DISTINCT p.*, ' .
-                '       (SELECT pi.ruta FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal '
+                "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
                 . 'FROM productos p '
                 . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
                 . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
@@ -541,7 +541,7 @@ class ProductoModel
             $db = Database::connect();
             $stmt = $db->prepare(
                 'SELECT p.*, ' .
-                '       (SELECT pi.ruta FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal '
+                "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
                 . 'FROM productos p '
                 . 'WHERE (p.nombre LIKE :q OR p.descripcion LIKE :q) '
                 . 'AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
