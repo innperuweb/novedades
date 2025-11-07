@@ -19,7 +19,13 @@ $max_precio = isset($max_precio) ? (float) $max_precio : 10000.0;
 
 $formatearPrecio = static fn (float $valor): string => number_format($valor, 2, '.', '');
 
-$urlBaseProductos = site_url('productos');
+$titulo_pagina = isset($titulo_pagina) ? trim((string) $titulo_pagina) : '';
+$titulo_pagina = $titulo_pagina !== '' ? $titulo_pagina : 'Producto';
+
+$url_base_listado = isset($url_base_listado) ? trim((string) $url_base_listado) : 'productos';
+$url_base_listado = $url_base_listado !== '' ? ltrim($url_base_listado, '/') : 'productos';
+
+$urlBaseProductos = site_url($url_base_listado);
 $construirUrlOrden = static function (string $ordenDeseado) use ($slug_subcat, $urlBaseProductos): string {
     $params = [];
     if ($slug_subcat !== '') {
@@ -95,7 +101,7 @@ $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrec
     <div class="container-fluid">
         <div class="row">
             <div class="col-12 text-center">
-                <h1 class="page-title">Producto</h1>
+                <h1 class="page-title"><?= e($titulo_pagina); ?></h1>
             </div>
         </div>
     </div>
