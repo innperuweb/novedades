@@ -9,19 +9,19 @@ class ProductoModel
     private const SECCIONES_PERMITIDAS = ['tienda', 'novedades', 'ofertas', 'populares', 'por_mayor'];
 
     public function obtenerProductosPorSeccion(string $seccion, int $limite = 10): array
-    {
-        $seccion = trim($seccion);
-        if ($seccion === '' || $limite <= 0) {
+{
+    $seccion = trim($seccion);
+    if ($seccion === '' || $limite <= 0) {
+        return [];
+    }
+
+    try {
+        if (!in_array($seccion, self::SECCIONES_PERMITIDAS, true)) {
             return [];
         }
 
-        try {
-            if (!in_array($seccion, self::SECCIONES_PERMITIDAS, true)) {
-                return [];
-            }
-
-            $pdo = Database::connect();
-            $sql = <<<'SQL'
+        $pdo = Database::connect();
+        $sql = <<<'SQL'
 SELECT
     p.*,
     (
@@ -32,7 +32,15 @@ SELECT
         LIMIT 1
     ) AS ruta_principal
 FROM productos p
-WHERE p.categoria_slug = :slug
+WHERE (
+        p.categoria_slug = :slug
+        OR EXISTS (
+            SELECT 1
+            FROM producto_categorias_web pcw
+            WHERE pcw.producto_id = p.id
+              AND pcw.seccion = :slug
+        )
+    )
   AND p.visible = 1
   AND p.estado = 1
   AND p.stock >= 0
@@ -40,30 +48,31 @@ ORDER BY p.id DESC
 LIMIT :limite
 SQL;
 
-            $stmt = $pdo->prepare($sql);
-            $stmt->bindValue(':slug', $seccion, \PDO::PARAM_STR);
-            $stmt->bindValue(':limite', $limite, \PDO::PARAM_INT);
-            $stmt->execute();
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindValue(':slug', $seccion, \PDO::PARAM_STR);
+        $stmt->bindValue(':limite', $limite, \PDO::PARAM_INT);
+        $stmt->execute();
 
-            $productos = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
-        } catch (\Throwable $exception) {
-            return [];
-        }
-
-        foreach ($productos as &$producto) {
-            $producto['id'] = (int) ($producto['id'] ?? 0);
-            $producto['nombre'] = trim((string) ($producto['nombre'] ?? ''));
-            if (isset($producto['precio'])) {
-                $producto['precio'] = (float) $producto['precio'];
-            }
-            if (isset($producto['ruta_principal'])) {
-                $producto['ruta_principal'] = trim((string) $producto['ruta_principal']);
-            }
-        }
-        unset($producto);
-
-        return $productos;
+        $productos = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+    } catch (\Throwable $exception) {
+        return [];
     }
+
+    foreach ($productos as &$producto) {
+        $producto['id'] = (int) ($producto['id'] ?? 0);
+        $producto['nombre'] = trim((string) ($producto['nombre'] ?? ''));
+        if (isset($producto['precio'])) {
+            $producto['precio'] = (float) $producto['precio'];
+        }
+        if (isset($producto['ruta_principal'])) {
+            $producto['ruta_principal'] = trim((string) $producto['ruta_principal']);
+        }
+    }
+    unset($producto);
+
+    return $productos;
+}
+
 
     public function getAll(): array
     {

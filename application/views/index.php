@@ -340,72 +340,78 @@
     </section>
 
     <section class="product-carousel-area pt--70 pt-md--50 pb--75 pb-md--55">
-        <div class="container-fluid">
-            <div class="row mb--40 mb-md--25">
-                <div class="col-12 text-center">
-                    <h2 class="heading-secondary">Ofertas</h2>
-                </div>
+    <div class="container-fluid">
+        <div class="row mb--40 mb-md--25">
+            <div class="col-12 text-center">
+                <h2 class="heading-secondary">Ofertas</h2>
             </div>
-            <div class="row">
-                <div class="col-12">
-                    <div class="row grid-space-30">
-                        <?php
-                        $productos = array_slice($ofertas, 0, 10);
-                        ?>
-                        <?php if ($productos === []): ?>
-                            <div class="col-12 text-center">
-                                <p>No se encontraron productos para esta sección.</p>
-                            </div>
-                        <?php else: ?>
-                            <?php foreach ($productos as $p): ?>
-                                <?php
-                                $id = (int) ($p['id'] ?? 0);
-                                $nombre = e((string) ($p['nombre'] ?? ''));
-                                $precio = number_format((float) ($p['precio'] ?? 0), 2);
-                                $detalleUrl = base_url('productos/detalle?id=' . $id);
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="row grid-space-30">
+                    <?php
+                    $productos = array_slice($ofertas, 0, 10);
+                    ?>
+                    <?php if ($productos === []): ?>
+                        <div class="col-12 text-center">
+                            <p>No se encontraron productos para esta sección.</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($productos as $p): ?>
+                            <?php
+                            $id = (int) ($p['id'] ?? 0);
+                            $nombre = e((string) ($p['nombre'] ?? ''));
+                            $precio = number_format((float) ($p['precio'] ?? 0), 2);
+                            $detalleUrl = base_url('productos/detalle?id=' . $id);
 
-                                $rutaPrincipal = trim((string) ($p['ruta_principal'] ?? ''));
-                                if ($rutaPrincipal !== '') {
-                                    $rutaPrincipal = 'public/assets/' . ltrim($rutaPrincipal, '/');
+                            // Determinar la ruta de imagen principal
+                            $rutaPrincipal = isset($p['ruta_principal']) ? (string) $p['ruta_principal'] : '';
+                            $imagen = 'public/assets/img/no-image.jpg';
+                            if ($rutaPrincipal !== '') {
+                                $rutaRelativa = 'public/assets/' . ltrim($rutaPrincipal, '/');
+                                $baseFisica = defined('ROOT_PATH') ? ROOT_PATH : dirname(__DIR__, 2);
+                                $rutaFisica = rtrim($baseFisica, '/\\') . '/' . str_replace(['\\', '//'], '/', $rutaRelativa);
+                                if (is_file($rutaFisica)) {
+                                    $imagen = $rutaRelativa;
                                 }
-
-                                $imagen = $rutaPrincipal !== '' ? $rutaPrincipal : 'public/assets/img/no-image.jpg';
-                                ?>
-                                <div class="col-xl-3 col-md-6 mb--40 mb-md--30">
-                                    <div class="airi-product">
-                                        <div class="product-inner">
-                                            <figure class="product-image">
-                                                <div class="product-image--holder">
-                                                    <a href="<?= e($detalleUrl); ?>">
-                                                        <img src="<?= e(base_url($imagen)); ?>" alt="<?= $nombre; ?>">
+                            }
+                            ?>
+                            <div class="col-xl-3 col-md-6 mb--40 mb-md--30">
+                                <div class="airi-product">
+                                    <div class="product-inner">
+                                        <figure class="product-image">
+                                            <div class="product-image--holder">
+                                                <a href="<?= e($detalleUrl); ?>">
+                                                    <img src="<?= e(base_url($imagen)); ?>" alt="<?= $nombre; ?>">
+                                                </a>
+                                            </div>
+                                            <div class="airi-product-action">
+                                                <div class="product-action">
+                                                    <a href="<?= e($detalleUrl); ?>"
+                                                       class="quickview-btn action-btn"
+                                                       data-bs-toggle="tooltip"
+                                                       data-bs-placement="left"
+                                                       title="Ver producto">
+                                                       <i class="dl-icon-view"></i>
                                                     </a>
                                                 </div>
-                                                <div class="airi-product-action">
-                                                    <div class="product-action">
-                                                        <a href="<?= e($detalleUrl); ?>"
-                                                           class="quickview-btn action-btn"
-                                                           data-bs-toggle="tooltip"
-                                                           data-bs-placement="left"
-                                                           title="Ver producto">
-                                                           <i class="dl-icon-view"></i>
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </figure>
-                                            <div class="product-info text-center">
-                                                <h3 class="product-title"><?= $nombre; ?></h3>
-                                                <span class="product-price">S/ <?= $precio; ?></span>
                                             </div>
+                                        </figure>
+                                        <div class="product-info text-center">
+                                            <h3 class="product-title"><?= $nombre; ?></h3>
+                                            <span class="product-price">S/ <?= $precio; ?></span>
                                         </div>
                                     </div>
                                 </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
+
 
     <section class="product-carousel-area pt--70 pt-md--50 pb--75 pb-md--55">
         <div class="container-fluid">
