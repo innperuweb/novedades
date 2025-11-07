@@ -117,7 +117,7 @@
                     <textarea id="descripcion" name="descripcion" rows="8" class="form-control"><?php echo htmlspecialchars((string) $descripcionValor, ENT_QUOTES, 'UTF-8'); ?></textarea>
                     <?php if (strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/productos/') !== false): ?>
                     <!-- CKEditor 4 - versión estándar, sin API key -->
-                    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+                    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script> 
                     <script>
                       CKEDITOR.replace('descripcion', {
                         height: 300,

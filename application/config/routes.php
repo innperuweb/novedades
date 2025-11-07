@@ -8,7 +8,7 @@ return [
     'productos/detalle' => ['ProductosController', 'detalle'],
     'detalle_producto' => ['ProductosController', 'detalle'],
     'ofertas' => ['ProductosController', 'ofertas'],
-    'novedades/novedades' => ['ProductosController', 'novedades'],
+    'novedades' => ['ProductosController', 'novedades'],
     'populares' => ['ProductosController', 'populares'],
     'por_mayor' => ['ProductosController', 'porMayor'],
     'categoria' => ['CategoriaController', 'index'],
