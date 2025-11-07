@@ -299,9 +299,13 @@ $miniCartSubtotal = 0.0;
                                 <a href="<?= e(base_url('carrito/eliminar?' . $removeQuery)); ?>" class="remove-from-cart remove">
                                     <i class="dl-icon-close"></i>
                                 </a>
+
+                                <!------
                                 <div class="mini-cart__product__image">
-                                    <img src="<?= e($imagenUrl); ?>" alt="<?= $nombre; ?>">
+                                     <img src="<?= e($imagenUrl); ?>" alt="<?= $nombre; ?>"> 
                                 </div>
+                                ------>
+                                
                                 <div class="mini-cart__product__content">
                                     <a class="mini-cart__product__title" href="<?= e($detalleUrl); ?>">
                                         <?= $nombre; ?>
