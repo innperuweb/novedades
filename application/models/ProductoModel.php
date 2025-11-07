@@ -108,8 +108,12 @@ SQL;
                 return [];
             }
 
-            $sql .= ' INNER JOIN producto_categorias_web pcw ON pcw.producto_id = p.id';
-            $where .= ' AND pcw.seccion = :sec';
+            $where .= ' AND (p.categoria_slug = :sec OR EXISTS (
+                SELECT 1
+                FROM producto_categorias_web pcw
+                WHERE pcw.producto_id = p.id
+                  AND pcw.seccion = :sec
+            ))';
             $params[':sec'] = $seccion;
         }
 
