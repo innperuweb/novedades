@@ -10,7 +10,7 @@ class ProductosController extends BaseController
     public function index(): void
     {
         $contexto = $this->construirContextoListado(null, 'productos');
-        $contexto['titulo_pagina'] = 'Producto';
+        $contexto['titulo_pagina'] = 'TIENDA';
 
         $this->render('productos', $contexto);
     }

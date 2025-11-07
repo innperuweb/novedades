@@ -129,23 +129,45 @@ $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrec
                                 </div>
                             <?php else: ?>
                                 <?php foreach ($productos as $p): ?>
-                                    <div class="col-xl-4 col-md-6 mb--40 mb-md--30">
+                                    <div class="col-xl-3 col-md-6 mb--40 mb-md--30">
                                         <div class="airi-product">
                                             <div class="product-inner">
                                                 <figure class="product-image">
+
+                                                    <?php
+                                                    $idProducto = (int)$p['id'];
+                                                    $directorio = __DIR__ . '/../../public/assets/uploads/productos/' . $idProducto;
+
+                                                    $imagenPrincipal = null;
+                                                    if (is_dir($directorio)) {
+                                                        $archivos = scandir($directorio);
+                                                        foreach ($archivos as $archivo) {
+                                                            if (preg_match('/^1_.*\.(jpg|jpeg|png|webp)$/i', $archivo)) {
+                                                                $imagenPrincipal = "public/assets/uploads/productos/{$idProducto}/{$archivo}";
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+
+                                                    if (!$imagenPrincipal) {
+                                                        $imagenPrincipal = 'public/assets/img/no-image.jpg';
+                                                    }
+                                                    $detalleUrl = "http://localhost/novedades/productos/detalle?id=" . $idProducto;
+                                                    ?>
                                                     <div class="product-image--holder">
-                                                        <a href="#">
-                                                            <img src="public/assets/uploads/productos/18/1_690cff061230c6.10920117.webp"
-                                                                alt="Product Image">
+                                                        <a href="<?= e($detalleUrl); ?>">
+                                                            <img src="<?= e($imagenPrincipal); ?>" alt="<?= e($p['nombre']); ?>">
                                                         </a>
                                                     </div>
+
                                                     <div class="airi-product-action">
                                                         <div class="product-action">
-                                                            <a class="quickview-btn action-btn" data-bs-toggle="tooltip"
-                                                                data-bs-placement="left" title="Quick Shop">
-                                                                <span data-bs-toggle="modal" data-bs-target="#productModal">
-                                                                    <i class="dl-icon-view"></i>
-                                                                </span>
+                                                            <a href="<?= e($detalleUrl); ?>"
+                                                                class="quickview-btn action-btn"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="left"
+                                                                title="Ver producto">
+                                                                <i class="dl-icon-view"></i>
                                                             </a>
                                                         </div>
                                                     </div>

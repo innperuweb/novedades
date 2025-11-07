@@ -743,15 +743,7 @@ $tablaTallasUrl = $tablaTallasArchivo !== '' ? $normalizarRutaTablaTallas($tabla
                 </div>
             </div>
 
-
-
-
-
-
-
         </div>
-
-
 
     </div>
 </div>
