@@ -70,7 +70,6 @@ if (isset($productoModel) && $productoModel instanceof ProductoModel) {
     $productoModelInstance = new ProductoModel();
 }
 $cacheSeccionesProducto = [];
-$placeholderImagen = base_url('public/assets/img/no-image.jpg');
 ?>
 <div class="breadcrumb-area bg--white-6 breadcrumb-bg-1 pt--60 pb--70 pt-lg--40 pb-lg--50 pt-md--30 pb-md--40">
     <div class="container-fluid">
@@ -135,24 +134,16 @@ $placeholderImagen = base_url('public/assets/img/no-image.jpg');
                                     <p class="text-center">No se encontraron productos para esta subcategoría.</p>
                                 </div>
                             <?php else: ?>
-                                <?php foreach ($productos as $producto): ?>
+                                <?php foreach ($productos as $p): ?>
                                     <?php
-                                    $productoId = (int) ($producto['id'] ?? 0);
-                                    $nombreProducto = (string) ($producto['nombre'] ?? 'Producto');
-                                    $precioProducto = (float) ($producto['precio'] ?? 0);
-                                    $detalleUrl = $productoId > 0 ? site_url('productos/detalle?id=' . $productoId) : '#';
+                                    $productoId = (int) ($p['id'] ?? 0);
+                                    $nombreProducto = (string) ($p['nombre'] ?? 'Producto');
+                                    $precioProducto = (float) ($p['precio'] ?? 0);
+                                    $rutaImagen = isset($p['ruta_imagen']) ? (string) $p['ruta_imagen'] : null;
+                                    $urlImagen = url_imagen_producto($productoId, $rutaImagen);
+                                    $detalleUrl = "http://localhost/novedades/productos/detalle?id=" . (int) $p['id'];
                                     $mostrarSale = false;
-                                    $urlImagen = $placeholderImagen;
-                                    if ($productoId > 0 && $productoModelInstance !== null && method_exists($productoModelInstance, 'obtenerImagenPrincipalURL')) {
-                                        try {
-                                            $urlImagen = $productoModelInstance->obtenerImagenPrincipalURL($productoId);
-                                        } catch (\Throwable $exception) {
-                                            $urlImagen = $placeholderImagen;
-                                        }
-                                    }
-                                    if (!is_string($urlImagen) || $urlImagen === '') {
-                                        $urlImagen = $placeholderImagen;
-                                    }
+
                                     if ($productoModelInstance !== null && $productoId > 0 && method_exists($productoModelInstance, 'obtenerSeccionesProducto')) {
                                         if (!array_key_exists($productoId, $cacheSeccionesProducto)) {
                                             try {

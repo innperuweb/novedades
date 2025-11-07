@@ -48,3 +48,30 @@ if (!function_exists('current_url')) {
         return $scheme . $host . $requestUri;
     }
 }
+
+if (!function_exists('url_imagen_producto')) {
+    function url_imagen_producto(int $productoId, ?string $rutaBD): string
+    {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $base   = rtrim("$scheme://$host/novedades", '/');
+
+        $uploadsRel  = '/uploads/productos';
+        $placeholder = $base . '/public/assets/img/no-image.jpg';
+
+        if (!$rutaBD) {
+            return $placeholder;
+        }
+
+        $rutaBD = trim($rutaBD, '/');
+        $dir    = dirname($rutaBD);
+        $file   = basename($rutaBD);
+        $url    = $base . $uploadsRel . '/' . ($dir === '.' ? '' : $dir . '/') . rawurlencode($file);
+
+        $docRoot = $_SERVER['DOCUMENT_ROOT'] ?? '';
+        $docRoot = rtrim($docRoot, '/\\');
+        $local   = $docRoot . '/novedades' . $uploadsRel . '/' . ($dir === '.' ? '' : $dir . '/') . $file;
+
+        return is_file($local) ? $url : $placeholder;
+    }
+}
