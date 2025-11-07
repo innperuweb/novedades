@@ -334,9 +334,14 @@ class ProductoModel
         }
 
         foreach ($resultados as &$producto) {
+            $producto['id'] = isset($producto['id']) ? (int) $producto['id'] : 0;
+            $producto['nombre'] = trim((string) ($producto['nombre'] ?? ''));
+            $producto['precio'] = (float) ($producto['precio'] ?? 0);
+
             if (isset($producto['imagen'])) {
                 $producto['imagen'] = trim((string) $producto['imagen']);
             }
+
             if (isset($producto['ruta_principal'])) {
                 $producto['ruta_principal'] = trim((string) $producto['ruta_principal']);
             }
