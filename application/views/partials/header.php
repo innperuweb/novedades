@@ -170,11 +170,29 @@ $uri_actual = $_SERVER['REQUEST_URI'] ?? '';
             </div>
         </header>
 
+        <?php
+        $searchBaseUrl = '#';
+        if (function_exists('base_url')) {
+            $searchBaseUrl = base_url('buscar');
+        } else {
+            $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+            $scheme = $isHttps ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+            $basePath = rtrim(str_replace('\\\\', '/', dirname($scriptName)), '/');
+            $basePath = $basePath === '.' ? '' : $basePath;
+            $searchBaseUrl = $scheme . '://' . $host;
+            if ($basePath !== '') {
+                $searchBaseUrl .= '/' . ltrim($basePath, '/');
+            }
+            $searchBaseUrl = rtrim($searchBaseUrl, '/') . '/buscar';
+        }
+        ?>
         <div class="searchform__popup" id="searchForm">
             <a href="#" class="btn-close"><i class="dl-icon-close"></i></a>
             <div class="searchform__body">
                 <p>¿Qué producto buscas?</p>
-                <form class="searchform" action="<?= base_url('buscar'); ?>" method="get">
+                <form class="searchform" action="<?= e($searchBaseUrl); ?>" method="get">
                     <input
                         type="text"
                         name="q"
