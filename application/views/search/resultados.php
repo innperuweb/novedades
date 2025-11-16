@@ -12,13 +12,17 @@ if (!isset($productoModel) || !($productoModel instanceof ProductoModel)) {
     <div class="resultados-busqueda">
         <?php foreach ($resultados as $p): ?>
             <?php
-            $nombre = htmlspecialchars($p['nombre'] ?? '', ENT_QUOTES, 'UTF-8');
-            $precio = isset($p['precio']) ? number_format((float) $p['precio'], 2) : number_format(0, 2);
+            $nombre     = htmlspecialchars($p['nombre'] ?? '', ENT_QUOTES, 'UTF-8');
+            $precio     = isset($p['precio']) ? number_format((float) $p['precio'], 2) : number_format(0, 2);
             $productoId = (int) ($p['id'] ?? 0);
-            $detalleUrl = htmlspecialchars('http://localhost/novedades/productos/detalle?id=' . $productoId, ENT_QUOTES, 'UTF-8');
+            $detalleUrl = htmlspecialchars(
+                base_url('productos/detalle?id=' . urlencode((string) $productoId)),
+                ENT_QUOTES,
+                'UTF-8'
+            );
             $urlImagen = $productoModel instanceof ProductoModel
                 ? htmlspecialchars($productoModel->urlImagenPrincipalDeFila($p), ENT_QUOTES, 'UTF-8')
-                : htmlspecialchars(base_url('public/assets/img/no-image.jpg'), ENT_QUOTES, 'UTF-8');
+                : htmlspecialchars(asset_url('img/no-image.jpg'), ENT_QUOTES, 'UTF-8');
             ?>
             <div class="producto">
                 <img src="<?= $urlImagen; ?>" alt="<?= $nombre; ?>">

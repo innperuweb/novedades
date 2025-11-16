@@ -204,19 +204,20 @@
                         <?php else: ?>
                             <?php foreach ($productosAleatorios as $producto): ?>
                                 <?php
-                                $productoId = (int) ($producto['id'] ?? 0);
-                                $nombreProducto = (string) ($producto['nombre'] ?? '');
-                                $detalleUrl = 'http://localhost/novedades/productos/detalle?id=' . $productoId;
-                                $imagenPrincipal = 'public/assets/img/no-image.jpg';
-
+                                $productoId      = (int) ($producto['id'] ?? 0);
+                                $nombreProducto  = (string) ($producto['nombre'] ?? '');
+                                $detalleUrl      = base_url('productos/detalle?id=' . urlencode((string) $productoId));
+                                $imagenPrincipal = asset_url('img/no-image.jpg');
+                                
                                 if ($productoId > 0) {
                                     $directorio = __DIR__ . '/../../public/assets/uploads/productos/' . $productoId;
-
+                                
                                     if (is_dir($directorio)) {
                                         $archivos = scandir($directorio);
+                                
                                         foreach ($archivos as $archivo) {
                                             if (preg_match('/^1_.*\.(jpe?g|png|gif|webp)$/i', $archivo)) {
-                                                $imagenPrincipal = 'public/assets/uploads/productos/' . $productoId . '/' . $archivo;
+                                                $imagenPrincipal = asset_url('uploads/productos/' . $productoId . '/' . $archivo);
                                                 break;
                                             }
                                         }
@@ -312,11 +313,12 @@
 
     $obtenerDetalleProducto = static function (int $productoId): string {
         if ($productoId <= 0) {
-            return 'http://localhost/novedades/productos';
+            return base_url('productos');
         }
-
-        return 'http://localhost/novedades/productos/detalle?id=' . $productoId;
+    
+        return base_url('productos/detalle?id=' . urlencode((string) $productoId));
     };
+    
 
     $formatearPrecioProducto = static function ($precio): string {
         $valor = is_numeric($precio) ? (float) $precio : 0.0;

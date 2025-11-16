@@ -150,9 +150,11 @@ $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrec
                                                     }
 
                                                     if (!$imagenPrincipal) {
-                                                        $imagenPrincipal = 'public/assets/img/no-image.jpg';
+                                                        $imagenPrincipal = asset_url('img/no-image.jpg');
                                                     }
-                                                    $detalleUrl = "http://localhost/novedades/productos/detalle?id=" . $idProducto;
+                                                    
+                                                    $detalleUrl = base_url('productos/detalle?id=' . urlencode((string) $idProducto));
+                                                    
                                                     ?>
                                                     <div class="product-image--holder">
                                                         <a href="<?= e($detalleUrl); ?>">

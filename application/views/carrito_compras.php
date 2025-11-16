@@ -64,12 +64,15 @@ $carrito = isset($carrito) && is_array($carrito)
                                                     }
 
                                                     if (!$imagenPrincipal) {
-                                                        $imagenPrincipal = 'public/assets/img/no-image.jpg';
+                                                        $imagenPrincipal = asset_url('img/no-image.jpg');
                                                     }
-                                                    $detalleUrl = "http://localhost/novedades/productos/detalle?id=" . $idProducto;
-                                                    $uid = (string) ($item['uid'] ?? '');
+                                                    
+                                                    $detalleUrl = base_url('productos/detalle?id=' . urlencode((string) $idProducto));
+                                                    
+                                                    $uid   = (string) ($item['uid'] ?? '');
                                                     $color = trim((string) ($item['color'] ?? ''));
                                                     $talla = trim((string) ($item['talla'] ?? ''));
+                                                    
                                                     $removeQuery = $uid !== ''
                                                         ? 'uid=' . urlencode($uid)
                                                         : 'id=' . urlencode((string) ($item['id'] ?? ''));

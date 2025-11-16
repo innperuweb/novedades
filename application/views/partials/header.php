@@ -87,46 +87,47 @@ foreach ($miniCartItems as $miniCartItem) {
                                     $uri_actual = $_SERVER['REQUEST_URI'] ?? '';
                                     ?>
                                     <ul class="mainmenu mainmenu--centered">
-                                        <li class="mainmenu__item <?= strpos($uri_actual, '/novedades/') === false && strpos($uri_actual, '/productos') === false ? 'active' : '' ?>">
-                                            <a href="http://localhost/novedades" class="mainmenu__link">
+                                        <li class="mainmenu__item <?= strpos($uri_actual, '/productos') === false && strpos($uri_actual, '/novedades') === false ? 'active' : '' ?>">
+                                            <a href="<?= base_url() ?>" class="mainmenu__link">
                                                 <span class="mm-text">Inicio</span>
                                             </a>
                                         </li>
+
                                         <li class="mainmenu__item <?= strpos($uri_actual, '/productos') !== false ? 'active' : '' ?>">
-                                            <a href="http://localhost/novedades/productos" class="mainmenu__link">
+                                            <a href="<?= base_url('productos') ?>" class="mainmenu__link">
                                                 <span class="mm-text">Tienda</span>
                                             </a>
                                         </li>
-                                        <li class="mainmenu__item <?= strpos($uri_actual, '/novedades/novedades') !== false ? 'active' : '' ?>">
-                                            <a href="http://localhost/novedades/novedades" class="mainmenu__link">
+
+                                        <li class="mainmenu__item <?= strpos($uri_actual, '/novedades') !== false ? 'active' : '' ?>">
+                                            <a href="<?= base_url('novedades') ?>" class="mainmenu__link">
                                                 <span class="mm-text">Novedades</span>
                                             </a>
                                         </li>
+
                                         <li class="mainmenu__item ">
-                                            <a href="http://localhost/novedades/ofertas" class="mainmenu__link">
+                                            <a href="<?= base_url('ofertas') ?>" class="mainmenu__link">
                                                 <span class="mm-text">Ofertas</span>
                                                 <span class="tip">Hot</span>
                                             </a>
                                         </li>
+
                                         <li class="mainmenu__item <?= strpos($uri_actual, '/populares') !== false ? 'active' : '' ?>">
-                                            <a href="http://localhost/novedades/populares" class="mainmenu__link">
+                                            <a href="<?= base_url('populares') ?>" class="mainmenu__link">
                                                 <span class="mm-text">Populares</span>
                                             </a>
                                         </li>
+
                                         <li class="mainmenu__item <?= strpos($uri_actual, '/por_mayor') !== false ? 'active' : '' ?>">
-                                            <a href="http://localhost/novedades/por_mayor" class="mainmenu__link">
+                                            <a href="<?= base_url('por_mayor') ?>" class="mainmenu__link">
                                                 <span class="mm-text">Por Mayor</span>
                                             </a>
                                         </li>
-                                        <!--------
-                                        <li class="mainmenu__item ">
-                                            <a href="http://localhost/novedades/blog" class="mainmenu__link">
-                                                <span class="mm-text">Blog</span>
-                                            </a>
-                                        </li>
-                                        -------->
-                                    </ul>
-                                </nav>
+
+                                        <!--
+                                            <li class="mainmenu__item ">
+                                                <a href="<?= base_url('blog') ?>"_
+
                             </div>
 
                             <div class="col-lg-2 col-md-9 col-8 order-2 order-lg-3">
@@ -251,38 +252,38 @@ foreach ($miniCartItems as $miniCartItem) {
                                     <button class="dl-trigger">Open Menu</button>
                                     <ul class="dl-menu">
                                         <li>
-                                            <a href="http://localhost/novedades">
+                                            <a href="<?= base_url() ?>">
                                                 Inicio
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="http://localhost/novedades/productos">
+                                            <a href="<?= base_url('productos') ?>">
                                                 Tienda
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="http://localhost/novedades/novedades">
+                                            <a href="<?= base_url('novedades') ?>">
                                                 Novedades
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="http://localhost/novedades/ofertas">
+                                            <a href="<?= base_url('ofertas') ?>">
                                                 Ofertas
                                                 <span class="tip">Hot</span>
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="http://localhost/novedades/por_mayor">
+                                            <a href="<?= base_url('por_mayor') ?>">
                                                 Por mayor
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="http://localhost/novedades/blog">
+                                            <a href="<?= base_url('blog') ?>">
                                                 Blog
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="<?= base_url('para-el-cliente'); ?>">
+                                            <a href="<?= base_url('para-el-cliente') ?>">
                                                 Contáctenos
                                             </a>
                                         </li>
