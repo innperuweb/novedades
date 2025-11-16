@@ -14,24 +14,18 @@ if (!function_exists('base_url')) {
     {
         $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
         $forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? null;
-
         if (!empty($forwardedProto)) {
             $scheme = explode(',', (string) $forwardedProto)[0];
         } else {
             $scheme = $isHttps ? 'https' : 'http';
         }
-
         $host = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost');
-
         $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
         $directory = str_replace('\\', '/', dirname($scriptName));
         $directory = ($directory === '/' || $directory === '.') ? '' : rtrim($directory, '/');
         $basePath = $directory !== '' ? $directory . '/' : '/';
-
         $base = sprintf('%s://%s%s', $scheme, $host, $basePath);
-
         $normalizedPath = ltrim((string) $path, '/');
-
         return $base . $normalizedPath;
     }
 }
@@ -83,43 +77,43 @@ if (!function_exists('url_imagen_producto')) {
             return $placeholder;
         }
 
-$rutaBD = str_replace('\\', '/', (string) $rutaBD);
-$rutaBD = trim($rutaBD, '/');
+        $rutaBD = str_replace('\\', '/', (string) $rutaBD);
+        $rutaBD = trim($rutaBD, '/');
 
-// Si está vacío, usa imagen por defecto
-if ($rutaBD === '') {
-    return $placeholder;
-}
+        // Si está vacío, usa imagen por defecto
+        if ($rutaBD === '') {
+            return $placeholder;
+        }
 
-// Si ya es una URL absoluta, devuélvela tal cual
-if (preg_match('~^https?://~i', $rutaBD)) {
-    return $rutaBD;
-}
+        // Si ya es una URL absoluta, devuélvela tal cual
+        if (preg_match('~^https?://~i', $rutaBD)) {
+            return $rutaBD;
+        }
 
-// Elimina el prefijo "uploads/productos/" si ya viene incluido
-$uploadsPrefix = ltrim($uploadsRel, '/');
-if (stripos($rutaBD, $uploadsPrefix . '/') === 0) {
-    $rutaBD = substr($rutaBD, strlen($uploadsPrefix) + 1);
-}
+        // Elimina el prefijo "uploads/productos/" si ya viene incluido
+        $uploadsPrefix = ltrim($uploadsRel, '/');
+        if (stripos($rutaBD, $uploadsPrefix . '/') === 0) {
+            $rutaBD = substr($rutaBD, strlen($uploadsPrefix) + 1);
+        }
 
-// Separa directorio y archivo
-$dir  = dirname($rutaBD);
-$file = basename($rutaBD);
+        // Separa directorio y archivo
+        $dir  = dirname($rutaBD);
+        $file = basename($rutaBD);
 
-// Validar nombre del archivo
-if ($file === '' || $file === '.' || $file === '..') {
-    return $placeholder;
-}
+        // Validar nombre del archivo
+        if ($file === '' || $file === '.' || $file === '..') {
+            return $placeholder;
+        }
 
-// Construir URL y ruta local
-$relativeDir = $dir === '.' ? '' : trim($dir, '/');
-$urlPath = $uploadsRel . '/' . ($relativeDir === '' ? '' : $relativeDir . '/');
-$url     = $base . $urlPath . rawurlencode($file);
+        // Construir URL y ruta local
+        $relativeDir = $dir === '.' ? '' : trim($dir, '/');
+        $urlPath = $uploadsRel . '/' . ($relativeDir === '' ? '' : $relativeDir . '/');
+        $url     = $base . $urlPath . rawurlencode($file);
 
-$docRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\');
-$local   = $docRoot . '/novedades' . $urlPath . $file;
+        $docRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\');
+        $local   = $docRoot . '/novedades' . $urlPath . $file;
 
-return is_file($local) ? $url : $placeholder;
+        return is_file($local) ? $url : $placeholder;
 
 
         return is_file($local) ? $url : $placeholder;

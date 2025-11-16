@@ -22,24 +22,24 @@ class ProductoModel
         try {
             $pdo = Database::connect();
             $sql = <<<'SQL'
-SELECT DISTINCT
-    p.*,
-    (
-        SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre)
-        FROM producto_imagenes pi
-        WHERE pi.producto_id = p.id
-        ORDER BY pi.es_principal DESC, pi.id ASC
-        LIMIT 1
-    ) AS ruta_principal
-FROM producto_categorias_web pcw
-INNER JOIN productos p ON p.id = pcw.producto_id
-WHERE pcw.seccion = :seccion
-  AND p.visible = 1
-  AND p.estado = 1
-  AND p.stock >= 0
-ORDER BY pcw.id DESC, p.id DESC
-LIMIT :limite
-SQL;
+            SELECT DISTINCT
+                p.*,
+                (
+                    SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre)
+                    FROM producto_imagenes pi
+                    WHERE pi.producto_id = p.id
+                    ORDER BY pi.es_principal DESC, pi.id ASC
+                    LIMIT 1
+                ) AS ruta_principal
+            FROM producto_categorias_web pcw
+            INNER JOIN productos p ON p.id = pcw.producto_id
+            WHERE pcw.seccion = :seccion
+            AND p.visible = 1
+            AND p.estado = 1
+            AND p.stock >= 0
+            ORDER BY pcw.id DESC, p.id DESC
+            LIMIT :limite
+            SQL;
 
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':seccion', $seccion, \PDO::PARAM_STR);
@@ -65,7 +65,6 @@ SQL;
 
         return $productos;
     }
-
 
     public function getAll(): array
     {
@@ -101,12 +100,8 @@ SQL;
                 return [];
             }
 
-            $where .= ' AND (p.categoria_slug = :sec OR EXISTS (
-                SELECT 1
-                FROM producto_categorias_web pcw
-                WHERE pcw.producto_id = p.id
-                  AND pcw.seccion = :sec
-            ))';
+            $sql .= ' INNER JOIN producto_categorias_web pcw ON pcw.producto_id = p.id';
+            $where .= ' AND pcw.seccion = :sec';
             $params[':sec'] = $seccion;
         }
 
