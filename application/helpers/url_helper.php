@@ -12,7 +12,27 @@ if (!function_exists('config_item')) {
 if (!function_exists('base_url')) {
     function base_url($path = '')
     {
-        return 'http://localhost/novedades/' . ltrim($path, '/');
+        $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+        $forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? null;
+
+        if (!empty($forwardedProto)) {
+            $scheme = explode(',', (string) $forwardedProto)[0];
+        } else {
+            $scheme = $isHttps ? 'https' : 'http';
+        }
+
+        $host = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost');
+
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        $directory = str_replace('\\', '/', dirname($scriptName));
+        $directory = ($directory === '/' || $directory === '.') ? '' : rtrim($directory, '/');
+        $basePath = $directory !== '' ? $directory . '/' : '/';
+
+        $base = sprintf('%s://%s%s', $scheme, $host, $basePath);
+
+        $normalizedPath = ltrim((string) $path, '/');
+
+        return $base . $normalizedPath;
     }
 }
 
