@@ -239,18 +239,23 @@ class ProductoModel
         try {
             $pdo = Database::connect();
             $stmt = $pdo->prepare(
-                'SELECT ruta FROM producto_imagenes WHERE producto_id = ? ORDER BY es_principal DESC, id ASC LIMIT 1'
+                'SELECT nombre FROM producto_imagenes WHERE producto_id = ? ORDER BY es_principal DESC, id ASC LIMIT 1'
             );
             $stmt->execute([$productoId]);
-            $ruta = $stmt->fetchColumn();
+            $nombre = $stmt->fetchColumn();
 
-            if ($ruta === false) {
+            if ($nombre === false) {
                 return null;
             }
 
-            $ruta = trim((string) $ruta);
+            $nombre = trim((string) $nombre);
+            $nombre = ltrim($nombre, '/\\');
 
-            return $ruta !== '' ? $ruta : null;
+            if ($nombre === '') {
+                return null;
+            }
+
+            return 'uploads/productos/' . $productoId . '/' . $nombre;
         } catch (\Throwable $exception) {
             return null;
         }
@@ -347,11 +352,9 @@ class ProductoModel
         }
 
         $ruta = trim($ruta, '/');
-        if (strpos($ruta, $uploadsRel) !== false) {
-            $pos = strpos($ruta, $uploadsRel);
-            if ($pos !== false) {
-                $ruta = ltrim(substr($ruta, $pos + strlen($uploadsRel)), '/');
-            }
+        $uploadsPrefix = ltrim($uploadsRel, '/');
+        if (stripos($ruta, $uploadsPrefix . '/') === 0) {
+            $ruta = substr($ruta, strlen($uploadsPrefix) + 1);
         }
 
         $dir = dirname($ruta);
