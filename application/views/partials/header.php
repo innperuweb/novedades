@@ -105,7 +105,7 @@ foreach ($miniCartItems as $miniCartItem) {
                                             </a>
                                         </li>
 
-                                        <li class="mainmenu__item ">
+                                        <li class="mainmenu__item">
                                             <a href="<?= base_url('ofertas') ?>" class="mainmenu__link">
                                                 <span class="mm-text">Ofertas</span>
                                                 <span class="tip">Hot</span>
@@ -125,8 +125,14 @@ foreach ($miniCartItems as $miniCartItem) {
                                         </li>
 
                                         <!--
-                                            <li class="mainmenu__item ">
-                                                <a href="<?= base_url('blog') ?>"_
+                                        <li class="mainmenu__item">
+                                            <a href="<?= base_url('blog') ?>" class="mainmenu__link">
+                                                <span class="mm-text">Blog</span>
+                                            </a>
+                                        </li>
+                                        -->
+                                    </ul>
+                                </nav>
 
                             </div>
 
@@ -256,38 +262,45 @@ foreach ($miniCartItems as $miniCartItem) {
                                                 Inicio
                                             </a>
                                         </li>
+
                                         <li>
                                             <a href="<?= base_url('productos') ?>">
                                                 Tienda
                                             </a>
                                         </li>
+
                                         <li>
                                             <a href="<?= base_url('novedades') ?>">
                                                 Novedades
                                             </a>
                                         </li>
+
                                         <li>
                                             <a href="<?= base_url('ofertas') ?>">
                                                 Ofertas
                                                 <span class="tip">Hot</span>
                                             </a>
                                         </li>
+
                                         <li>
                                             <a href="<?= base_url('por_mayor') ?>">
                                                 Por mayor
                                             </a>
                                         </li>
+
                                         <li>
                                             <a href="<?= base_url('blog') ?>">
                                                 Blog
                                             </a>
                                         </li>
+
                                         <li>
                                             <a href="<?= base_url('para-el-cliente') ?>">
                                                 Contáctenos
                                             </a>
                                         </li>
                                     </ul>
+
                                 </div>
                             </div>
                         </div>
