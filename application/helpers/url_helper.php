@@ -12,23 +12,47 @@ if (!function_exists('config_item')) {
 if (!function_exists('base_url')) {
     function base_url($path = '')
     {
-        $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+        // Detectar esquema (http/https)
+        $isHttps        = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
         $forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? null;
+
         if (!empty($forwardedProto)) {
             $scheme = explode(',', (string) $forwardedProto)[0];
         } else {
             $scheme = $isHttps ? 'https' : 'http';
         }
+
+        // Host
         $host = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost');
+
+        // Path actual del script
         $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
-        $directory = str_replace('\\', '/', dirname($scriptName));
-        $directory = ($directory === '/' || $directory === '.') ? '' : rtrim($directory, '/');
+        $directory  = str_replace('\\', '/', dirname($scriptName));
+
+        // 👇 Ajuste clave
+        // Si la ruta termina en "/admin" o contiene "/admin/", subimos un nivel
+        if (preg_match('~/admin$~', $directory)) {
+            $directory = dirname($directory);
+        }
+
+        // Normalizar directory
+        if ($directory === '/' || $directory === '.' || $directory === '\\') {
+            $directory = '';
+        } else {
+            $directory = rtrim($directory, '/');
+        }
+
+        // Base final
         $basePath = $directory !== '' ? $directory . '/' : '/';
-        $base = sprintf('%s://%s%s', $scheme, $host, $basePath);
+        $base     = sprintf('%s://%s%s', $scheme, $host, $basePath);
+
+        // Agregar path
         $normalizedPath = ltrim((string) $path, '/');
+
         return $base . $normalizedPath;
     }
 }
+
 
 if (!function_exists('site_url')) {
     function site_url(string $path = ''): string
