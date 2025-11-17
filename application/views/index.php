@@ -67,8 +67,6 @@
         </div>
     </div>
 
-
-
     <section class="method-area pt--40 pt-md--30 pb-md--55">
         <div class="container">
             <div class="row">
