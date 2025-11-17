@@ -30,10 +30,10 @@
                     <div class="footer-widget">
                         <h3 class="widget-title">Para el cliente</h3>
                         <ul class="widget-menu">
-                            <li><a href="<?= base_url('para-el-cliente'); ?>">Preguntas frecuentes</a></li>
-                            <li><a href="<?= base_url('para-el-cliente'); ?>">Envíos a nivel nacional</a></li>
-                            <li><a href="<?= base_url('para-el-cliente'); ?>">Pedidos por mayor</a></li>
-                            <li><a href="<?= base_url('para-el-cliente'); ?>">Garantías</a></li>
+                            <li><a href="<?= base_url('para-el-cliente/faq'); ?>">Preguntas frecuentes</a></li>
+                            <li><a href="<?= base_url('para-el-cliente/envios'); ?>">Envíos a nivel nacional</a></li>
+                            <li><a href="<?= base_url('para-el-cliente/por_mayor'); ?>">Pedidos por mayor</a></li>
+                            <li><a href="<?= base_url('para-el-cliente/garantias'); ?>">Garantías</a></li>
                         </ul>
                     </div>
                 </div>
@@ -41,9 +41,9 @@
                     <div class="footer-widget">
                         <h3 class="widget-title">Importante</h3>
                         <ul class="widget-menu">
-                            <li><a href="<?= base_url('para-el-cliente'); ?>">Términos y condiciones</a></li>
-                            <li><a href="<?= base_url('para-el-cliente'); ?>">Políticas de privacidad</a></li>
-                            <li><a href="<?= base_url('para-el-cliente'); ?>">Cambios y devoluciones</a></li>
+                            <li><a href="<?= base_url('para-el-cliente/terminos'); ?>">Términos y condiciones</a></li>
+                            <li><a href="<?= base_url('para-el-cliente/privacidad'); ?>">Políticas de privacidad</a></li>
+                            <li><a href="<?= base_url('para-el-cliente/cambios'); ?>">Cambios y devoluciones</a></li>
                             <li><a href="<?= base_url('libro-de-reclamaciones'); ?>">Libro de reclamaciones</a></li>
                         </ul>
                     </div>
