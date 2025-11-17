@@ -320,27 +320,27 @@ class ProductoModel
     }
 
     public function urlImagenPrincipalDeFila(array $fila): string
-{
-    $ruta = $fila['ruta_principal'] ?? null;
+    {
+        $ruta = $fila['ruta_principal'] ?? null;
 
-    // Si no viene ruta directa, intentar obtenerla desde BD
-    if (!$ruta) {
-        $productoId = isset($fila['id']) ? (int) $fila['id'] : 0;
-        if ($productoId > 0 && method_exists($this, 'obtenerImagenPrincipalRuta')) {
-            $ruta = $this->obtenerImagenPrincipalRuta($productoId);
+        // Si no viene ruta directa, intentar obtenerla desde BD
+        if (!$ruta) {
+            $productoId = isset($fila['id']) ? (int) $fila['id'] : 0;
+            if ($productoId > 0 && method_exists($this, 'obtenerImagenPrincipalRuta')) {
+                $ruta = $this->obtenerImagenPrincipalRuta($productoId);
+            }
         }
+
+        $productoId = isset($fila['id']) ? (int) $fila['id'] : 0;
+
+        return url_imagen_producto($productoId, $ruta);
     }
 
-    $productoId = isset($fila['id']) ? (int) $fila['id'] : 0;
-
-    return url_imagen_producto($productoId, $ruta);
-}
-
-    public function obtenerImagenPrincipal(int $producto_id): ?string
+    public function obtenerImagenPrincipal(int $producto_id): string
     {
         $ruta = $this->obtenerImagenPrincipalRuta($producto_id);
 
-        return $ruta ?? 'no-image.jpg';
+        return url_imagen_producto($producto_id, $ruta);
     }
 
 
