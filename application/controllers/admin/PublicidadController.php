@@ -15,7 +15,7 @@ final class PublicidadController extends AdminBaseController
     ];
 
     private const POSICIONES = [1, 2, 3, 4];
-
+  
     private PublicidadModel $publicidadModel;
     private string $directorioPublicidad;
 
@@ -26,115 +26,116 @@ final class PublicidadController extends AdminBaseController
     }
 
     public function index(): void
-    {
-        $this->requireLogin();
+{
+    $this->requireLogin();
 
-        $publicidades = $this->publicidadModel->obtenerTodas();
+    $publicidades = $this->publicidadModel->obtenerTodas();
 
+    $this->render('publicidad_form', [
+        'title' => 'Publicidad',
+        'publicidades' => $publicidades,
+        'errores' => [],
+    ]);
+}
+          
+    public function guardar(): void
+{
+    $this->requireLogin();
+
+    if (!$this->isPost()) {
+        $this->redirect('admin/publicidad');
+        return;
+    }
+
+    $token = $_POST['csrf_token'] ?? '';
+    if (!$this->validateCsrfToken($token)) {
+        $this->redirect('admin/publicidad');
+        return;
+    }
+
+    $publicidadesActuales = $this->publicidadModel->obtenerTodas();
+    $archivosImagen = $_FILES['imagen'] ?? [];
+
+    $errores = [];
+    $publicidadesProcesadas = [];
+
+    foreach (self::POSICIONES as $posicion) {
+        $datosBanner = [
+            'titulo'    => trim((string) ($this->obtenerValorArreglo($_POST['titulo'] ?? [], $posicion))),
+            'subtitulo' => trim((string) ($this->obtenerValorArreglo($_POST['subtitulo'] ?? [], $posicion))),
+            'texto'     => trim((string) ($this->obtenerValorArreglo($_POST['texto'] ?? [], $posicion))),
+            'imagen'    => (string) ($publicidadesActuales[$posicion]['imagen'] ?? ''),
+        ];
+
+        $archivoImagen = $this->extraerArchivoPorPosicion($archivosImagen, $posicion);
+        $erroresBanner = $this->validarDatosBanner($datosBanner, $archivoImagen);
+
+        if ($erroresBanner !== []) {
+            $errores[$posicion] = $erroresBanner;
+        }
+
+        $publicidadesProcesadas[$posicion] = $datosBanner;
+
+        if ($erroresBanner !== [] || !$this->hayNuevaImagen($archivoImagen)) {
+            continue;
+        }
+
+        $resultadoImagen = $this->manejarImagen(
+            $archivoImagen ?? [],
+            $publicidadesActuales[$posicion]['imagen'] ?? null,
+            $posicion
+        );
+
+        if (isset($resultadoImagen['error'])) {
+            $errores[$posicion]['imagen'] = $resultadoImagen['error'];
+            continue;
+        }
+
+        $publicidadesProcesadas[$posicion]['imagen'] = $resultadoImagen['ruta'] ?? $datosBanner['imagen'];
+    }
+
+    if ($errores !== []) {
         $this->render('publicidad_form', [
             'title' => 'Publicidad',
-            'publicidades' => $publicidades,
-            'errores' => [],
+            'publicidades' => $publicidadesProcesadas,
+            'errores' => $errores,
         ]);
+        return;
     }
 
-    public function guardar(): void
-    {
-        $this->requireLogin();
-
-        if (!$this->isPost()) {
-            $this->redirect('admin/publicidad');
-
-            return;
-        }
-
-        $token = $_POST['csrf_token'] ?? '';
-        if (!$this->validateCsrfToken($token)) {
-            $this->redirect('admin/publicidad');
-
-            return;
-        }
-
-        $publicidadesActuales = $this->publicidadModel->obtenerTodas();
-        $archivosImagen = $_FILES['imagen'] ?? [];
-
-        $errores = [];
-        $publicidadesProcesadas = [];
-
-        foreach (self::POSICIONES as $posicion) {
-            $datosBanner = [
-                'titulo' => trim((string) ($this->obtenerValorArreglo($_POST['titulo'] ?? [], $posicion))),
-                'subtitulo' => trim((string) ($this->obtenerValorArreglo($_POST['subtitulo'] ?? [], $posicion))),
-                'texto' => trim((string) ($this->obtenerValorArreglo($_POST['texto'] ?? [], $posicion))),
-                'imagen' => (string) ($publicidadesActuales[$posicion]['imagen'] ?? ''),
-            ];
-
-            $archivoImagen = $this->extraerArchivoPorPosicion($archivosImagen, $posicion);
-            $erroresBanner = $this->validarDatosBanner($datosBanner, $archivoImagen);
-
-            if ($erroresBanner !== []) {
-                $errores[$posicion] = $erroresBanner;
-            }
-
-            $publicidadesProcesadas[$posicion] = $datosBanner;
-
-            if ($erroresBanner !== [] || !$this->hayNuevaImagen($archivoImagen)) {
-                continue;
-            }
-
-            $resultadoImagen = $this->manejarImagen($archivoImagen ?? [], $publicidadesActuales[$posicion]['imagen'] ?? null, $posicion);
-
-            if (isset($resultadoImagen['error'])) {
-                $errores[$posicion]['imagen'] = $resultadoImagen['error'];
-                continue;
-            }
-
-            $publicidadesProcesadas[$posicion]['imagen'] = $resultadoImagen['ruta'] ?? $datosBanner['imagen'];
-        }
-
-        if ($errores !== []) {
-            $this->render('publicidad_form', [
-                'title' => 'Publicidad',
-                'publicidades' => $publicidadesProcesadas,
-                'errores' => $errores,
-            ]);
-
-            return;
-        }
-
-        foreach (self::POSICIONES as $posicion) {
-            $this->publicidadModel->actualizarPorPosicion($posicion, $publicidadesProcesadas[$posicion]);
-        }
-
-        admin_set_flash('success', 'Publicidad actualizada correctamente.');
-        $this->redirect('admin/publicidad');
+    foreach (self::POSICIONES as $posicion) {
+        $this->publicidadModel->actualizarPorPosicion($posicion, $publicidadesProcesadas[$posicion]);
     }
+
+    admin_set_flash('success', 'Publicidad actualizada correctamente.');
+    $this->redirect('admin/publicidad');
+}
 
     private function validarDatosBanner(array $datos, ?array $archivoImagen): array
-    {
-        $errores = [];
+{
+    $errores = [];
 
-        if ($datos['titulo'] === '') {
-            $errores['titulo'] = 'El título es obligatorio.';
-        }
-
-        if ($datos['subtitulo'] === '') {
-            $errores['subtitulo'] = 'El subtítulo es obligatorio.';
-        }
-
-        if ($datos['texto'] === '') {
-            $errores['texto'] = 'El texto es obligatorio.';
-        }
-
-        if ($this->hayNuevaImagen($archivoImagen)) {
-            $errorImagen = $this->validarImagen($archivoImagen ?? []);
-            if ($errorImagen !== null) {
-                $errores['imagen'] = $errorImagen;
-            }
-        }
-
-        return $errores;
+    if ($datos['titulo'] === '') {
+        $errores['titulo'] = 'El título es obligatorio.';
     }
+
+    if ($datos['subtitulo'] === '') {
+        $errores['subtitulo'] = 'El subtítulo es obligatorio.';
+    }
+
+    if ($datos['texto'] === '') {
+        $errores['texto'] = 'El texto es obligatorio.';
+    }
+
+    if ($this->hayNuevaImagen($archivoImagen)) {
+        $errorImagen = $this->validarImagen($archivoImagen ?? []);
+        if ($errorImagen !== null) {
+            $errores['imagen'] = $errorImagen;
+        }
+    }
+
+    return $errores;
+}
 
     private function hayNuevaImagen(?array $archivo): bool
     {
@@ -170,59 +171,38 @@ final class PublicidadController extends AdminBaseController
         return null;
     }
 
-    private function obtenerValorArreglo(array $valores, int $posicion): string
-    {
-        return (string) ($valores[$posicion] ?? '');
-    }
-
-    private function extraerArchivoPorPosicion(array $archivos, int $posicion): ?array
-    {
-        if (!isset($archivos['name'][$posicion])) {
-            return null;
-        }
-
-        return [
-            'name' => $archivos['name'][$posicion] ?? '',
-            'type' => $archivos['type'][$posicion] ?? '',
-            'tmp_name' => $archivos['tmp_name'][$posicion] ?? '',
-            'error' => $archivos['error'][$posicion] ?? UPLOAD_ERR_NO_FILE,
-            'size' => $archivos['size'][$posicion] ?? 0,
-        ];
-    }
-
     private function manejarImagen(array $archivoImagen, ?string $imagenActual, int $posicion): array
-    {
-        $errorImagen = $this->validarImagen($archivoImagen);
-        if ($errorImagen !== null) {
-            return ['error' => $errorImagen];
-        }
-
-        try {
-            $directorio = $this->asegurarDirectorioPublicidad();
-        } catch (\RuntimeException $exception) {
-            return ['error' => $exception->getMessage()];
-        }
-
-        $timestamp = time();
-        $nombreArchivo = 'publicidad-' . $posicion . '-' . $timestamp . '.webp';
-        $destino = $directorio . '/' . $nombreArchivo;
-
-        $mime = (string) ($archivoImagen['type'] ?? '');
-        $tmpName = (string) ($archivoImagen['tmp_name'] ?? '');
-
-        if (!$this->convertirAWebp($tmpName, $mime, $destino)) {
-            return ['error' => 'No se pudo procesar la imagen.'];
-        }
-
-        @chmod($destino, 0644);
-
-        if ($imagenActual) {
-            $this->eliminarImagenFisica($imagenActual);
-        }
-
-        return ['ruta' => 'public/assets/uploads/publicidad/' . $nombreArchivo];
+{
+    $errorImagen = $this->validarImagen($archivoImagen);
+    if ($errorImagen !== null) {
+        return ['error' => $errorImagen];
     }
 
+    try {
+        $directorio = $this->asegurarDirectorioPublicidad();
+    } catch (\RuntimeException $exception) {
+        return ['error' => $exception->getMessage()];
+    }
+
+    $timestamp = time();
+    $nombreArchivo = 'publicidad-' . $posicion . '-' . $timestamp . '.webp';
+    $destino = $directorio . '/' . $nombreArchivo;
+
+    $mime = (string) ($archivoImagen['type'] ?? '');
+    $tmpName = (string) ($archivoImagen['tmp_name'] ?? '');
+
+    if (!$this->convertirAWebp($tmpName, $mime, $destino)) {
+        return ['error' => 'No se pudo procesar la imagen.'];
+    }
+
+    @chmod($destino, 0644);
+
+    if ($imagenActual) {
+        $this->eliminarImagenFisica($imagenActual);
+    }
+
+    return ['ruta' => 'public/assets/uploads/publicidad/' . $nombreArchivo];
+}
     private function asegurarDirectorioPublicidad(): string
     {
         $ruta = rtrim($this->directorioPublicidad, '/');

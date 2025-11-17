@@ -426,32 +426,33 @@
         </div>
     </section>
 
-    <?php
-    $publicidades = $publicidades ?? [];
-    $banner1 = $publicidades[1] ?? null;
-    $banner2 = $publicidades[2] ?? null;
-    $banner3 = $publicidades[3] ?? null;
-    $banner4 = $publicidades[4] ?? null;
-    ?>
+<?php
+$publicidades = $publicidades ?? [];
+$banner1 = $publicidades[1] ?? null;
+$banner2 = $publicidades[2] ?? null;
+$banner3 = $publicidades[3] ?? null;
+$banner4 = $publicidades[4] ?? null;
+?>
 
     <div class="banner-area">
         <div class="container-fluid p-0">
             <div class="row g-0">
                 <div class="col-lg-4 d-md-flex d-lg-block">
                     <div class="banner-box banner-type-7 banner-1 banner-hover-5">
-                        <div class="banner-inner">
-                            <div class="banner-image">
-                                <img src="<?= $banner1 ? base_url($banner1['imagen']) : asset_url('img/banner/m12-banner1.jpg'); ?>" alt="Banner">
-                            </div>
-                            <div class="banner-info">
-                                <div class="banner-info--inner">
-                                    <p class="banner-title-3 color--white"><?= htmlspecialchars($banner1['titulo'] ?? 'Sale Weekend - Living Room'); ?></p>
-                                    <p class="banner-title-7 font-bold"><?= htmlspecialchars($banner1['subtitulo'] ?? 'Off 50%'); ?></p>
-                                    <p class="banner-title-8 color--white"><?= htmlspecialchars($banner1['texto'] ?? "Don't miss the chance"); ?></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <div class="banner-inner">
+        <div class="banner-image">
+            <img src="<?= $banner1 ? base_url($banner1['imagen']) : asset_url('img/banner/m12-banner1.jpg'); ?>" alt="Banner">
+        </div>
+        <div class="banner-info">
+            <div class="banner-info--inner">
+                <p class="banner-title-3 color--white"><?= htmlspecialchars($banner1['titulo'] ?? 'Sale Weekend - Living Room'); ?></p>
+                <p class="banner-title-7 font-bold"><?= htmlspecialchars($banner1['subtitulo'] ?? 'Off 50%'); ?></p>
+                <p class="banner-title-8 color--white"><?= htmlspecialchars($banner1['texto'] ?? "Don't miss the chance"); ?></p>
+            </div>
+        </div>
+    </div>
+</div>
+
                     <div class="banner-box banner-type-7 banner-2 banner-hover-5">
                         <div class="banner-inner">
                             <div class="banner-image">
