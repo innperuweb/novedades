@@ -7,7 +7,26 @@ class ClienteController extends BaseController
 {
     public function index(): void
     {
-        $this->render('para_el_cliente');
+        require_once APP_PATH . '/models/InfoClienteModel.php';
+
+        $slug = $_GET['seccion'] ?? 'faq';
+
+        $titulos = [
+            'faq' => 'Preguntas frecuentes',
+            'envios' => 'Envíos a nivel nacional',
+            'por_mayor' => 'Pedidos por mayor',
+            'garantias' => 'Garantías',
+            'terminos' => 'Términos y condiciones',
+            'privacidad' => 'Políticas de privacidad',
+            'cambios' => 'Cambios y devoluciones',
+        ];
+
+        $titulo = $titulos[$slug] ?? 'Información para el cliente';
+
+        $info = InfoClienteModel::obtenerPorSlug($slug);
+        $contenido = $info['contenido'] ?? '';
+
+        $this->render('para_el_cliente', compact('titulo', 'contenido'));
     }
 
     public function libro(): void
