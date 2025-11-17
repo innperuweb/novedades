@@ -55,6 +55,22 @@ $isActive = static function (array $paths) use ($requestPath): bool {
             </div>
         </div>
 
+        <?php
+        $sliderPaths = ['slider', 'slider/crear', 'slider/editar'];
+        $isSliderOpen = $isActive($sliderPaths);
+        ?>
+        <div class="nav-item mt-3 has-submenu <?= $isSliderOpen ? 'open' : ''; ?>">
+            <a href="#" class="nav-link submenu-toggle d-flex justify-content-between align-items-center">
+                <span>Slider</span>
+                <span class="arrow">▼</span>
+            </a>
+
+            <div class="nav flex-column ms-3 submenu">
+                <a class="nav-link <?= $isActive(['slider']) ? 'active' : ''; ?>" href="<?= base_url('admin/slider'); ?>">Listar sliders</a>
+                <a class="nav-link <?= $isActive(['slider/crear']) ? 'active' : ''; ?>" href="<?= base_url('admin/slider/crear'); ?>">Crear slider</a>
+            </div>
+        </div>
+
         <a class="nav-link <?= $isActive(['usuarios']) ? 'active' : ''; ?>" href="<?= base_url('admin/usuarios'); ?>">Usuarios</a>
 
     </nav>
