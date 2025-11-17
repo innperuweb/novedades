@@ -3,7 +3,8 @@
         <div id="rev_slider_7_1_wrapper" class="rev_slider_wrapper fullwidthbanner-container" data-alias="home-12" data-source="gallery" style="margin:0px auto;background:transparent;padding:0px;margin-top:0px;margin-bottom:0px;">
             <div id="rev_slider_7_1" class="rev_slider fullwidthabanner" style="display:none;" data-version="5.4.7">
                 <ul>
-<?php if (!empty($sliders)): ?>
+
+                  <?php if (!empty($sliders)): ?>
     <?php foreach ($sliders as $i => $s): ?>
 
         <li data-index="rs-<?= $s['id'] ?>"
@@ -19,7 +20,7 @@
             data-saveperformance="off"
             data-title="<?= sprintf('%02d', $i + 1); ?>">
 
-            <img src="<?= asset_url('uploads/slider/' . $s['imagen']) ?>"
+            <img src="<?= asset_url('public/assets/uploads/slider/' . $s['imagen']) ?>"
                  data-bgcolor='#f8f7ee'
                  style='background:#f8f7ee'
                  alt=""
@@ -49,7 +50,7 @@
                      data-height="['680','680','300','280']"
                      data-type="shape"
                      data-responsive_offset="on"
-                     data-frames='[{"delay":"+290","speed":1500,"frame":"0","from":"z:0;rX:0;rY:0;rZ:0;sX:0.9;sY:0.9;opacity:0;","to":"o:1;","ease":"Power3.easeInOut"}]'
+                     data-frames='[{"delay":"+290","speed":1500,"frame":"0","from":"z:0;sX:0.9;sY:0.9;opacity:0;","to":"o:1;","ease":"Power3.easeInOut"}]'
                      style="z-index: 6;background-color:rgb(239,236,213);border-radius:500px;">
                 </div>
 
@@ -57,7 +58,7 @@
                      data-x="['center','center','center','center']"
                      data-y="['middle','middle','middle','middle']"
                      style="z-index: 7;">
-                     <img src="<?= asset_url('uploads/slider/' . $s['imagen']) ?>"
+                     <img src="<?= asset_url('public/assets/uploads/slider/' . $s['imagen']) ?>"
                           alt="" data-ww="['488','488','210px','180px']"
                           data-hh="['712px','712px','306px','263px']"
                           data-no-retina>
@@ -108,6 +109,8 @@
 
     <?php endforeach; ?>
 <?php endif; ?>
+
+                  
 </ul>
                 <div class="tp-bannertimer tp-bottom" style="visibility: hidden !important;"></div>
             </div>
