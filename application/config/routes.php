@@ -32,10 +32,17 @@ return [
     'mi_cuenta/eliminar' => ['MiCuentaController', 'eliminar'],
     'ver-orden' => ['CheckoutController', 'ver_orden'],
     'ver_orden' => ['CheckoutController', 'ver_orden'],
-    'para-el-cliente/(:segment)' => ['ClienteController', 'index'],
-    'para-el-cliente' => ['ClienteController', 'index'],
-    'para_el_cliente/(:segment)' => ['ClienteController', 'index'],
-    'para_el_cliente' => ['ClienteController', 'index'],
+
+    // =======================
+    // Para el Cliente (FRONT)
+    // =======================
+    'para-el-cliente/{slug}' => ['ClienteController', 'index'],
+    'para-el-cliente'        => ['ClienteController', 'index'],
+
+    'para_el_cliente/{slug}' => ['ClienteController', 'index'],
+    'para_el_cliente'        => ['ClienteController', 'index'],
+
+
     'libro-de-reclamaciones' => ['ClienteController', 'libro'],
     'libro_de_reclamaciones' => ['ClienteController', 'libro'],
     'admin' => ['AdminController', 'login'],

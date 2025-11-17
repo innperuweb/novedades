@@ -6,34 +6,31 @@ require_once APP_PATH . '/models/ClienteModel.php';
 class ClienteController extends BaseController
 {
    
-  public function index(?string $slugFromRoute = null): void
-{
-    require_once APP_PATH . '/models/InfoClienteModel.php';
-
-    $titulos = [
-        'faq'         => 'Preguntas frecuentes',
-        'envios'      => 'Envíos a nivel nacional',
-        'por_mayor'   => 'Pedidos por mayor',
-        'garantias'   => 'Garantías',
-        'terminos'    => 'Términos y condiciones',
-        'privacidad'  => 'Políticas de privacidad',
-        'cambios'     => 'Cambios y devoluciones',
-    ];
-
-    // slug usando: route > GET param > default
-    $slug = $slugFromRoute ?? ($_GET['seccion'] ?? 'faq');
-
-    // validar que el slug exista en la lista; si no, fallback
-    if (!array_key_exists($slug, $titulos)) {
-        $slug = 'faq';
+    public function index(string $slug = null): void
+    {
+        require_once APP_PATH . '/models/InfoClienteModel.php';
+    
+        $titulos = [
+            'faq'         => 'Preguntas frecuentes',
+            'envios'      => 'Envíos a nivel nacional',
+            'por_mayor'   => 'Pedidos por mayor',
+            'garantias'   => 'Garantías',
+            'terminos'    => 'Términos y condiciones',
+            'privacidad'  => 'Políticas de privacidad',
+            'cambios'     => 'Cambios y devoluciones',
+        ];
+    
+        if (!$slug || !array_key_exists($slug, $titulos)) {
+            $slug = 'faq';
+        }
+    
+        $titulo = $titulos[$slug];
+        $info = InfoClienteModel::obtenerPorSlug($slug);
+        $contenido = $info['contenido'] ?? '';
+    
+        $this->render('para_el_cliente', compact('titulo', 'contenido'));
     }
-
-    $titulo = $titulos[$slug];
-    $info = InfoClienteModel::obtenerPorSlug($slug);
-    $contenido = $info['contenido'] ?? '';
-
-    $this->render('para_el_cliente', compact('titulo', 'contenido'));
-}  
+    
 
     public function libro(): void
     {
