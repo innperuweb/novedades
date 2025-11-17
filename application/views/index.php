@@ -207,14 +207,13 @@
                                 $productoId = (int) ($producto['id'] ?? 0);
                                 $nombreProducto = (string) ($producto['nombre'] ?? '');
                                 $detalleUrl = 'http://localhost/novedades/productos/detalle?id=' . $productoId;
-                                $imagenPrincipal = url_imagen_producto($productoId, $producto['ruta_principal'] ?? null);
                                 ?>
                                 <div class="item">
                                     <div class="single-featured-product">
                                         <div class="banner-box banner-type-3 banner-hover-1">
                                             <div class="banner-inner">
                                                 <div class="banner-image">
-                                                    <img src="<?= e($imagenPrincipal); ?>" alt="<?= e($nombreProducto); ?>">
+                                                    <img src="<?= htmlspecialchars($this->urlImagenPrincipalDeFila($producto)); ?>" alt="<?= htmlspecialchars($nombreProducto); ?>">
                                                 </div>
                                                 <div class="banner-info">
                                                     <p class="banner-title-1 lts-5"><?= e($nombreProducto); ?></p>
@@ -237,9 +236,8 @@
     $ofertas = $ofertas ?? [];
     $populares = $populares ?? [];
 
-    $obtenerImagenPrincipal = static function (array $producto): string {
-        $productoId = (int) ($producto['id'] ?? 0);
-        return url_imagen_producto($productoId, $producto['ruta_principal'] ?? null);
+    $obtenerImagenPrincipal = function (array $producto): string {
+        return $this->urlImagenPrincipalDeFila($producto);
     };
 
     $obtenerDetalleProducto = static function (int $productoId): string {
