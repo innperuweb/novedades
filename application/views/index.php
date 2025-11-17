@@ -426,6 +426,14 @@
         </div>
     </section>
 
+    <?php
+    $publicidades = $publicidades ?? [];
+    $banner1 = $publicidades[1] ?? null;
+    $banner2 = $publicidades[2] ?? null;
+    $banner3 = $publicidades[3] ?? null;
+    $banner4 = $publicidades[4] ?? null;
+    ?>
+
     <div class="banner-area">
         <div class="container-fluid p-0">
             <div class="row g-0">
@@ -433,13 +441,13 @@
                     <div class="banner-box banner-type-7 banner-1 banner-hover-5">
                         <div class="banner-inner">
                             <div class="banner-image">
-                                <img src="<?= asset_url('img/banner/m12-banner1.jpg'); ?>" alt="Banner">
+                                <img src="<?= $banner1 ? base_url($banner1['imagen']) : asset_url('img/banner/m12-banner1.jpg'); ?>" alt="Banner">
                             </div>
                             <div class="banner-info">
                                 <div class="banner-info--inner">
-                                    <p class="banner-title-3 color--white">Sale Weekend - Living Room</p>
-                                    <p class="banner-title-7 font-bold">Off 50%</p>
-                                    <p class="banner-title-8 color--white">Don't miss the chance</p>
+                                    <p class="banner-title-3 color--white"><?= htmlspecialchars($banner1['titulo'] ?? 'Sale Weekend - Living Room'); ?></p>
+                                    <p class="banner-title-7 font-bold"><?= htmlspecialchars($banner1['subtitulo'] ?? 'Off 50%'); ?></p>
+                                    <p class="banner-title-8 color--white"><?= htmlspecialchars($banner1['texto'] ?? "Don't miss the chance"); ?></p>
                                 </div>
                             </div>
                         </div>
@@ -447,13 +455,13 @@
                     <div class="banner-box banner-type-7 banner-2 banner-hover-5">
                         <div class="banner-inner">
                             <div class="banner-image">
-                                <img src="<?= asset_url('img/banner/m12-banner2.jpg'); ?>" alt="Banner">
+                                <img src="<?= $banner2 ? base_url($banner2['imagen']) : asset_url('img/banner/m12-banner2.jpg'); ?>" alt="Banner">
                             </div>
                             <div class="banner-info">
                                 <div class="banner-info--inner">
-                                    <p class="banner-title-3 color--white">Kid's Corner</p>
-                                    <p class="banner-title-9 color--white">Flash Sale</p>
-                                    <p class="banner-title-7">Off 20%</p>
+                                    <p class="banner-title-3 color--white"><?= htmlspecialchars($banner2['titulo'] ?? "Kid's Corner"); ?></p>
+                                    <p class="banner-title-9 color--white"><?= htmlspecialchars($banner2['subtitulo'] ?? 'Flash Sale'); ?></p>
+                                    <p class="banner-title-7"><?= htmlspecialchars($banner2['texto'] ?? 'Off 20%'); ?></p>
                                 </div>
                             </div>
                         </div>
@@ -463,13 +471,13 @@
                     <div class="banner-box banner-type-7 banner-3 banner-hover-5">
                         <div class="banner-inner">
                             <div class="banner-image">
-                                <img src="<?= asset_url('img/banner/m12-banner3.jpg'); ?>" alt="Banner">
+                                <img src="<?= $banner3 ? base_url($banner3['imagen']) : asset_url('img/banner/m12-banner3.jpg'); ?>" alt="Banner">
                             </div>
                             <div class="banner-info">
                                 <div class="banner-info--inner">
-                                    <p class="banner-title-8 color--white">Bed Room 2019</p>
-                                    <p class="banner-title-7 font-bold">Off 30%</p>
-                                    <p class="banner-title-3 color--white">From $25.99</p>
+                                    <p class="banner-title-8 color--white"><?= htmlspecialchars($banner3['titulo'] ?? 'Bed Room 2019'); ?></p>
+                                    <p class="banner-title-7 font-bold"><?= htmlspecialchars($banner3['subtitulo'] ?? 'Off 30%'); ?></p>
+                                    <p class="banner-title-3 color--white"><?= htmlspecialchars($banner3['texto'] ?? 'From $25.99'); ?></p>
                                 </div>
                             </div>
                         </div>
@@ -479,13 +487,13 @@
                     <div class="banner-box banner-type-7 banner-4 banner-hover-5">
                         <div class="banner-inner">
                             <div class="banner-image">
-                                <img src="<?= asset_url('img/banner/m12-banner4.jpg'); ?>" alt="Banner">
+                                <img src="<?= $banner4 ? base_url($banner4['imagen']) : asset_url('img/banner/m12-banner4.jpg'); ?>" alt="Banner">
                             </div>
                             <div class="banner-info">
                                 <div class="banner-info--inner">
-                                    <p class="banner-title-8 color--white">Home Decoreation</p>
-                                    <p class="banner-title-7 font-bold">Off 20%</p>
-                                    <p class="banner-title-3 color--white">for all items</p>
+                                    <p class="banner-title-8 color--white"><?= htmlspecialchars($banner4['titulo'] ?? 'Home Decoreation'); ?></p>
+                                    <p class="banner-title-7 font-bold"><?= htmlspecialchars($banner4['subtitulo'] ?? 'Off 20%'); ?></p>
+                                    <p class="banner-title-3 color--white"><?= htmlspecialchars($banner4['texto'] ?? 'for all items'); ?></p>
                                 </div>
                             </div>
                         </div>
