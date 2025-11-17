@@ -3,6 +3,7 @@
 require_once APP_PATH . '/controllers/BaseController.php';
 require_once APP_PATH . '/models/ProductoModel.php';
 require_once APP_PATH . '/models/SliderModel.php';
+require_once APP_PATH . '/models/PublicidadModel.php';
 
 class HomeController extends BaseController
 {
@@ -14,11 +15,14 @@ class HomeController extends BaseController
             $novedades = $productoModel->obtenerProductosPorSeccion('novedades', 10);
             $ofertas = $productoModel->obtenerProductosPorSeccion('ofertas', 10);
             $populares = $productoModel->obtenerProductosPorSeccion('populares', 10);
+            $publicidadModel = new PublicidadModel();
+            $publicidad = $publicidadModel->obtener();
         } catch (\Throwable $exception) {
             $productosAleatorios = [];
             $novedades = [];
             $ofertas = [];
             $populares = [];
+            $publicidad = null;
         }
 
         $sliderModel = new SliderModel();
@@ -30,6 +34,7 @@ class HomeController extends BaseController
             'ofertas'             => $ofertas,
             'populares'           => $populares,
             'sliders'             => $sliders,
+            'publicidad'          => $publicidad,
         ]);
     }
 }

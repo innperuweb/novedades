@@ -139,6 +139,18 @@ return [
         'auth' => true,
         'methods' => ['POST'],
     ],
+    'publicidad' => [
+        'controller' => 'PublicidadController',
+        'method' => 'index',
+        'auth' => true,
+        'methods' => ['GET'],
+    ],
+    'publicidad/guardar' => [
+        'controller' => 'PublicidadController',
+        'method' => 'guardar',
+        'auth' => true,
+        'methods' => ['POST'],
+    ],
     'categorias' => [
         'controller' => 'CategoriasController',
         'method' => 'index',
