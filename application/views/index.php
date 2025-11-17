@@ -426,6 +426,8 @@
         </div>
     </section>
 
+    <?php $publicidad = $publicidad ?? null; ?>
+
     <div class="banner-area">
         <div class="container-fluid p-0">
             <div class="row g-0">
@@ -433,13 +435,17 @@
                     <div class="banner-box banner-type-7 banner-1 banner-hover-5">
                         <div class="banner-inner">
                             <div class="banner-image">
-                                <img src="<?= asset_url('img/banner/m12-banner1.jpg'); ?>" alt="Banner">
+                                <?php if ($publicidad): ?>
+                                    <img src="<?= base_url($publicidad['imagen']); ?>" alt="Banner">
+                                <?php endif; ?>
                             </div>
                             <div class="banner-info">
                                 <div class="banner-info--inner">
-                                    <p class="banner-title-3 color--white">Sale Weekend - Living Room</p>
-                                    <p class="banner-title-7 font-bold">Off 50%</p>
-                                    <p class="banner-title-8 color--white">Don't miss the chance</p>
+                                    <?php if ($publicidad): ?>
+                                        <p class="banner-title-3 color--white"><?= htmlspecialchars($publicidad['titulo']); ?></p>
+                                        <p class="banner-title-7 font-bold"><?= htmlspecialchars($publicidad['subtitulo']); ?></p>
+                                        <p class="banner-title-8 color--white"><?= htmlspecialchars($publicidad['texto']); ?></p>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
