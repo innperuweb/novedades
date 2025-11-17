@@ -133,28 +133,11 @@ $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrec
                                         <div class="airi-product">
                                             <div class="product-inner">
                                                 <figure class="product-image">
-
                                                     <?php
-                                                    $idProducto = (int)$p['id'];
-                                                    $directorio = __DIR__ . '/../../public/assets/uploads/productos/' . $idProducto;
-
-                                                    $imagenPrincipal = null;
-                                                    if (is_dir($directorio)) {
-                                                        $archivos = scandir($directorio);
-                                                        foreach ($archivos as $archivo) {
-                                                            if (preg_match('/^1_.*\.(jpg|jpeg|png|webp)$/i', $archivo)) {
-                                                                $imagenPrincipal = "public/assets/uploads/productos/{$idProducto}/{$archivo}";
-                                                                break;
-                                                            }
-                                                        }
-                                                    }
-
-                                                    if (!$imagenPrincipal) {
-                                                        $imagenPrincipal = asset_url('img/no-image.jpg');
-                                                    }
-                                                    
-                                                    $detalleUrl = base_url('productos/detalle?id=' . urlencode((string) $idProducto));
-                                                    
+                                                    $idProducto = (int) ($p['id'] ?? 0);
+                                                    $rutaBD = $p['ruta_principal'] ?? null;
+                                                    $imagenPrincipal = url_imagen_producto($idProducto, $rutaBD);                                                    
+                                                    $detalleUrl = base_url('productos/detalle?id=' . urlencode((string) $idProducto));                                                    
                                                     ?>
                                                     <div class="product-image--holder">
                                                         <a href="<?= e($detalleUrl); ?>">
@@ -185,10 +168,9 @@ $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrec
                             <?php endif; ?>
                         </div>
                     </div>
-
-
-
+                    
                 </div>
+
                 <div class="col-lg-3 order-lg-1 mt--30 mt-md--40" id="primary-sidebar">
                     <div class="sidebar-widget">
                         <div class="product-widget categroy-widget mb--35 mb-md--30">

@@ -87,6 +87,21 @@ if (!function_exists('current_url')) {
     }
 }
 
+if (!function_exists('imagen_principal_producto')) {
+    /**
+     * Retorna la URL de la imagen principal de un producto, usando ruta_principal del modelo.
+     */
+    function imagen_principal_producto(array $producto): string
+    {
+        $id = (int)($producto['id'] ?? 0);
+        $rutaBD = $producto['ruta_principal'] ?? null;
+
+        // Usa el helper central url_imagen_producto()
+        return url_imagen_producto($id, $rutaBD);
+    }
+}
+
+
 if (!function_exists('url_imagen_producto')) {
     function url_imagen_producto(int $productoId, ?string $rutaBD): string
     {

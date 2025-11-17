@@ -1,6 +1,7 @@
 <?php
 
 abstract class BaseController
+
 {
     protected function render(string $view, array $data = []): void
     {

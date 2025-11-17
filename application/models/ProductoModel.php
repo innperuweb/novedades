@@ -25,7 +25,7 @@ class ProductoModel
             SELECT DISTINCT
                 p.*,
                 (
-                    SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre)
+                    SELECT pi.ruta
                     FROM producto_imagenes pi
                     WHERE pi.producto_id = p.id
                     ORDER BY pi.es_principal DESC, pi.id ASC
@@ -77,15 +77,12 @@ class ProductoModel
 
         $sql = "
       SELECT p.*,
-             (
-               SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre)
-               FROM producto_imagenes pi
-               WHERE pi.producto_id = p.id
-               ORDER BY pi.es_principal DESC, pi.id ASC
-               LIMIT 1
-             ) AS ruta_principal
-      FROM productos p
-    ";
+             (SELECT pi.ruta
+              FROM producto_imagenes pi
+              WHERE pi.producto_id = p.id
+              ORDER BY pi.es_principal DESC, pi.id ASC
+              LIMIT 1) AS ruta_principal
+      FROM productos p ";
 
         $params = [];
         $where = 'WHERE p.visible = 1 AND p.estado = 1 AND p.stock >= 0';
@@ -134,11 +131,12 @@ class ProductoModel
             $pdo = Database::connect();
             $sql =
                 'SELECT p.id, p.nombre, '
-                . "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
+                . "       (SELECT pi.ruta FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
                 . 'FROM productos p '
                 . 'WHERE p.visible = 1 AND p.estado = 1 AND p.stock > 0 '
                 . 'ORDER BY RAND() '
                 . 'LIMIT ' . (int) $limite;
+
             $stmt = $pdo->query($sql);
 
             $productos = $stmt !== false ? $stmt->fetchAll(\PDO::FETCH_ASSOC) : [];
@@ -320,21 +318,21 @@ class ProductoModel
     }
 
     public function urlImagenPrincipalDeFila(array $fila): string
-{
-    $ruta = $fila['ruta_principal'] ?? null;
+    {
+        $ruta = $fila['ruta_principal'] ?? null;
 
-    // Si no viene ruta directa, intentar obtenerla desde BD
-    if (!$ruta) {
-        $productoId = isset($fila['id']) ? (int) $fila['id'] : 0;
-        if ($productoId > 0 && method_exists($this, 'obtenerImagenPrincipalRuta')) {
-            $ruta = $this->obtenerImagenPrincipalRuta($productoId);
+        // Si no viene ruta directa, intentar obtenerla desde BD
+        if (!$ruta) {
+            $productoId = isset($fila['id']) ? (int) $fila['id'] : 0;
+            if ($productoId > 0 && method_exists($this, 'obtenerImagenPrincipalRuta')) {
+                $ruta = $this->obtenerImagenPrincipalRuta($productoId);
+            }
         }
+
+        $productoId = isset($fila['id']) ? (int) $fila['id'] : 0;
+
+        return url_imagen_producto($productoId, $ruta);
     }
-
-    $productoId = isset($fila['id']) ? (int) $fila['id'] : 0;
-
-    return url_imagen_producto($productoId, $ruta);
-}
 
     public function obtenerImagenPrincipal(int $producto_id): ?string
     {
@@ -355,7 +353,7 @@ class ProductoModel
             $pdo = Database::connect();
 
             $sql = "SELECT p.*, 
-                       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre)
+                       (SELECT pi.ruta
                         FROM producto_imagenes pi
                         WHERE pi.producto_id = p.id
                         ORDER BY pi.es_principal DESC, pi.id ASC
@@ -485,7 +483,11 @@ class ProductoModel
             $db = Database::connect();
             $stmt = $db->prepare(
                 'SELECT DISTINCT p.*, ' .
-                    "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
+                    "(SELECT pi.ruta
+                        FROM producto_imagenes pi
+                        WHERE pi.producto_id = p.id
+                        ORDER BY pi.es_principal DESC, pi.id ASC
+                        LIMIT 1) AS ruta_principal"
                     . 'FROM productos p '
                     . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
                     . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
@@ -531,7 +533,11 @@ class ProductoModel
             $db = Database::connect();
             $stmt = $db->prepare(
                 'SELECT DISTINCT p.*, ' .
-                    "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
+                    "(SELECT pi.ruta
+                        FROM producto_imagenes pi
+                        WHERE pi.producto_id = p.id
+                        ORDER BY pi.es_principal DESC, pi.id ASC
+                        LIMIT 1) AS ruta_principal"
                     . 'FROM productos p '
                     . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
                     . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
@@ -572,7 +578,11 @@ class ProductoModel
             $db = Database::connect();
             $stmt = $db->prepare(
                 'SELECT DISTINCT p.*, ' .
-                    "       (SELECT CONCAT('uploads/productos/', pi.producto_id, '/', pi.nombre) FROM producto_imagenes pi WHERE pi.producto_id = p.id ORDER BY pi.es_principal DESC, pi.id ASC LIMIT 1) AS ruta_principal "
+                    "(SELECT pi.ruta
+                        FROM producto_imagenes pi
+                        WHERE pi.producto_id = p.id
+                        ORDER BY pi.es_principal DESC, pi.id ASC
+                        LIMIT 1) AS ruta_principal"
                     . 'FROM productos p '
                     . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
                     . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
