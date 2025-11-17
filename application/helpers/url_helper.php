@@ -91,10 +91,9 @@ if (!function_exists('url_imagen_producto')) {
     function url_imagen_producto(int $productoId, ?string $rutaBD): string
     {
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $base   = rtrim("$scheme://$host/novedades", '/');
+        $base = rtrim(base_url(), '/');
 
-        $uploadsRel  = '/uploads/productos';
+        $uploadsRel  = '/public/assets/uploads/productos';
         $placeholder = $base . '/public/assets/img/no-image.jpg';
 
         if (!$rutaBD) {
@@ -115,7 +114,7 @@ if (!function_exists('url_imagen_producto')) {
         }
 
         // Elimina el prefijo "uploads/productos/" si ya viene incluido
-        $uploadsPrefix = ltrim($uploadsRel, '/');
+        $uploadsPrefix = 'uploads/productos';
         if (stripos($rutaBD, $uploadsPrefix . '/') === 0) {
             $rutaBD = substr($rutaBD, strlen($uploadsPrefix) + 1);
         }
@@ -134,12 +133,11 @@ if (!function_exists('url_imagen_producto')) {
         $urlPath = $uploadsRel . '/' . ($relativeDir === '' ? '' : $relativeDir . '/');
         $url     = $base . $urlPath . rawurlencode($file);
 
-        $docRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\');
-        $local   = $docRoot . '/novedades' . $urlPath . $file;
+        $docRoot   = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\');
+        $basePath  = parse_url(base_url(), PHP_URL_PATH) ?? '';
+        $basePath  = rtrim($basePath, '/');
+        $localPath = $docRoot . ($basePath !== '' ? $basePath : '') . $urlPath . $file;
 
-        return is_file($local) ? $url : $placeholder;
-
-
-        return is_file($local) ? $url : $placeholder;
+        return is_file($localPath) ? $url : $placeholder;
     }
 }
