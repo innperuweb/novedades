@@ -63,4 +63,13 @@ final class SliderModel
 
         return $stmt->execute([':id' => $id]);
     }
+
+    public function obtenerVisibles(): array
+    {
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare('SELECT * FROM slider_home WHERE visible = 1 ORDER BY orden ASC, id DESC');
+        $stmt->execute();
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+    }
 }

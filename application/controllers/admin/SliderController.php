@@ -22,6 +22,12 @@ final class SliderController extends AdminBaseController
         $this->directorioSlider = ROOT_PATH . '/public/assets/uploads/slider';
     }
 
+    public function obtenerVisibles(): array
+    {
+        $sql = "SELECT * FROM slider_home WHERE visible = 1 ORDER BY orden ASC";
+        return DB::fetchAll($sql);
+    }
+
     public function index(): void
     {
         $this->requireLogin();

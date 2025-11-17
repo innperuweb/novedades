@@ -2,6 +2,7 @@
 
 require_once APP_PATH . '/controllers/BaseController.php';
 require_once APP_PATH . '/models/ProductoModel.php';
+require_once APP_PATH . '/models/SliderModel.php';
 
 class HomeController extends BaseController
 {
@@ -20,11 +21,15 @@ class HomeController extends BaseController
             $populares = [];
         }
 
+        $sliderModel = new SliderModel();
+        $sliders = $sliderModel->obtenerVisibles();
+
         $this->render('index', [
             'productosAleatorios' => $productosAleatorios,
-            'novedades' => $novedades,
-            'ofertas' => $ofertas,
-            'populares' => $populares,
+            'novedades'           => $novedades,
+            'ofertas'             => $ofertas,
+            'populares'           => $populares,
+            'sliders'             => $sliders,
         ]);
     }
 }
