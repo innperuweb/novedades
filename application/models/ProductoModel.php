@@ -239,18 +239,23 @@ class ProductoModel
         try {
             $pdo = Database::connect();
             $stmt = $pdo->prepare(
-                'SELECT ruta FROM producto_imagenes WHERE producto_id = ? ORDER BY es_principal DESC, id ASC LIMIT 1'
+                'SELECT nombre FROM producto_imagenes WHERE producto_id = ? ORDER BY es_principal DESC, id ASC LIMIT 1'
             );
             $stmt->execute([$productoId]);
-            $ruta = $stmt->fetchColumn();
+            $nombre = $stmt->fetchColumn();
 
-            if ($ruta === false) {
+            if ($nombre === false) {
                 return null;
             }
 
-            $ruta = trim((string) $ruta);
+            $nombre = trim((string) $nombre);
+            $nombre = ltrim($nombre, '/\\');
 
-            return $ruta !== '' ? $ruta : null;
+            if ($nombre === '') {
+                return null;
+            }
+
+            return 'uploads/productos/' . $productoId . '/' . $nombre;
         } catch (\Throwable $exception) {
             return null;
         }
@@ -321,13 +326,6 @@ class ProductoModel
 
     public function urlImagenPrincipalDeFila(array $fila): string
     {
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $base = rtrim("$scheme://$host", '/') . '/novedades';
-
-        $uploadsRel = '/uploads/productos';
-        $placeholder = $base . '/public/assets/img/no-image.jpg';
-
         $ruta = $fila['ruta_principal'] ?? null;
         if (!$ruta) {
             $productoId = isset($fila['id']) ? (int) $fila['id'] : 0;
@@ -336,49 +334,9 @@ class ProductoModel
             }
         }
 
-        if (!$ruta) {
-            return $placeholder;
-        }
+        $productoId = isset($fila['id']) ? (int) $fila['id'] : 0;
 
-        $ruta = str_replace('\\', '/', (string) $ruta);
-        $ruta = trim($ruta);
-        if ($ruta === '') {
-            return $placeholder;
-        }
-
-        $ruta = trim($ruta, '/');
-        if (strpos($ruta, $uploadsRel) !== false) {
-            $pos = strpos($ruta, $uploadsRel);
-            if ($pos !== false) {
-                $ruta = ltrim(substr($ruta, $pos + strlen($uploadsRel)), '/');
-            }
-        }
-
-        $dir = dirname($ruta);
-        $dir = ($dir === '.' || $dir === DIRECTORY_SEPARATOR) ? '' : $dir;
-        $file = basename($ruta);
-
-        if ($file === '' || $file === '.' || $file === '..') {
-            return $placeholder;
-        }
-
-        $encodedFile = rawurlencode($file);
-        $dirSegment = $dir !== '' ? trim(str_replace('\\', '/', $dir), '/') . '/' : '';
-        $url = $base . $uploadsRel . '/' . $dirSegment . $encodedFile;
-
-        $docRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\');
-        $local = $docRoot . '/novedades' . $uploadsRel . '/' . $dirSegment . $file;
-
-        if ($docRoot !== '' && is_file($local)) {
-            return $url;
-        }
-
-        $projectRoot = defined('ROOT_PATH') ? ROOT_PATH : dirname(__DIR__, 2);
-        $projectRoot = rtrim($projectRoot, '/\\');
-        $relativeLocal = 'uploads/productos/' . $dirSegment . $file;
-        $projectPath = $projectRoot . DIRECTORY_SEPARATOR . trim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativeLocal), DIRECTORY_SEPARATOR);
-
-        return is_file($projectPath) ? $url : $placeholder;
+        return url_imagen_producto($productoId, $ruta);
     }
 
     public function obtenerImagenPrincipal(int $producto_id): ?string

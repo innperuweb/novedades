@@ -66,56 +66,34 @@ if (!function_exists('current_url')) {
 if (!function_exists('url_imagen_producto')) {
     function url_imagen_producto(int $productoId, ?string $rutaBD): string
     {
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $base   = rtrim("$scheme://$host/novedades", '/');
-
-        $uploadsRel  = '/uploads/productos';
+        $base = rtrim(base_url(), '/');
         $placeholder = $base . '/public/assets/img/no-image.jpg';
 
-        if (!$rutaBD) {
+        if ($rutaBD === null) {
             return $placeholder;
         }
 
         $rutaBD = str_replace('\\', '/', (string) $rutaBD);
-        $rutaBD = trim($rutaBD, '/');
+        $rutaBD = trim($rutaBD);
 
-        // Si está vacío, usa imagen por defecto
         if ($rutaBD === '') {
             return $placeholder;
         }
 
-        // Si ya es una URL absoluta, devuélvela tal cual
         if (preg_match('~^https?://~i', $rutaBD)) {
             return $rutaBD;
         }
 
-        // Elimina el prefijo "uploads/productos/" si ya viene incluido
-        $uploadsPrefix = ltrim($uploadsRel, '/');
-        if (stripos($rutaBD, $uploadsPrefix . '/') === 0) {
-            $rutaBD = substr($rutaBD, strlen($uploadsPrefix) + 1);
+        $rutaBD = ltrim($rutaBD, '/');
+
+        if (stripos($rutaBD, 'public/assets/uploads/productos/') === 0) {
+            return base_url($rutaBD);
         }
 
-        // Separa directorio y archivo
-        $dir  = dirname($rutaBD);
-        $file = basename($rutaBD);
-
-        // Validar nombre del archivo
-        if ($file === '' || $file === '.' || $file === '..') {
-            return $placeholder;
+        if (stripos($rutaBD, 'uploads/productos/') === 0 || stripos($rutaBD, 'uploads/productos') === 0) {
+            return base_url('public/assets/' . $rutaBD);
         }
 
-        // Construir URL y ruta local
-        $relativeDir = $dir === '.' ? '' : trim($dir, '/');
-        $urlPath = $uploadsRel . '/' . ($relativeDir === '' ? '' : $relativeDir . '/');
-        $url     = $base . $urlPath . rawurlencode($file);
-
-        $docRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\');
-        $local   = $docRoot . '/novedades' . $urlPath . $file;
-
-        return is_file($local) ? $url : $placeholder;
-
-
-        return is_file($local) ? $url : $placeholder;
+        return base_url($rutaBD);
     }
 }

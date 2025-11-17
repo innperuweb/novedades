@@ -207,40 +207,7 @@
                                 $productoId = (int) ($producto['id'] ?? 0);
                                 $nombreProducto = (string) ($producto['nombre'] ?? '');
                                 $detalleUrl = 'http://localhost/novedades/productos/detalle?id=' . $productoId;
-                                $imagenPrincipal = 'public/assets/img/no-image.jpg';
-
-                                if ($productoId > 0) {
-                                    $directorio = __DIR__ . '/../../public/assets/uploads/productos/' . $productoId;
-
-                                    if (is_dir($directorio)) {
-                                        $archivos = scandir($directorio);
-                                        foreach ($archivos as $archivo) {
-                                            if (preg_match('/^1_.*\.(jpe?g|png|gif|webp)$/i', $archivo)) {
-                                                $imagenPrincipal = 'public/assets/uploads/productos/' . $productoId . '/' . $archivo;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if ($imagenPrincipal === 'public/assets/img/no-image.jpg') {
-                                    $rutaPrincipal = isset($producto['ruta_principal']) ? (string) $producto['ruta_principal'] : '';
-                                    $rutaPrincipal = str_replace('\\', '/', trim($rutaPrincipal));
-                                    if ($rutaPrincipal !== '') {
-                                        $rutaPrincipal = trim($rutaPrincipal, '/');
-                                        $prefijo = 'uploads/productos/';
-                                        if (stripos($rutaPrincipal, $prefijo) === 0) {
-                                            $rutaPrincipal = substr($rutaPrincipal, strlen($prefijo));
-                                        }
-                                        if ($rutaPrincipal !== '') {
-                                            $rutaPosible = 'public/assets/uploads/productos/' . $rutaPrincipal;
-                                            $rutaLocal = __DIR__ . '/../../' . $rutaPosible;
-                                            if (is_file($rutaLocal)) {
-                                                $imagenPrincipal = $rutaPosible;
-                                            }
-                                        }
-                                    }
-                                }
+                                $imagenPrincipal = url_imagen_producto($productoId, $producto['ruta_principal'] ?? null);
                                 ?>
                                 <div class="item">
                                     <div class="single-featured-product">
@@ -272,42 +239,7 @@
 
     $obtenerImagenPrincipal = static function (array $producto): string {
         $productoId = (int) ($producto['id'] ?? 0);
-        $imagenPrincipal = 'public/assets/img/no-image.jpg';
-
-        if ($productoId > 0) {
-            $directorio = __DIR__ . '/../../public/assets/uploads/productos/' . $productoId;
-
-            if (is_dir($directorio)) {
-                $archivos = scandir($directorio);
-                foreach ($archivos as $archivo) {
-                    if (preg_match('/^1_.*\.(jpe?g|png|gif|webp)$/i', $archivo)) {
-                        $imagenPrincipal = 'public/assets/uploads/productos/' . $productoId . '/' . $archivo;
-                        break;
-                    }
-                }
-            }
-        }
-
-        if ($imagenPrincipal === 'public/assets/img/no-image.jpg') {
-            $rutaPrincipal = isset($producto['ruta_principal']) ? (string) $producto['ruta_principal'] : '';
-            $rutaPrincipal = str_replace('\\', '/', trim($rutaPrincipal));
-            if ($rutaPrincipal !== '') {
-                $rutaPrincipal = trim($rutaPrincipal, '/');
-                $prefijo = 'uploads/productos/';
-                if (stripos($rutaPrincipal, $prefijo) === 0) {
-                    $rutaPrincipal = substr($rutaPrincipal, strlen($prefijo));
-                }
-                if ($rutaPrincipal !== '') {
-                    $rutaPosible = 'public/assets/uploads/productos/' . $rutaPrincipal;
-                    $rutaLocal = __DIR__ . '/../../' . $rutaPosible;
-                    if (is_file($rutaLocal)) {
-                        $imagenPrincipal = $rutaPosible;
-                    }
-                }
-            }
-        }
-
-        return $imagenPrincipal;
+        return url_imagen_producto($productoId, $producto['ruta_principal'] ?? null);
     };
 
     $obtenerDetalleProducto = static function (int $productoId): string {
