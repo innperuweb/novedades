@@ -31,6 +31,12 @@ return [
         'auth' => true,
         'methods' => ['GET'],
     ],
+    'info-cliente/editar/{slug}' => [
+        'controller' => 'InfoClienteController',
+        'method' => 'editar',
+        'auth' => true,
+        'methods' => ['GET', 'POST'],
+    ],
     'ordenes/ver/{id}' => [
         'controller' => 'OrdenesController',
         'method' => 'ver',
