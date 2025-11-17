@@ -325,64 +325,56 @@ class ProductoModel
     }
 
     public function urlImagenPrincipalDeFila(array $fila): string
-    {
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $base = rtrim("$scheme://$host", '/') . '/novedades';
+{
+    $base      = rtrim(base_url(), '/');
+    $uploadsRel = '/public/assets/uploads/productos';
+    $placeholder = $base . '/public/assets/img/no-image.jpg';
 
-        $uploadsRel = '/uploads/productos';
-        $placeholder = $base . '/public/assets/img/no-image.jpg';
+    // 1) Obtener ruta desde la fila o por consulta secundaria
+    $ruta = $fila['ruta_principal'] ?? null;
 
-        $ruta = $fila['ruta_principal'] ?? null;
-        if (!$ruta) {
-            $productoId = isset($fila['id']) ? (int) $fila['id'] : 0;
-            if ($productoId > 0) {
-                $ruta = $this->obtenerImagenPrincipalRuta($productoId);
-            }
-        }
-
-        if (!$ruta) {
-            return $placeholder;
-        }
-
-        $ruta = str_replace('\\', '/', (string) $ruta);
-        $ruta = trim($ruta);
-        if ($ruta === '') {
-            return $placeholder;
-        }
-
-        $ruta = trim($ruta, '/');
-        $uploadsPrefix = ltrim($uploadsRel, '/');
-        if (stripos($ruta, $uploadsPrefix . '/') === 0) {
-            $ruta = substr($ruta, strlen($uploadsPrefix) + 1);
-        }
-
-        $dir = dirname($ruta);
-        $dir = ($dir === '.' || $dir === DIRECTORY_SEPARATOR) ? '' : $dir;
-        $file = basename($ruta);
-
-        if ($file === '' || $file === '.' || $file === '..') {
-            return $placeholder;
-        }
-
-        $encodedFile = rawurlencode($file);
-        $dirSegment = $dir !== '' ? trim(str_replace('\\', '/', $dir), '/') . '/' : '';
-        $url = $base . $uploadsRel . '/' . $dirSegment . $encodedFile;
-
-        $docRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\');
-        $local = $docRoot . '/novedades' . $uploadsRel . '/' . $dirSegment . $file;
-
-        if ($docRoot !== '' && is_file($local)) {
-            return $url;
-        }
-
-        $projectRoot = defined('ROOT_PATH') ? ROOT_PATH : dirname(__DIR__, 2);
-        $projectRoot = rtrim($projectRoot, '/\\');
-        $relativeLocal = 'uploads/productos/' . $dirSegment . $file;
-        $projectPath = $projectRoot . DIRECTORY_SEPARATOR . trim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativeLocal), DIRECTORY_SEPARATOR);
-
-        return is_file($projectPath) ? $url : $placeholder;
+    if (!$ruta && !empty($fila['id'])) {
+        $ruta = $this->obtenerImagenPrincipalRuta((int) $fila['id']);
     }
+
+    // 2) Si no hay ruta, usar placeholder directo
+    if (!$ruta || trim($ruta) === '') {
+        return $placeholder;
+    }
+
+    // 3) Normalizar la ruta de archivo
+    $ruta = str_replace('\\', '/', trim($ruta, " \t\n\r\0\x0B/"));
+    if ($ruta === '') {
+        return $placeholder;
+    }
+
+    // 4) Eliminar prefijo de uploads si viene incluido
+    $uploadsPrefix = ltrim($uploadsRel, '/'); // public/assets/uploads/productos
+    if (stripos($ruta, $uploadsPrefix . '/') === 0) {
+        $ruta = substr($ruta, strlen($uploadsPrefix) + 1);
+    }
+
+    // 5) Nombre de archivo y subcarpeta
+    $file = basename($ruta);
+    if ($file === '' || $file === '.' || $file === '..') {
+        return $placeholder;
+    }
+
+    $dir  = trim(str_replace('\\', '/', dirname($ruta)), '/');
+    $dirSeg = $dir !== '' ? $dir . '/' : '';
+
+    // 6) URL final
+    $encoded = rawurlencode($file);
+    $url = "{$base}{$uploadsRel}/{$dirSeg}{$encoded}";
+
+    // 7) Verificar si el archivo existe localmente
+    $docRoot  = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\');
+    $basePath = rtrim(parse_url(base_url(), PHP_URL_PATH) ?? '', '/');
+    $localPath = "{$docRoot}{$basePath}{$uploadsRel}/{$dirSeg}{$file}";
+
+    return ($docRoot && is_file($localPath)) ? $url : $placeholder;
+}
+
 
     public function obtenerImagenPrincipal(int $producto_id): ?string
     {
