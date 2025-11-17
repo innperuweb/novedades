@@ -103,6 +103,42 @@ return [
         'auth' => true,
         'methods' => ['POST'],
     ],
+    'slider' => [
+        'controller' => 'SliderController',
+        'method' => 'index',
+        'auth' => true,
+        'methods' => ['GET'],
+    ],
+    'slider/crear' => [
+        'controller' => 'SliderController',
+        'method' => 'crear',
+        'auth' => true,
+        'methods' => ['GET'],
+    ],
+    'slider/guardar' => [
+        'controller' => 'SliderController',
+        'method' => 'guardar',
+        'auth' => true,
+        'methods' => ['POST'],
+    ],
+    'slider/editar/{id}' => [
+        'controller' => 'SliderController',
+        'method' => 'editar',
+        'auth' => true,
+        'methods' => ['GET'],
+    ],
+    'slider/actualizar/{id}' => [
+        'controller' => 'SliderController',
+        'method' => 'actualizar',
+        'auth' => true,
+        'methods' => ['POST'],
+    ],
+    'slider/eliminar/{id}' => [
+        'controller' => 'SliderController',
+        'method' => 'eliminar',
+        'auth' => true,
+        'methods' => ['POST'],
+    ],
     'categorias' => [
         'controller' => 'CategoriasController',
         'method' => 'index',
