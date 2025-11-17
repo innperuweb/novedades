@@ -5,9 +5,32 @@ require_once APP_PATH . '/models/ClienteModel.php';
 
 class ClienteController extends BaseController
 {
-    public function index(): void
+    public function index(?string $slugFromRoute = null): void
     {
-        $this->render('para_el_cliente');
+        require_once APP_PATH . '/models/InfoClienteModel.php';
+
+        $titulos = [
+            'faq' => 'Preguntas frecuentes',
+            'envios' => 'Envíos a nivel nacional',
+            'por_mayor' => 'Pedidos por mayor',
+            'garantias' => 'Garantías',
+            'terminos' => 'Términos y condiciones',
+            'privacidad' => 'Políticas de privacidad',
+            'cambios' => 'Cambios y devoluciones',
+        ];
+
+        $slug = $slugFromRoute ?? ($_GET['seccion'] ?? 'faq');
+
+        if (!array_key_exists($slug, $titulos)) {
+            $slug = 'faq';
+        }
+
+        $titulo = $titulos[$slug] ?? 'Información para el cliente';
+
+        $info = InfoClienteModel::obtenerPorSlug($slug);
+        $contenido = $info['contenido'] ?? '';
+
+        $this->render('para_el_cliente', compact('titulo', 'contenido'));
     }
 
     public function libro(): void
