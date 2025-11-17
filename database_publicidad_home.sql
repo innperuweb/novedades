@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS publicidad_home (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    posicion TINYINT NOT NULL UNIQUE,
     imagen VARCHAR(255) NOT NULL,
     titulo VARCHAR(255) NOT NULL,
     subtitulo VARCHAR(255) NOT NULL,

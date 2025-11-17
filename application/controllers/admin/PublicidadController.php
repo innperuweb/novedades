@@ -14,6 +14,8 @@ final class PublicidadController extends AdminBaseController
         'image/webp' => 'webp',
     ];
 
+    private const POSICIONES = [1, 2, 3, 4];
+  
     private PublicidadModel $publicidadModel;
     private string $directorioPublicidad;
 
@@ -24,110 +26,116 @@ final class PublicidadController extends AdminBaseController
     }
 
     public function index(): void
-    {
-        $this->requireLogin();
+{
+    $this->requireLogin();
 
-        $publicidad = $this->publicidadModel->obtener();
+    $publicidades = $this->publicidadModel->obtenerTodas();
 
-        $this->render('publicidad_form', [
-            'title' => 'Publicidad',
-            'publicidad' => $publicidad,
-            'errores' => [],
-        ]);
+    $this->render('publicidad_form', [
+        'title' => 'Publicidad',
+        'publicidades' => $publicidades,
+        'errores' => [],
+    ]);
+}
+          
+    public function guardar(): void
+{
+    $this->requireLogin();
+
+    if (!$this->isPost()) {
+        $this->redirect('admin/publicidad');
+        return;
     }
 
-    public function guardar(): void
-    {
-        $this->requireLogin();
+    $token = $_POST['csrf_token'] ?? '';
+    if (!$this->validateCsrfToken($token)) {
+        $this->redirect('admin/publicidad');
+        return;
+    }
 
-        if (!$this->isPost()) {
-            $this->redirect('admin/publicidad');
+    $publicidadesActuales = $this->publicidadModel->obtenerTodas();
+    $archivosImagen = $_FILES['imagen'] ?? [];
 
-            return;
-        }
+    $errores = [];
+    $publicidadesProcesadas = [];
 
-        $token = $_POST['csrf_token'] ?? '';
-        if (!$this->validateCsrfToken($token)) {
-            $this->redirect('admin/publicidad');
-
-            return;
-        }
-
-        $datos = [
-            'titulo' => trim((string) ($_POST['titulo'] ?? '')),
-            'subtitulo' => trim((string) ($_POST['subtitulo'] ?? '')),
-            'texto' => trim((string) ($_POST['texto'] ?? '')),
+    foreach (self::POSICIONES as $posicion) {
+        $datosBanner = [
+            'titulo'    => trim((string) ($this->obtenerValorArreglo($_POST['titulo'] ?? [], $posicion))),
+            'subtitulo' => trim((string) ($this->obtenerValorArreglo($_POST['subtitulo'] ?? [], $posicion))),
+            'texto'     => trim((string) ($this->obtenerValorArreglo($_POST['texto'] ?? [], $posicion))),
+            'imagen'    => (string) ($publicidadesActuales[$posicion]['imagen'] ?? ''),
         ];
 
-        $archivoImagen = $_FILES['imagen'] ?? null;
-        $publicidadActual = $this->publicidadModel->obtener();
+        $archivoImagen = $this->extraerArchivoPorPosicion($archivosImagen, $posicion);
+        $erroresBanner = $this->validarDatosBanner($datosBanner, $archivoImagen);
 
-        $errores = $this->validarDatos($datos, $archivoImagen);
-
-        if ($errores !== []) {
-            $this->render('publicidad_form', [
-                'title' => 'Publicidad',
-                'publicidad' => array_merge($publicidadActual ?? [], $datos),
-                'errores' => $errores,
-            ]);
-
-            return;
+        if ($erroresBanner !== []) {
+            $errores[$posicion] = $erroresBanner;
         }
 
-        $datos['imagen'] = (string) ($publicidadActual['imagen'] ?? '');
+        $publicidadesProcesadas[$posicion] = $datosBanner;
 
-        if ($this->hayNuevaImagen($archivoImagen)) {
-            $resultadoImagen = $this->manejarImagen($archivoImagen ?? [], $publicidadActual['imagen'] ?? null);
-
-            if (isset($resultadoImagen['error'])) {
-                $this->render('publicidad_form', [
-                    'title' => 'Publicidad',
-                    'publicidad' => array_merge($publicidadActual ?? [], $datos),
-                    'errores' => ['imagen' => $resultadoImagen['error']],
-                ]);
-
-                return;
-            }
-
-            $datos['imagen'] = $resultadoImagen['ruta'] ?? $datos['imagen'];
+        if ($erroresBanner !== [] || !$this->hayNuevaImagen($archivoImagen)) {
+            continue;
         }
 
-        $resultado = $this->publicidadModel->actualizar($datos);
+        $resultadoImagen = $this->manejarImagen(
+            $archivoImagen ?? [],
+            $publicidadesActuales[$posicion]['imagen'] ?? null,
+            $posicion
+        );
 
-        if ($resultado) {
-            admin_set_flash('success', 'Publicidad actualizada correctamente.');
-        } else {
-            admin_set_flash('danger', 'No se pudo actualizar la publicidad.');
+        if (isset($resultadoImagen['error'])) {
+            $errores[$posicion]['imagen'] = $resultadoImagen['error'];
+            continue;
         }
 
-        $this->redirect('admin/publicidad');
+        $publicidadesProcesadas[$posicion]['imagen'] = $resultadoImagen['ruta'] ?? $datosBanner['imagen'];
     }
 
-    private function validarDatos(array $datos, ?array $archivoImagen): array
-    {
-        $errores = [];
-
-        if ($datos['titulo'] === '') {
-            $errores['titulo'] = 'El título es obligatorio.';
-        }
-
-        if ($datos['subtitulo'] === '') {
-            $errores['subtitulo'] = 'El subtítulo es obligatorio.';
-        }
-
-        if ($datos['texto'] === '') {
-            $errores['texto'] = 'El texto es obligatorio.';
-        }
-
-        if ($this->hayNuevaImagen($archivoImagen)) {
-            $errorImagen = $this->validarImagen($archivoImagen ?? []);
-            if ($errorImagen !== null) {
-                $errores['imagen'] = $errorImagen;
-            }
-        }
-
-        return $errores;
+    if ($errores !== []) {
+        $this->render('publicidad_form', [
+            'title' => 'Publicidad',
+            'publicidades' => $publicidadesProcesadas,
+            'errores' => $errores,
+        ]);
+        return;
     }
+
+    foreach (self::POSICIONES as $posicion) {
+        $this->publicidadModel->actualizarPorPosicion($posicion, $publicidadesProcesadas[$posicion]);
+    }
+
+    admin_set_flash('success', 'Publicidad actualizada correctamente.');
+    $this->redirect('admin/publicidad');
+}
+
+    private function validarDatosBanner(array $datos, ?array $archivoImagen): array
+{
+    $errores = [];
+
+    if ($datos['titulo'] === '') {
+        $errores['titulo'] = 'El título es obligatorio.';
+    }
+
+    if ($datos['subtitulo'] === '') {
+        $errores['subtitulo'] = 'El subtítulo es obligatorio.';
+    }
+
+    if ($datos['texto'] === '') {
+        $errores['texto'] = 'El texto es obligatorio.';
+    }
+
+    if ($this->hayNuevaImagen($archivoImagen)) {
+        $errorImagen = $this->validarImagen($archivoImagen ?? []);
+        if ($errorImagen !== null) {
+            $errores['imagen'] = $errorImagen;
+        }
+    }
+
+    return $errores;
+}
 
     private function hayNuevaImagen(?array $archivo): bool
     {
@@ -163,39 +171,38 @@ final class PublicidadController extends AdminBaseController
         return null;
     }
 
-    private function manejarImagen(array $archivoImagen, ?string $imagenActual): array
-    {
-        $errorImagen = $this->validarImagen($archivoImagen);
-        if ($errorImagen !== null) {
-            return ['error' => $errorImagen];
-        }
-
-        try {
-            $directorio = $this->asegurarDirectorioPublicidad();
-        } catch (\RuntimeException $exception) {
-            return ['error' => $exception->getMessage()];
-        }
-
-        $timestamp = time();
-        $nombreArchivo = 'publicidad-' . $timestamp . '.webp';
-        $destino = $directorio . '/' . $nombreArchivo;
-
-        $mime = (string) ($archivoImagen['type'] ?? '');
-        $tmpName = (string) ($archivoImagen['tmp_name'] ?? '');
-
-        if (!$this->convertirAWebp($tmpName, $mime, $destino)) {
-            return ['error' => 'No se pudo procesar la imagen.'];
-        }
-
-        @chmod($destino, 0644);
-
-        if ($imagenActual) {
-            $this->eliminarImagenFisica($imagenActual);
-        }
-
-        return ['ruta' => 'public/assets/uploads/publicidad/' . $nombreArchivo];
+    private function manejarImagen(array $archivoImagen, ?string $imagenActual, int $posicion): array
+{
+    $errorImagen = $this->validarImagen($archivoImagen);
+    if ($errorImagen !== null) {
+        return ['error' => $errorImagen];
     }
 
+    try {
+        $directorio = $this->asegurarDirectorioPublicidad();
+    } catch (\RuntimeException $exception) {
+        return ['error' => $exception->getMessage()];
+    }
+
+    $timestamp = time();
+    $nombreArchivo = 'publicidad-' . $posicion . '-' . $timestamp . '.webp';
+    $destino = $directorio . '/' . $nombreArchivo;
+
+    $mime = (string) ($archivoImagen['type'] ?? '');
+    $tmpName = (string) ($archivoImagen['tmp_name'] ?? '');
+
+    if (!$this->convertirAWebp($tmpName, $mime, $destino)) {
+        return ['error' => 'No se pudo procesar la imagen.'];
+    }
+
+    @chmod($destino, 0644);
+
+    if ($imagenActual) {
+        $this->eliminarImagenFisica($imagenActual);
+    }
+
+    return ['ruta' => 'public/assets/uploads/publicidad/' . $nombreArchivo];
+}
     private function asegurarDirectorioPublicidad(): string
     {
         $ruta = rtrim($this->directorioPublicidad, '/');
