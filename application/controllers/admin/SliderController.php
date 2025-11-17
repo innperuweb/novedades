@@ -47,9 +47,7 @@ final class SliderController extends AdminBaseController
         $this->mostrarFormulario([
             'titulo' => '',
             'subtitulo' => '',
-            'boton_texto' => '',
             'boton_url' => '',
-            'orden' => 0,
             'visible' => 1,
             'imagen' => '',
         ], [], false);
@@ -255,9 +253,7 @@ final class SliderController extends AdminBaseController
         return [
             'titulo' => (string) ($_POST['titulo'] ?? ''),
             'subtitulo' => (string) ($_POST['subtitulo'] ?? ''),
-            'boton_texto' => (string) ($_POST['boton_texto'] ?? ''),
             'boton_url' => (string) ($_POST['boton_url'] ?? ''),
-            'orden' => (int) ($_POST['orden'] ?? 0),
             'visible' => isset($_POST['visible']) ? 1 : 0,
         ];
     }

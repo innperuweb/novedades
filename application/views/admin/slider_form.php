@@ -40,19 +40,11 @@
     </div>
     <div class="col-lg-4">
         <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <div class="mb-3">
-                    <label for="boton_texto" class="form-label">Texto del botón</label>
-                    <input type="text" name="boton_texto" id="boton_texto" class="form-control" value="<?= e($slider['boton_texto'] ?? ''); ?>">
-                </div>
+            <div class="card-body">               
                 <div class="mb-3">
                     <label for="boton_url" class="form-label">URL del botón</label>
                     <input type="text" name="boton_url" id="boton_url" class="form-control" placeholder="productos/detalle?id=25" value="<?= e($slider['boton_url'] ?? ''); ?>">
-                </div>
-                <div class="mb-3">
-                    <label for="orden" class="form-label">Orden</label>
-                    <input type="number" name="orden" id="orden" class="form-control" value="<?= (int) ($slider['orden'] ?? 0); ?>">
-                </div>
+                </div>               
                 <div class="form-check form-switch mb-4">
                     <input class="form-check-input" type="checkbox" id="visible" name="visible" value="1" <?= (int) ($slider['visible'] ?? 1) === 1 ? 'checked' : ''; ?>>
                     <label class="form-check-label" for="visible">Visible en la web</label>
