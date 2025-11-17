@@ -30,8 +30,6 @@
     $elementCarousel = $('.airi-element-carousel');
     $instafeed = $('.instagram-feed-wrapper');
 
-
-
     /**********************
      *Mobile Menu Activatin
      ***********************/

@@ -2,6 +2,22 @@
     --admin-sidebar-width: 240px;
 }
 
+.has-submenu .submenu {
+    display: none;
+}
+.has-submenu.open .submenu {
+    display: block;
+}
+.submenu-toggle {
+    cursor: pointer;
+}
+.has-submenu .arrow {
+    transition: transform .2s;
+}
+.has-submenu.open .arrow {
+    transform: rotate(180deg);
+}
+
 body.admin-auth-body {
     background: linear-gradient(135deg, #1f2937, #0f172a);
     min-height: 100vh;
@@ -103,8 +119,3 @@ body.admin-auth-body {
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
-
-
-
-
-
