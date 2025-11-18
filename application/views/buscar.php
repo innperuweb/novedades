@@ -18,8 +18,8 @@ if ($total_resultados > 0) {
     $fin = 0;
 }
 
-$min_precio = isset($_POST['min_precio']) ? (float) $_POST['min_precio'] : (isset($min_precio) ? (float) $min_precio : 0.0);
-$max_precio = isset($_POST['max_precio']) ? (float) $_POST['max_precio'] : (isset($max_precio) ? (float) $max_precio : 10000.0);
+$min_precio = isset($min_precio) ? (float) $min_precio : 0.0;
+$max_precio = isset($max_precio) ? (float) $max_precio : 10000.0;
 
 $formatearPrecio = static fn(float $valor): string => number_format($valor, 2, '.', '');
 
@@ -27,13 +27,9 @@ $url_base_listado = isset($url_base_listado) ? trim((string) $url_base_listado) 
 $url_base_listado = $url_base_listado !== '' ? ltrim($url_base_listado, '/') : 'buscar';
 
 $urlBaseProductos = site_url($url_base_listado);
-$precioParams = [
-    'min_precio' => $formatearPrecio($min_precio),
-    'max_precio' => $formatearPrecio($max_precio),
-];
+$construirUrlOrden = static function (string $ordenDeseado) use ($slug_subcat, $urlBaseProductos, $query): string {
+    $params = [];
 
-$construirUrlOrden = static function (string $ordenDeseado) use ($slug_subcat, $urlBaseProductos, $query, $precioParams): string {
-    $params = $precioParams;
     if ($query !== '') {
         $params['q'] = $query;
     }
@@ -48,8 +44,8 @@ $construirUrlOrden = static function (string $ordenDeseado) use ($slug_subcat, $
     return $urlBaseProductos . ($queryString !== '' ? ('?' . $queryString) : '');
 };
 
-$generarUrlSubcategoria = static function (string $slug) use ($orden, $urlBaseProductos, $query, $precioParams): string {
-    $params = array_merge($precioParams, ['subcat' => $slug]);
+$generarUrlSubcategoria = static function (string $slug) use ($orden, $urlBaseProductos, $query): string {
+    $params = ['subcat' => $slug];
     if ($orden !== '') {
         $params['order'] = $orden;
     }

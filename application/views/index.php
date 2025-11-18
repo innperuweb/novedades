@@ -575,6 +575,24 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="testimonial testimonial-style-2">
+                            <div class="testimonial__inner">
+                                <p class="testimonial__desc">"Maecenas eu accumsan libero. Fusce id imperdiet felis. Cras sed ex vel.</p>
+                                <div class="testimonial__author">
+                                    <img src="<?= asset_url('img/others/happy-client-1.jpg'); ?>" alt="Author" class="testimonial__author--img">
+                                    <h3 class="testimonial__author--name">Lura Frazier</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="testimonial testimonial-style-2">
+                            <div class="testimonial__inner">
+                                <p class="testimonial__desc">"Maecenas eu accumsan libero. Fusce id imperdiet felis. Cras sed ex vel.</p>
+                                <div class="testimonial__author">
+                                    <img src="<?= asset_url('img/others/happy-client-1.jpg'); ?>" alt="Author" class="testimonial__author--img">
+                                    <h3 class="testimonial__author--name">Lura Frazier</h3>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
                 </div>

@@ -19,52 +19,6 @@ class ProductoModel
         };
     }
 
-    public function listarPorRangoPrecio(float $min, float $max, string $orden = '', string $busqueda = '', string $subcat = ''): array
-    {
-        $sql = "SELECT * FROM productos p WHERE p.visible = 1 AND p.estado = 1 AND p.stock >= 0";
-
-        if ($busqueda !== '') {
-            $sql .= " AND (p.nombre LIKE :busqueda OR p.descripcion LIKE :busqueda)";
-        }
-
-        if ($subcat !== '') {
-            $sql .= " AND p.subcategoria_slug = :subcat";
-        }
-
-        $sql .= " AND p.precio BETWEEN :min AND :max";
-
-        $orderBy = $this->resolverOrdenSql($orden);
-        $sql .= " ORDER BY $orderBy";
-
-        try {
-            $pdo = Database::connect();
-            $stmt = $pdo->prepare($sql);
-            if ($busqueda !== '') {
-                $stmt->bindValue(':busqueda', "%$busqueda%", \PDO::PARAM_STR);
-            }
-            if ($subcat !== '') {
-                $stmt->bindValue(':subcat', $subcat, \PDO::PARAM_STR);
-            }
-            $stmt->bindValue(':min', $min, \PDO::PARAM_STR);
-            $stmt->bindValue(':max', $max, \PDO::PARAM_STR);
-
-            $stmt->execute();
-
-            $productos = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
-        } catch (\Throwable $exception) {
-            return [];
-        }
-
-        foreach ($productos as &$producto) {
-            if (isset($producto['precio'])) {
-                $producto['precio'] = (float) $producto['precio'];
-            }
-        }
-        unset($producto);
-
-        return $productos;
-    }
-
     public function obtenerProductosPorSeccion(string $seccion, int $limite = 10): array
     {
         $seccion = trim($seccion);

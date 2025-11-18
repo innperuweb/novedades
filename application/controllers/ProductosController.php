@@ -6,13 +6,7 @@ require_once APP_PATH . '/models/SubcategoriaModel.php';
 require_once APP_PATH . '/helpers/security_helper.php';
 
 class ProductosController extends BaseController
-{
-    private $productoModel;
-
-    public function __construct()
-    {
-        $this->productoModel = new ProductoModel();
-    }
+{    
 
     public function index(): void
     {
@@ -51,10 +45,11 @@ class ProductosController extends BaseController
         $id = isset($_GET['id']) ? sanitize_int($_GET['id']) : null;
         $id = $id ?? 1;
 
-        $producto = $this->productoModel->getById($id);
+        $model = new ProductoModel();
+        $producto = $model->getById($id);
 
         if ($producto === null) {
-            $producto = $this->productoModel->getById(1);
+            $producto = $model->getById(1);
             if ($producto === null) {
                 $this->render('detalle_producto', ['producto' => null]);
                 return;
@@ -65,7 +60,7 @@ class ProductosController extends BaseController
         $producto['tallas'] = $this->normalizarOpciones($producto['tallas'] ?? []);
         $productoId = (int) ($producto['id'] ?? 0);
         try {
-            $imagenes = $this->productoModel->obtenerImagenesPorProducto($productoId);
+            $imagenes = $model->obtenerImagenesPorProducto($productoId);
         } catch (\Throwable $exception) {
             $imagenes = [];
         }
@@ -107,34 +102,43 @@ class ProductosController extends BaseController
         $categoriaId = null;
         $subcategorias = [];
 
-        $seccionesEspeciales = ['tienda', 'novedades', 'ofertas', 'populares', 'por_mayor'];
+        $productoModel = new ProductoModel();
 
-        $minPrecio = $this->sanitizarPrecio($_POST['min_precio'] ?? ($_GET['min_precio'] ?? null), 0.0);
-        $maxPrecio = $this->sanitizarPrecio($_POST['max_precio'] ?? ($_GET['max_precio'] ?? null), 10000.0);
+        $minPrecio = $this->sanitizarPrecio($_POST['min_precio'] ?? null, 0.0);
+        $maxPrecio = $this->sanitizarPrecio($_POST['max_precio'] ?? null, 10000.0);
 
-        if ($minPrecio > $maxPrecio) {
-            [$minPrecio, $maxPrecio] = [$maxPrecio, $minPrecio];
-        }
+        $esSolicitudPost = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST';
+        $aplicarFiltroPrecio = $esSolicitudPost && ($slugSubcategoria !== '');
 
-        if ($slugSubcategoria === '' && $slugForzado === null) {
-            $productos = $this->productoModel->listarPorRangoPrecio($minPrecio, $maxPrecio, $orden);
-        } elseif (in_array($slugSubcategoria, $seccionesEspeciales, true)) {
-            $seccionConsulta = $slugSubcategoria === 'tienda' ? null : $slugSubcategoria;
-            $productos = $this->productoModel->listarConPrincipalPorSeccion($seccionConsulta, $orden);
-            $productos = array_values(array_filter($productos, static function (array $producto) use ($minPrecio, $maxPrecio): bool {
-                $precio = isset($producto['precio']) ? (float) $producto['precio'] : 0.0;
-                return $precio >= $minPrecio && $precio <= $maxPrecio;
-            }));
+        $seccionesEspeciales = ['novedades', 'ofertas', 'populares', 'por_mayor'];
+
+        if ($slugSubcategoria === '' || in_array($slugSubcategoria, $seccionesEspeciales, true)) {
+            $aplicarFiltroPrecio = false;
+            $seccionConsulta = $slugSubcategoria === '' ? null : $slugSubcategoria;
+            $productos = $productoModel->listarConPrincipalPorSeccion($seccionConsulta, $orden);
         } else {
-            $subcategoria = SubcategoriaModel::obtenerPorSlug($slugSubcategoria);
 
-            if ($subcategoria !== null) {
-                $categoriaId = (int) ($subcategoria['categoria_id'] ?? 0);
-                if ($categoriaId > 0) {
-                    $subcategorias = SubcategoriaModel::obtenerPorCategoria($categoriaId);
+            if ($slugSubcategoria !== '') {
+                $subcategoria = SubcategoriaModel::obtenerPorSlug($slugSubcategoria);
+
+                if ($subcategoria !== null) {
+                    $categoriaId = (int) ($subcategoria['categoria_id'] ?? 0);
+                    if ($categoriaId > 0) {
+                        $subcategorias = SubcategoriaModel::obtenerPorCategoria($categoriaId);
+                    }
+
+                    if ($aplicarFiltroPrecio) {
+                        if ($minPrecio > $maxPrecio) {
+                            [$minPrecio, $maxPrecio] = [$maxPrecio, $minPrecio];
+                        }
+
+                        $productos = ProductoModel::filtrarPorPrecio($slugSubcategoria, $minPrecio, $maxPrecio, $orden);
+                    } elseif ($orden !== '') {
+                        $productos = ProductoModel::obtenerFiltrados($slugSubcategoria, $orden);
+                    } else {
+                        $productos = ProductoModel::obtenerPorSubcategoria($slugSubcategoria, $orden);
+                    }
                 }
-
-                $productos = $this->productoModel->listarPorRangoPrecio($minPrecio, $maxPrecio, $orden, '', $slugSubcategoria);
             }
         }
 
@@ -149,7 +153,7 @@ class ProductosController extends BaseController
             'min_precio' => $minPrecio,
             'max_precio' => $maxPrecio,
             'url_base_listado' => ltrim($rutaBase, '/'),
-            'productoModel' => $this->productoModel,
+            'productoModel' => $productoModel,
         ];
     }
 
