@@ -26,16 +26,24 @@ class BuscarController extends BaseController
                 'query' => '',
                 'resultados' => [],
                 'orden' => $orden,
+                'min_precio' => 0.0,
+                'max_precio' => 10000.0,
             ]);
             return;
         }
 
         $productoModel = new ProductoModel();
         $resultados = [];
+        $minPrecio = isset($_POST['min_precio']) ? (float) $_POST['min_precio'] : (isset($_GET['min_precio']) ? (float) $_GET['min_precio'] : 0.0);
+        $maxPrecio = isset($_POST['max_precio']) ? (float) $_POST['max_precio'] : (isset($_GET['max_precio']) ? (float) $_GET['max_precio'] : 10000.0);
+
+        if ($minPrecio > $maxPrecio) {
+            [$minPrecio, $maxPrecio] = [$maxPrecio, $minPrecio];
+        }
 
         try {
             // Búsqueda con coincidencias parciales (mayús/minús indiferente)
-            $resultados = $productoModel->buscarProductos($termino, $orden);
+            $resultados = $productoModel->listarPorRangoPrecio($minPrecio, $maxPrecio, $orden, $termino);
             if (!is_array($resultados)) {
                 $resultados = [];
             }
@@ -48,6 +56,8 @@ class BuscarController extends BaseController
             'query' => $termino,
             'resultados' => $resultados,
             'orden' => $orden,
+            'min_precio' => $minPrecio,
+            'max_precio' => $maxPrecio,
         ]);
     }
 }
