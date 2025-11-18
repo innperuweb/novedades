@@ -89,6 +89,8 @@ $isActive = static function (array $paths) use ($requestPath): bool {
 
         <a class="nav-link <?= $isActive(['publicidad']) ? 'active' : ''; ?>" href="<?= base_url('admin/publicidad'); ?>">Publicidad</a>
 
+        <a class="nav-link <?= $isActive(['informacion']) ? 'active' : ''; ?>" href="<?= base_url('admin/informacion'); ?>">Información</a>
+
         <a class="nav-link <?= $isActive(['usuarios']) ? 'active' : ''; ?>" href="<?= base_url('admin/usuarios'); ?>">Usuarios</a>
 
     </nav>

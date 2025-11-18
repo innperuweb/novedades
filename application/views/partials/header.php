@@ -1,4 +1,27 @@
 <?php
+require_once APP_PATH . '/models/InformacionModel.php';
+
+$infoContacto = InformacionModel::obtenerPorTipo('contacto') ?? [];
+$infoRedes = InformacionModel::obtenerPorTipo('redes') ?? [];
+$infoHeader = InformacionModel::obtenerPorTipo('header') ?? [];
+
+$infoContacto += [
+    'telefono1' => '',
+    'telefono2' => '',
+    'email'     => '',
+];
+
+$infoRedes += [
+    'facebook'  => '',
+    'instagram' => '',
+    'youtube'   => '',
+    'tiktok'    => '',
+];
+
+$infoHeader += [
+    'mensaje_header' => '',
+];
+
 $miniCartItems = isset($miniCartItems) && is_array($miniCartItems)
     ? $miniCartItems
     : (function_exists('get_cart_session')
@@ -48,8 +71,7 @@ foreach ($miniCartItems as $miniCartItem) {
                     <div class="row">
                         <div class="col-12 text-center">
                             <div class="notice-text-wrapper">
-                                <p class="notice-text"><span><strong>GRAN</strong>
-                                        DESCUENTO</span> <strong>DEL 30%</strong> COMPRA AHORA, NO TE LO PIERDAS</p>
+                                <p class="notice-text"><?= e($infoHeader['mensaje_header']); ?></p>
                                 <a class="close-notice"><i
                                         class="dl-icon-close"></i></a>
                             </div>

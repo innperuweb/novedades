@@ -175,6 +175,18 @@ return [
         'auth' => true,
         'methods' => ['POST'],
     ],
+    'informacion' => [
+        'controller' => 'InformacionController',
+        'method' => 'index',
+        'auth' => true,
+        'methods' => ['GET', 'POST'],
+    ],
+    'informacion/editar/{tipo}' => [
+        'controller' => 'InformacionController',
+        'method' => 'editar',
+        'auth' => true,
+        'methods' => ['GET', 'POST'],
+    ],
     'categorias' => [
         'controller' => 'CategoriasController',
         'method' => 'index',
