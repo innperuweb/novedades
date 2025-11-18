@@ -4,6 +4,7 @@ require_once APP_PATH . '/controllers/BaseController.php';
 require_once APP_PATH . '/models/ProductoModel.php';
 require_once APP_PATH . '/models/SliderModel.php';
 require_once APP_PATH . '/models/PublicidadModel.php';
+require_once APP_PATH . '/models/ExperienciaModel.php';
 
 class HomeController extends BaseController
 {
@@ -30,6 +31,13 @@ class HomeController extends BaseController
     $sliderModel = new SliderModel();
     $sliders = $sliderModel->obtenerVisibles();
 
+    try {
+        $experienciaModel = new ExperienciaModel();
+        $experiencias = $experienciaModel->obtenerVisibles();
+    } catch (\Throwable $exception) {
+        $experiencias = [];
+    }
+
     $this->render('index', [
         'productosAleatorios' => $productosAleatorios,
         'novedades'           => $novedades,
@@ -37,6 +45,7 @@ class HomeController extends BaseController
         'populares'           => $populares,
         'sliders'             => $sliders,
         'publicidades'        => $publicidades, // MULTIPLE
+        'experiencias'        => $experiencias,
     ]);
 }
   
