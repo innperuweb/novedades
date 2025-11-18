@@ -538,62 +538,30 @@
                                         "slidesToScroll": 1
                                     } }
                                 ]'>
-
-                        <div class="testimonial testimonial-style-2">
-                            <div class="testimonial__inner">
-                                <p class="testimonial__desc">"Maecenas eu accumsan libero. Fusce id imperdiet felis. Cras sed ex vel.</p>
-                                <div class="testimonial__author">
-                                    <img src="<?= asset_url('img/others/happy-client-1.jpg'); ?>" alt="Author" class="testimonial__author--img">
-                                    <h3 class="testimonial__author--name">Lura Frazier</h3>
+                        <?php if (!empty($experiencias)): ?>
+                            <?php foreach ($experiencias as $e): ?>
+                                <?php
+                                $imagen = !empty($e['imagen'])
+                                    ? asset_url('uploads/experiencias/' . $e['imagen'])
+                                    : asset_url('img/others/happy-client-1.jpg');
+                                ?>
+                                <div class="testimonial">
+                                    <div class="testimonial__image">
+                                        <img src="<?= $imagen; ?>" alt="<?= e($e['nombre'] ?? ''); ?>">
+                                    </div>
+                                    <div class="testimonial__content">
+                                        <p class="testimonial__text"><?= e($e['texto'] ?? ''); ?></p>
+                                        <h5 class="testimonial__name"><?= e($e['nombre'] ?? ''); ?></h5>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <div class="testimonial">
+                                <div class="testimonial__content">
+                                    <p class="testimonial__text">Pronto compartiremos nuevas experiencias de nuestros clientes.</p>
                                 </div>
                             </div>
-                        </div>
-                        <div class="testimonial testimonial-style-2">
-                            <div class="testimonial__inner">
-                                <p class="testimonial__desc">"Maecenas eu accumsan libero. Fusce id imperdiet felis. Cras sed ex vel.</p>
-                                <div class="testimonial__author">
-                                    <img src="<?= asset_url('img/others/happy-client-1.jpg'); ?>" alt="Author" class="testimonial__author--img">
-                                    <h3 class="testimonial__author--name">Lura Frazier</h3>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="testimonial testimonial-style-2">
-                            <div class="testimonial__inner">
-                                <p class="testimonial__desc">"Maecenas eu accumsan libero. Fusce id imperdiet felis. Cras sed ex vel.</p>
-                                <div class="testimonial__author">
-                                    <img src="<?= asset_url('img/others/happy-client-1.jpg'); ?>" alt="Author" class="testimonial__author--img">
-                                    <h3 class="testimonial__author--name">Lura Frazier</h3>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="testimonial testimonial-style-2">
-                            <div class="testimonial__inner">
-                                <p class="testimonial__desc">"Maecenas eu accumsan libero. Fusce id imperdiet felis. Cras sed ex vel.</p>
-                                <div class="testimonial__author">
-                                    <img src="<?= asset_url('img/others/happy-client-1.jpg'); ?>" alt="Author" class="testimonial__author--img">
-                                    <h3 class="testimonial__author--name">Lura Frazier</h3>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="testimonial testimonial-style-2">
-                            <div class="testimonial__inner">
-                                <p class="testimonial__desc">"Maecenas eu accumsan libero. Fusce id imperdiet felis. Cras sed ex vel.</p>
-                                <div class="testimonial__author">
-                                    <img src="<?= asset_url('img/others/happy-client-1.jpg'); ?>" alt="Author" class="testimonial__author--img">
-                                    <h3 class="testimonial__author--name">Lura Frazier</h3>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="testimonial testimonial-style-2">
-                            <div class="testimonial__inner">
-                                <p class="testimonial__desc">"Maecenas eu accumsan libero. Fusce id imperdiet felis. Cras sed ex vel.</p>
-                                <div class="testimonial__author">
-                                    <img src="<?= asset_url('img/others/happy-client-1.jpg'); ?>" alt="Author" class="testimonial__author--img">
-                                    <h3 class="testimonial__author--name">Lura Frazier</h3>
-                                </div>
-                            </div>
-                        </div>
-
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
