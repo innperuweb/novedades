@@ -71,6 +71,22 @@ $isActive = static function (array $paths) use ($requestPath): bool {
             </div>
         </div>
 
+        <?php
+        $experienciaPaths = ['experiencias', 'experiencias/crear', 'experiencias/editar'];
+        $isExperienciasOpen = $isActive($experienciaPaths);
+        ?>
+        <div class="nav-item mt-3 has-submenu <?= $isExperienciasOpen ? 'open' : ''; ?>">
+            <a href="#" class="nav-link submenu-toggle d-flex justify-content-between align-items-center">
+                <span>Experiencias</span>
+                <span class="arrow">▼</span>
+            </a>
+
+            <div class="nav flex-column ms-3 submenu">
+                <a class="nav-link <?= $isActive(['experiencias']) ? 'active' : ''; ?>" href="<?= base_url('admin/experiencias'); ?>">Listar experiencias</a>
+                <a class="nav-link <?= $isActive(['experiencias/crear']) ? 'active' : ''; ?>" href="<?= base_url('admin/experiencias/crear'); ?>">Crear nueva</a>
+            </div>
+        </div>
+
         <a class="nav-link <?= $isActive(['publicidad']) ? 'active' : ''; ?>" href="<?= base_url('admin/publicidad'); ?>">Publicidad</a>
 
         <a class="nav-link <?= $isActive(['usuarios']) ? 'active' : ''; ?>" href="<?= base_url('admin/usuarios'); ?>">Usuarios</a>

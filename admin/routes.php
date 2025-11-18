@@ -139,6 +139,30 @@ return [
         'auth' => true,
         'methods' => ['POST'],
     ],
+    'experiencias' => [
+        'controller' => 'ExperienciasController',
+        'method' => 'index',
+        'auth' => true,
+        'methods' => ['GET'],
+    ],
+    'experiencias/crear' => [
+        'controller' => 'ExperienciasController',
+        'method' => 'crear',
+        'auth' => true,
+        'methods' => ['GET', 'POST'],
+    ],
+    'experiencias/editar/{id}' => [
+        'controller' => 'ExperienciasController',
+        'method' => 'editar',
+        'auth' => true,
+        'methods' => ['GET', 'POST'],
+    ],
+    'experiencias/eliminar/{id}' => [
+        'controller' => 'ExperienciasController',
+        'method' => 'eliminar',
+        'auth' => true,
+        'methods' => ['POST'],
+    ],
     'publicidad' => [
         'controller' => 'PublicidadController',
         'method' => 'index',
