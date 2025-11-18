@@ -113,7 +113,7 @@ class ProductosController extends BaseController
         if ($slugSubcategoria === '' || in_array($slugSubcategoria, $seccionesEspeciales, true)) {
             $aplicarFiltroPrecio = false;
             $seccionConsulta = $slugSubcategoria === '' ? null : $slugSubcategoria;
-            $productos = $productoModel->listarConPrincipalPorSeccion($seccionConsulta);
+            $productos = $productoModel->listarConPrincipalPorSeccion($seccionConsulta, $orden);
         } else {
             if ($slugSubcategoria !== '') {
                 $subcategoria = SubcategoriaModel::obtenerPorSlug($slugSubcategoria);
@@ -129,11 +129,11 @@ class ProductosController extends BaseController
                             [$minPrecio, $maxPrecio] = [$maxPrecio, $minPrecio];
                         }
 
-                        $productos = ProductoModel::filtrarPorPrecio($slugSubcategoria, $minPrecio, $maxPrecio);
+                        $productos = ProductoModel::filtrarPorPrecio($slugSubcategoria, $minPrecio, $maxPrecio, $orden);
                     } elseif ($orden !== '') {
                         $productos = ProductoModel::obtenerFiltrados($slugSubcategoria, $orden);
                     } else {
-                        $productos = ProductoModel::obtenerPorSubcategoria($slugSubcategoria);
+                        $productos = ProductoModel::obtenerPorSubcategoria($slugSubcategoria, $orden);
                     }
                 }
             }

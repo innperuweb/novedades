@@ -12,6 +12,12 @@ class BuscarController extends BaseController
         $termino = isset($_GET['q']) ? clean_string((string) $_GET['q']) : '';
         $termino = trim($termino);
 
+        $orden = isset($_GET['order']) ? sanitize_string((string) $_GET['order']) : '';
+        $ordenesPermitidos = ['precio_asc', 'precio_desc', 'nombre_asc', 'nombre_desc'];
+        if (!in_array($orden, $ordenesPermitidos, true)) {
+            $orden = '';
+        }
+
         error_log("🔍 BuscarController → término recibido: [$termino]");
 
         // Si no hay término, renderiza la vista vacía directamente
@@ -19,6 +25,7 @@ class BuscarController extends BaseController
             $this->render('buscar', [
                 'query' => '',
                 'resultados' => [],
+                'orden' => $orden,
             ]);
             return;
         }
@@ -28,7 +35,7 @@ class BuscarController extends BaseController
 
         try {
             // Búsqueda con coincidencias parciales (mayús/minús indiferente)
-            $resultados = $productoModel->buscarProductos($termino);
+            $resultados = $productoModel->buscarProductos($termino, $orden);
             if (!is_array($resultados)) {
                 $resultados = [];
             }
@@ -40,6 +47,7 @@ class BuscarController extends BaseController
         $this->render('buscar', [
             'query' => $termino,
             'resultados' => $resultados,
+            'orden' => $orden,
         ]);
     }
 }
