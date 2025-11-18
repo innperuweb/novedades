@@ -8,6 +8,17 @@ class ProductoModel
 {
     private const SECCIONES_PERMITIDAS = ['tienda', 'novedades', 'ofertas', 'populares', 'por_mayor'];
 
+    private function resolverOrdenSql(string $orden): string
+    {
+        return match ($orden) {
+            'precio_asc' => 'p.precio ASC',
+            'precio_desc' => 'p.precio DESC',
+            'nombre_asc' => 'p.nombre ASC',
+            'nombre_desc' => 'p.nombre DESC',
+            default => 'p.id DESC',
+        };
+    }
+
     public function obtenerProductosPorSeccion(string $seccion, int $limite = 10): array
     {
         $seccion = trim($seccion);
@@ -71,7 +82,7 @@ class ProductoModel
         return $this->obtenerTodos();
     }
 
-    public function listarConPrincipalPorSeccion(?string $seccion = null): array
+    public function listarConPrincipalPorSeccion(?string $seccion = null, string $orden = ''): array
     {
         $pdo = Database::connect();
 
@@ -102,7 +113,8 @@ class ProductoModel
             $params[':sec'] = $seccion;
         }
 
-        $sql .= ' ' . $where . ' ORDER BY p.id DESC';
+        $orderBy = $this->resolverOrdenSql($orden);
+        $sql .= ' ' . $where . ' ORDER BY ' . $orderBy;
 
         if ($params !== []) {
             $st = $pdo->prepare($sql);
@@ -343,28 +355,30 @@ class ProductoModel
 
 
 
-    public function buscarProductos(string $query): array
+    public function buscarProductos(string $query, string $orden = ''): array
     {
         if ($query === '') {
             return [];
         }
 
+        $orderBy = $this->resolverOrdenSql($orden);
+
         try {
             $pdo = Database::connect();
 
-            $sql = "SELECT p.*, 
+            $sql = "SELECT p.*,
                        (SELECT pi.ruta
                         FROM producto_imagenes pi
                         WHERE pi.producto_id = p.id
                         ORDER BY pi.es_principal DESC, pi.id ASC
                         LIMIT 1) AS ruta_principal
                 FROM productos p
-                WHERE (LOWER(p.nombre) LIKE :q1 
+                WHERE (LOWER(p.nombre) LIKE :q1
                        OR CAST(p.id AS CHAR) LIKE :q2)
-                  AND p.visible = 1 
-                  AND p.estado = 1 
+                  AND p.visible = 1
+                  AND p.estado = 1
                   AND p.stock >= 0
-                ORDER BY p.id DESC";
+                ORDER BY {$orderBy}";
 
             $stmt = $pdo->prepare($sql);
 
@@ -471,13 +485,16 @@ class ProductoModel
         return array_values(array_unique($items));
     }
 
-    public static function obtenerPorSubcategoria(string $slug): array
+    public static function obtenerPorSubcategoria(string $slug, string $orden = ''): array
     {
         $slug = trim($slug);
 
         if ($slug === '') {
             return [];
         }
+
+        $modelo = new self();
+        $ordenSql = $modelo->resolverOrdenSql($orden);
 
         try {
             $db = Database::connect();
@@ -491,7 +508,7 @@ class ProductoModel
                     . 'FROM productos p '
                     . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
                     . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
-                    . 'WHERE s.slug = :slug AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
+                    . 'WHERE s.slug = :slug AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY ' . $ordenSql
             );
             $stmt->execute([':slug' => $slug]);
 
@@ -521,13 +538,8 @@ class ProductoModel
             return [];
         }
 
-        $ordenSQL = match ($orden) {
-            'precio_asc' => 'p.precio ASC',
-            'precio_desc' => 'p.precio DESC',
-            'nombre_asc' => 'p.nombre ASC',
-            'nombre_desc' => 'p.nombre DESC',
-            default => 'p.id DESC',
-        };
+        $modelo = new self();
+        $ordenSQL = $modelo->resolverOrdenSql($orden);
 
         try {
             $db = Database::connect();
@@ -563,7 +575,7 @@ class ProductoModel
         }
     }
 
-    public static function filtrarPorPrecio(string $slug, float $min, float $max): array
+    public static function filtrarPorPrecio(string $slug, float $min, float $max, string $orden = ''): array
     {
         $slug = trim($slug);
 
@@ -573,6 +585,9 @@ class ProductoModel
 
         $min = (float) $min;
         $max = (float) $max;
+
+        $modelo = new self();
+        $ordenSql = $modelo->resolverOrdenSql($orden);
 
         try {
             $db = Database::connect();
@@ -587,7 +602,7 @@ class ProductoModel
                     . 'INNER JOIN producto_subcategoria ps ON ps.producto_id = p.id '
                     . 'INNER JOIN subcategorias s ON s.id = ps.subcategoria_id '
                     . 'WHERE s.slug = :slug AND p.precio BETWEEN :min AND :max '
-                    . 'AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY p.id DESC'
+                    . 'AND p.estado = 1 AND p.visible = 1 AND p.stock >= 0 ORDER BY ' . $ordenSql
             );
             $stmt->execute([':slug' => $slug, ':min' => $min, ':max' => $max]);
 
@@ -609,11 +624,11 @@ class ProductoModel
         }
     }
 
-    public static function buscar(string $termino): array
+    public static function buscar(string $termino, string $orden = ''): array
     {
         $modelo = new self();
 
-        return $modelo->buscarProductos($termino);
+        return $modelo->buscarProductos($termino, $orden);
     }
 
     public function obtenerSeccionesProducto(int $producto_id): array
