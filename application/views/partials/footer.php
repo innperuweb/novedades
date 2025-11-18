@@ -1,3 +1,28 @@
+<?php
+require_once APP_PATH . '/models/InformacionModel.php';
+
+$infoContacto = InformacionModel::obtenerPorTipo('contacto') ?? [];
+$infoRedes = InformacionModel::obtenerPorTipo('redes') ?? [];
+$infoHeader = InformacionModel::obtenerPorTipo('header') ?? [];
+
+$infoContacto += [
+    'telefono1' => '',
+    'telefono2' => '',
+    'email'     => '',
+];
+
+$infoRedes += [
+    'facebook'  => '',
+    'instagram' => '',
+    'youtube'   => '',
+    'tiktok'    => '',
+];
+
+$infoHeader += [
+    'mensaje_header' => '',
+];
+?>
+
 <footer class="footer footer-1 bg--black ptb--60 celular">
     <div class="footer-top pb--40 pb-md--30">
         <div class="container">
@@ -7,21 +32,34 @@
                         <div class="textwidget">
                             <img src="<?= asset_url('img/logo/logo-white.png'); ?>" alt="Logo" class="mb--10"> <br> <br>
                             <ul class="social">
-                                <li class="social__item">
-                                    <a href="#" class="social__link color--white">
-                                        <i class="fa fa-facebook"></i>
-                                    </a>
-                                </li>
-                                <li class="social__item">
-                                    <a href="#" class="social__link color--white">
-                                        <i class="fa fa-instagram"></i>
-                                    </a>
-                                </li>
-                                <li class="social__item">
-                                    <a href="#" class="social__link color--white">
-                                        <i class="fa-brands fa-tiktok"></i>
-                                    </a>
-                                </li>
+                                <?php if (!empty($infoRedes['facebook'])): ?>
+                                    <li class="social__item">
+                                        <a href="<?= e($infoRedes['facebook']); ?>" class="social__link color--white">
+                                            <i class="fa fa-facebook"></i>
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+                                <?php if (!empty($infoRedes['instagram'])): ?>
+                                    <li class="social__item">
+                                        <a href="<?= e($infoRedes['instagram']); ?>" class="social__link color--white">
+                                            <i class="fa fa-instagram"></i>
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+                                <?php if (!empty($infoRedes['youtube'])): ?>
+                                    <li class="social__item">
+                                        <a href="<?= e($infoRedes['youtube']); ?>" class="social__link color--white">
+                                            <i class="fa fa-youtube"></i>
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+                                <?php if (!empty($infoRedes['tiktok'])): ?>
+                                    <li class="social__item">
+                                        <a href="<?= e($infoRedes['tiktok']); ?>" class="social__link color--white">
+                                            <i class="fa-brands fa-tiktok"></i>
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
                             </ul>
                         </div>
                     </div>
@@ -55,13 +93,12 @@
                         <ul class="contact-info">
                             <li class="contact-info__item">
                                 <i class="fa fa-phone"></i>
-                                <span><a href="tel:+51901200822" class="contact-info__link">901 200 822</a></span>
-                                <span><a href="tel:+51901110822" class="contact-info__link">901 110 822</a></span>
+                                <span><a href="tel:+51<?= e($infoContacto['telefono1']); ?>" class="contact-info__link"><?= e($infoContacto['telefono1']); ?></a></span>
+                                <span><a href="tel:+51<?= e($infoContacto['telefono2']); ?>" class="contact-info__link"><?= e($infoContacto['telefono2']); ?></a></span>
                             </li>
                             <li class="contact-info__item">
                                 <i class="fa fa-envelope"></i>
-                                <span><a href="mailto:ys@novedades.pe"
-                                        class="contact-info__link">ys@novedades.pe</a></span>
+                                <span><a href="mailto:<?= e($infoContacto['email']); ?>" class="contact-info__link"><?= e($infoContacto['email']); ?></a></span>
                             </li>
                             <li class="contact-info__item">
                                 <i class="fa fa-map-marker"></i>
@@ -140,8 +177,9 @@
             <div class="widget">
                 <div class="text-widget">
                     <p>
-                        <a href="tel:901200822">901 200 822</a> <a href="tel:901110822">901 110 822</a>
-                        <a href="mailto:ys@novedades.pe">ys@novedades.pe</a> Lima - Perú
+                        <a href="tel:+51<?= e($infoContacto['telefono1']); ?>"><?= e($infoContacto['telefono1']); ?></a>
+                        <a href="tel:+51<?= e($infoContacto['telefono2']); ?>"><?= e($infoContacto['telefono2']); ?></a>
+                        <a href="mailto:<?= e($infoContacto['email']); ?>"><?= e($infoContacto['email']); ?></a> Lima - Perú
                     </p>
                 </div>
             </div>
@@ -149,21 +187,34 @@
             <div class="widget">
                 <div class="text-widget">
                     <ul class="social social-small">
-                        <li class="social__item">
-                            <a href="https://facebook.com/" class="social__link">
-                                <i class="fa fa-facebook"></i>
-                            </a>
-                        </li>
-                        <li class="social__item">
-                            <a href="https://instagram.com/" class="social__link">
-                                <i class="fa fa-instagram"></i>
-                            </a>
-                        </li>
-                        <li class="social__item">
-                            <a href="https://youtube.com/" class="social__link">
-                                <i class="fa-brands fa-tiktok"></i>
-                            </a>
-                        </li>
+                        <?php if (!empty($infoRedes['facebook'])): ?>
+                            <li class="social__item">
+                                <a href="<?= e($infoRedes['facebook']); ?>" class="social__link">
+                                    <i class="fa fa-facebook"></i>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+                        <?php if (!empty($infoRedes['instagram'])): ?>
+                            <li class="social__item">
+                                <a href="<?= e($infoRedes['instagram']); ?>" class="social__link">
+                                    <i class="fa fa-instagram"></i>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+                        <?php if (!empty($infoRedes['youtube'])): ?>
+                            <li class="social__item">
+                                <a href="<?= e($infoRedes['youtube']); ?>" class="social__link">
+                                    <i class="fa fa-youtube"></i>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+                        <?php if (!empty($infoRedes['tiktok'])): ?>
+                            <li class="social__item">
+                                <a href="<?= e($infoRedes['tiktok']); ?>" class="social__link">
+                                    <i class="fa-brands fa-tiktok"></i>
+                                </a>
+                            </li>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </div>
