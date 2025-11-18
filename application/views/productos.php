@@ -173,6 +173,7 @@ $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrec
 
                 <div class="col-lg-3 order-lg-1 mt--30 mt-md--40" id="primary-sidebar">
                     <div class="sidebar-widget">
+                        <!---------
                         <div class="product-widget categroy-widget mb--35 mb-md--30">
                             <h3 class="widget-title">Categorías</h3>
                             <ul class="prouduct-categories product-widget__list">
@@ -192,6 +193,7 @@ $montoVisual = 'S/ ' . $formatearPrecio($min_precio) . ' - S/ ' . $formatearPrec
                                     <?php endif; ?>
                             </ul>
                         </div>
+                        --------->
 
                         <div class="product-widget product-price-widget mb--40 mb-md--35">
                             <h3 class="widget-title">Precio</h3>
