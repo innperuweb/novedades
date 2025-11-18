@@ -222,10 +222,10 @@ $tituloPagina = $query === ''
                                         $urlSub = $slug !== '' ? $generarUrlSubcategoria($slug) : $urlBaseProductos;
                                         ?>
                                         <li<?= $clase; ?>><a href="<?= e($urlSub); ?>"><?= e($nombre); ?></a></li>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <li><span>No hay subcategorías disponibles.</span></li>
-                                <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <li><span>No hay subcategorías disponibles.</span></li>
+                                    <?php endif; ?>
                             </ul>
                         </div>
 
