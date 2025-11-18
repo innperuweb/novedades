@@ -14,7 +14,7 @@ final class PublicidadController extends AdminBaseController
         'image/webp' => 'webp',
     ];
 
-    private const POSICIONES = [1, 2, 3, 4];
+    private const POSICIONES = [1, 2, 3, 4, 5];
 
     private PublicidadModel $publicidadModel;
     private string $directorioPublicidad;

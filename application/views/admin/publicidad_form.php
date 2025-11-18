@@ -11,7 +11,7 @@
     <?= csrf_field(); ?>
     <div class="col-lg-8">
 
-        <?php for ($posicion = 1; $posicion <= 4; $posicion++): ?>
+        <?php for ($posicion = 1; $posicion <= 5; $posicion++): ?>
             <?php $registro = $publicidades[$posicion] ?? []; ?>
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body">
